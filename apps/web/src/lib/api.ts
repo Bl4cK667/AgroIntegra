@@ -158,11 +158,13 @@ export interface VisitDetail {
   hasSignature: boolean;
   location: { latitude: number; longitude: number; accuracy: number | null } | null;
   photos: { id: string; position: number; mimeType: string }[];
+  request: { id: string; subject: string } | null;
   createdAt: string;
 }
 
 export interface NewVisit {
   producerId: string;
+  requestId?: string;
   propertyId?: string;
   visitedOn: string;
   diagnosis: string;
@@ -189,3 +191,73 @@ export async function fetchImage(path: string): Promise<string> {
   if (!res.ok) throw new ApiError(res.status, 'Imagem indisponível.');
   return URL.createObjectURL(await res.blob());
 }
+
+// ---------- Solicitações ----------
+
+export type RequestStatus = 'NEW' | 'IN_REVIEW' | 'SCHEDULED' | 'DONE';
+export type RequestPriority = 'HIGH' | 'MEDIUM' | 'LOW';
+
+export const STATUS_ORDER: RequestStatus[] = ['NEW', 'IN_REVIEW', 'SCHEDULED', 'DONE'];
+export const STATUS_LABEL: Record<RequestStatus, string> = {
+  NEW: 'Nova',
+  IN_REVIEW: 'Em análise',
+  SCHEDULED: 'Agendada',
+  DONE: 'Concluída',
+};
+export const PRIORITY_ORDER: RequestPriority[] = ['HIGH', 'MEDIUM', 'LOW'];
+export const PRIORITY_LABEL: Record<RequestPriority, string> = { HIGH: 'Alta', MEDIUM: 'Média', LOW: 'Baixa' };
+
+export interface ServiceRequest {
+  id: string;
+  producer: { id: string; name: string; community: string };
+  property: { id: string; name: string } | null;
+  subject: string;
+  description: string | null;
+  priority: RequestPriority;
+  status: RequestStatus;
+  scheduledFor: string | null; // AAAA-MM-DD
+  completedAt: string | null;
+  createdBy: { name: string };
+  createdAt: string;
+  visitCount: number;
+}
+
+export const listRequests = (filter: { producerId?: string; open?: boolean } = {}) => {
+  const q = new URLSearchParams();
+  if (filter.producerId) q.set('producerId', filter.producerId);
+  if (filter.open) q.set('open', 'true');
+  const s = q.toString();
+  return request<{ items: ServiceRequest[]; total: number }>(`/requests${s ? `?${s}` : ''}`);
+};
+
+export const createRequest = (data: {
+  producerId: string;
+  propertyId?: string;
+  subject: string;
+  description?: string;
+  priority: RequestPriority;
+}) => request<ServiceRequest>('/requests', { method: 'POST', body: JSON.stringify(data) });
+
+export const moveRequest = (id: string, status: RequestStatus, scheduledFor?: string) =>
+  request<ServiceRequest>(`/requests/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status, scheduledFor }) });
+
+export const setRequestPriority = (id: string, priority: RequestPriority) =>
+  request<ServiceRequest>(`/requests/${id}/priority`, { method: 'PATCH', body: JSON.stringify({ priority }) });
+
+// ---------- Painel ----------
+
+export interface Dashboard {
+  year: number;
+  month: number;
+  openRequests: number;
+  openByStatus: { NEW: number; IN_REVIEW: number; SCHEDULED: number };
+  highPriorityOpen: number;
+  completedThisMonth: number;
+  visitsThisYear: number;
+  producersServed: number;
+  producersTotal: number;
+  visitsByMonth: number[];
+  visitsByCommunity: { community: string; visits: number; producers: number }[];
+}
+
+export const getDashboard = () => request<Dashboard>('/dashboard');

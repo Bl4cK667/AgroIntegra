@@ -77,6 +77,12 @@ export default function VisitaPage() {
         </div>
 
         <dl className={styles.facts}>
+          {visit.request && (
+            <div>
+              <dt>Solicitação atendida</dt>
+              <dd>{visit.request.subject}</dd>
+            </div>
+          )}
           <div>
             <dt>Técnico responsável</dt>
             <dd>{visit.technician.name}</dd>

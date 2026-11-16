@@ -121,11 +121,13 @@
     padding: 0;
   }
 
+  /* Com cinco módulos, o menu quebra em duas linhas em vez de esconder itens. */
   .nav {
     display: flex;
+    flex-wrap: wrap;
     order: 3;
     width: 100%;
-    overflow-x: auto;
+    gap: 2px 0;
   }
 
   .navLink,
@@ -133,6 +135,7 @@
     border-left: 0;
     border-bottom: 3px solid transparent;
     white-space: nowrap;
+    padding: 7px 10px;
   }
 
   .navActive {

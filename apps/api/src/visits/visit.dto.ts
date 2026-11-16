@@ -41,6 +41,10 @@ export class CreateVisitDto {
   @IsUUID('4', { message: 'Propriedade inválida.' })
   propertyId?: string;
 
+  @IsOptional()
+  @IsUUID('4', { message: 'Solicitação inválida.' })
+  requestId?: string;
+
   @Matches(DAY, { message: 'Informe a data da visita.' })
   visitedOn: string;
 

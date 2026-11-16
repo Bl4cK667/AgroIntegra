@@ -13,18 +13,19 @@ enum Role {
 }
 
 model User {
-  id           String     @id @default(uuid())
+  id           String           @id @default(uuid())
   name         String
-  email        String     @unique
+  email        String           @unique
   passwordHash String
   role         Role
-  active       Boolean    @default(true)
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
+  active       Boolean          @default(true)
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
   auditLogs    AuditLog[]
   producers    Producer[]
   properties   Property[]
   visits       Visit[]
+  requests     ServiceRequest[]
 }
 
 // Registro de auditoria (LGPD): quem fez, o quê, quando.
@@ -43,59 +44,61 @@ model AuditLog {
 }
 
 model Producer {
-  id          String     @id @default(uuid())
+  id          String           @id @default(uuid())
   name        String
   // Nome em minúsculas e sem acentos, usado na busca.
   searchName  String
   // Somente dígitos. Nunca sai completo da API.
-  cpf         String     @unique
+  cpf         String           @unique
   phone       String?
   community   String
   // Data em que o produtor autorizou o uso dos dados (LGPD). Nulo = pendente.
   consentAt   DateTime?
   createdById String
-  createdBy   User       @relation(fields: [createdById], references: [id])
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  createdBy   User             @relation(fields: [createdById], references: [id])
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
   properties  Property[]
   visits      Visit[]
+  requests    ServiceRequest[]
 
   @@index([searchName])
 }
 
 model Property {
-  id           String   @id @default(uuid())
+  id           String           @id @default(uuid())
   producerId   String
-  producer     Producer @relation(fields: [producerId], references: [id])
+  producer     Producer         @relation(fields: [producerId], references: [id])
   name         String
   // Nome + localidade em minúsculas e sem acentos, usado na busca.
-  searchText   String   @default("")
+  searchText   String           @default("")
   // Área digitada (sem mapa na demo).
-  areaHa       Decimal  @db.Decimal(10, 2)
+  areaHa       Decimal          @db.Decimal(10, 2)
   locality     String
   mainActivity String?
   createdById  String
-  createdBy    User     @relation(fields: [createdById], references: [id])
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  createdBy    User             @relation(fields: [createdById], references: [id])
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
   visits       Visit[]
+  requests     ServiceRequest[]
 
   @@index([producerId])
 }
 
 // Visita técnica. Depois de salva não é editada: vale como registro do atendimento.
 model Visit {
-  id               String       @id @default(uuid())
+  id               String          @id @default(uuid())
   producerId       String
-  producer         Producer     @relation(fields: [producerId], references: [id])
+  producer         Producer        @relation(fields: [producerId], references: [id])
   propertyId       String?
-  property         Property?    @relation(fields: [propertyId], references: [id])
+  property         Property?       @relation(fields: [propertyId], references: [id])
   technicianId     String
-  technician       User         @relation(fields: [technicianId], references: [id])
-  visitedOn        DateTime     @db.Date
+  technician       User            @relation(fields: [technicianId], references: [id])
+  visitedOn        DateTime        @db.Date
   diagnosis        String
   actionPlan       String
-  returnOn         DateTime?    @db.Date
+  returnOn         DateTime?       @db.Date
   impact           String?
   // Assinatura do produtor (PNG desenhado na tela).
   signature        Bytes?
@@ -103,7 +106,10 @@ model Visit {
   latitude         Float?
   longitude        Float?
   locationAccuracy Float?
-  createdAt        DateTime     @default(now())
+  // Solicitação que esta visita atendeu (opcional).
+  requestId        String?
+  request          ServiceRequest? @relation(fields: [requestId], references: [id])
+  createdAt        DateTime        @default(now())
   photos           VisitPhoto[]
 
   @@index([producerId, visitedOn])
@@ -121,4 +127,43 @@ model VisitPhoto {
   createdAt DateTime @default(now())
 
   @@index([visitId])
+}
+
+enum RequestStatus {
+  NEW
+  IN_REVIEW
+  SCHEDULED
+  DONE
+}
+
+enum RequestPriority {
+  HIGH
+  MEDIUM
+  LOW
+}
+
+// Pedido de atendimento do produtor, acompanhado no quadro de Solicitações.
+model ServiceRequest {
+  id           String          @id @default(uuid())
+  producerId   String
+  producer     Producer        @relation(fields: [producerId], references: [id])
+  propertyId   String?
+  property     Property?       @relation(fields: [propertyId], references: [id])
+  subject      String
+  description  String?
+  priority     RequestPriority @default(MEDIUM)
+  status       RequestStatus   @default(NEW)
+  // Data combinada para a visita, quando a solicitação está Agendada.
+  scheduledFor DateTime?       @db.Date
+  // Preenchida quando a solicitação vai para Concluída; limpa se ela voltar.
+  completedAt  DateTime?
+  createdById  String
+  createdBy    User            @relation(fields: [createdById], references: [id])
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+  visits       Visit[]
+
+  @@index([status])
+  @@index([completedAt])
+  @@index([producerId])
 }

@@ -6,9 +6,11 @@ import { HealthController } from './health.controller';
 import { PrismaModule } from './prisma/prisma.module';
 import { ProducersModule } from './producers/producers.module';
 import { VisitsModule } from './visits/visits.module';
+import { RequestsModule } from './requests/requests.module';
+import { DashboardModule } from './dashboard/dashboard.module';
 
 @Module({
-  imports: [ConfigModule.forRoot({ isGlobal: true }), PrismaModule, AuditModule, AuthModule, ProducersModule, VisitsModule],
+  imports: [ConfigModule.forRoot({ isGlobal: true }), PrismaModule, AuditModule, AuthModule, ProducersModule, VisitsModule, RequestsModule, DashboardModule],
   controllers: [HealthController],
 })
 export class AppModule {}

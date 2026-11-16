@@ -6,10 +6,10 @@ import { FormEvent, Suspense, useEffect, useRef, useState } from 'react';
 import { Location, LocationField } from '@/components/visit/LocationField';
 import { PhotoPicker } from '@/components/visit/PhotoPicker';
 import { SignaturePad, SignaturePadHandle } from '@/components/visit/SignaturePad';
-import { ApiError, createVisit, getProducer, listProducers, ProducerDetail, ProducerSummary } from '@/lib/api';
+import { ApiError, createVisit, getProducer, listRequests, ProducerDetail, ServiceRequest, STATUS_LABEL } from '@/lib/api';
 import { formatArea, todayIso } from '@/lib/format';
-import { useDebounced } from '@/lib/useDebounced';
-import styles from './nova.module.css';
+import styles from '@/components/form.module.css';
+import { ProducerSearch } from '@/components/ProducerSearch';
 
 export default function NovaVisitaPage() {
   return (
@@ -23,9 +23,12 @@ function NovaVisita() {
   const router = useRouter();
   const params = useSearchParams();
   const fromProducer = params.get('produtor');
+  const fromRequest = params.get('solicitacao');
 
   const [producer, setProducer] = useState<ProducerDetail | null>(null);
   const [propertyId, setPropertyId] = useState('');
+  const [openRequests, setOpenRequests] = useState<ServiceRequest[]>([]);
+  const [requestId, setRequestId] = useState('');
   const [visitedOn, setVisitedOn] = useState(todayIso());
   const [diagnosis, setDiagnosis] = useState('');
   const [actionPlan, setActionPlan] = useState('');
@@ -37,19 +40,22 @@ function NovaVisita() {
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
-  function choose(id: string) {
-    getProducer(id)
-      .then((p) => {
+  function choose(id: string, preselectRequest?: string | null) {
+    Promise.all([getProducer(id), listRequests({ producerId: id, open: true })])
+      .then(([p, reqs]) => {
         setProducer(p);
-        // Com uma só propriedade, ela já vem escolhida.
-        setPropertyId(p.properties.length === 1 ? p.properties[0].id : '');
+        setOpenRequests(reqs.items);
+        // Vindo do quadro, a solicitação já vem marcada e traz a propriedade dela.
+        const pre = reqs.items.find((r) => r.id === preselectRequest);
+        setRequestId(pre?.id ?? '');
+        setPropertyId(pre?.property?.id ?? (p.properties.length === 1 ? p.properties[0].id : ''));
       })
       .catch((e) => setError(e instanceof ApiError ? e.message : 'Não foi possível carregar o produtor.'));
   }
 
   useEffect(() => {
-    if (fromProducer) choose(fromProducer);
-  }, [fromProducer]);
+    if (fromProducer) choose(fromProducer, fromRequest);
+  }, [fromProducer, fromRequest]);
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
@@ -63,6 +69,7 @@ function NovaVisita() {
       const v = await createVisit({
         producerId: producer.id,
         propertyId: propertyId || undefined,
+        requestId: requestId || undefined,
         visitedOn,
         diagnosis,
         actionPlan,
@@ -79,12 +86,13 @@ function NovaVisita() {
     }
   }
 
-  const back = fromProducer ? `/produtores/${fromProducer}` : '/visitas';
+  const back = fromRequest ? '/solicitacoes' : fromProducer ? `/produtores/${fromProducer}` : '/visitas';
+  const backLabel = fromRequest ? 'Solicitações' : fromProducer ? (producer?.name ?? 'Produtor') : 'Visitas';
 
   return (
     <>
       <Link href={back} className="back">
-        {fromProducer ? (producer?.name ?? 'Produtor') : 'Visitas'}
+        {backLabel}
       </Link>
       <header className="page-head">
         <div>
@@ -105,13 +113,28 @@ function NovaVisita() {
                 </span>
               </div>
               {!fromProducer && (
-                <button type="button" className="btn-link" onClick={() => setProducer(null)}>
+                <button type="button" className="btn-link" onClick={() => (setProducer(null), setRequestId(''))}>
                   Trocar produtor
                 </button>
               )}
             </div>
           ) : (
             <ProducerSearch onPick={choose} />
+          )}
+
+          {producer && openRequests.length > 0 && (
+            <label className="field">
+              <span>Solicitação atendida</span>
+              <select className="input" value={requestId} onChange={(e) => setRequestId(e.target.value)}>
+                <option value="">Nenhuma: visita sem solicitação</option>
+                {openRequests.map((r) => (
+                  <option key={r.id} value={r.id}>
+                    {r.subject} ({STATUS_LABEL[r.status].toLowerCase()})
+                  </option>
+                ))}
+              </select>
+              <small>Ao salvar a visita, a solicitação marcada vai para Concluída.</small>
+            </label>
           )}
 
           {producer && (
@@ -216,57 +239,5 @@ function NovaVisita() {
         </div>
       </form>
     </>
-  );
-}
-
-function ProducerSearch({ onPick }: { onPick: (id: string) => void }) {
-  const [search, setSearch] = useState('');
-  const term = useDebounced(search.trim());
-  const [items, setItems] = useState<ProducerSummary[] | null>(null);
-
-  useEffect(() => {
-    if (!term) {
-      setItems(null);
-      return;
-    }
-    let alive = true;
-    listProducers(term)
-      .then((d) => alive && setItems(d.items.slice(0, 8)))
-      .catch(() => alive && setItems([]));
-    return () => {
-      alive = false;
-    };
-  }, [term]);
-
-  return (
-    <div className="field">
-      <span>Produtor atendido</span>
-      <input
-        className="input"
-        type="search"
-        placeholder="Digite o nome ou o CPF"
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        autoFocus
-      />
-      {items && (
-        <ul className={styles.results}>
-          {items.length === 0 ? (
-            <li className="muted">Nenhum produtor encontrado.</li>
-          ) : (
-            items.map((p) => (
-              <li key={p.id}>
-                <button type="button" onClick={() => onPick(p.id)}>
-                  <strong>{p.name}</strong>
-                  <span className="muted">
-                    {p.community} · <span className="num">{p.cpf}</span>
-                  </span>
-                </button>
-              </li>
-            ))
-          )}
-        </ul>
-      )}
-    </div>
   );
 }

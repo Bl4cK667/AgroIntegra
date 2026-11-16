@@ -13,6 +13,7 @@ const MENU = [
   { href: '/painel', label: 'Painel' },
   { href: '/produtores', label: 'Produtores' },
   { href: '/propriedades', label: 'Propriedades' },
+  { href: '/solicitacoes', label: 'Solicitações' },
   { href: '/visitas', label: 'Visitas' },
 ];
 

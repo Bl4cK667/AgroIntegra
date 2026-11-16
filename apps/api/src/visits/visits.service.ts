@@ -1,32 +1,19 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { AuditService } from '../audit/audit.service';
 import { AuthUser } from '../auth/current-user.decorator';
+import { parseDay, today } from '../common/dates';
 import { PrismaService } from '../prisma/prisma.service';
+import { statusChange } from '../requests/requests.service';
 import { decodeImage } from './image';
 import { CreateVisitDto } from './visit.dto';
 import { visitRow, visitRowInclude, visitView } from './visit.view';
-
-// "2026-11-16" -> Date na meia-noite UTC; recusa dias que não existem (ex.: 30/02).
-function parseDay(value: string, label: string): Date {
-  const d = new Date(`${value}T00:00:00Z`);
-  if (Number.isNaN(d.getTime()) || d.toISOString().slice(0, 10) !== value) {
-    throw new BadRequestException(`${label}: data inválida.`);
-  }
-  return d;
-}
-
-// Hoje no fuso do servidor (a secretaria), no formato AAAA-MM-DD.
-function today(): string {
-  const d = new Date();
-  const pad = (n: number) => String(n).padStart(2, '0');
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-}
 
 const detailInclude = {
   producer: { select: { id: true, name: true } },
   property: { select: { id: true, name: true } },
   technician: { select: { name: true } },
   photos: { select: { id: true, position: true, mimeType: true }, orderBy: { position: 'asc' } },
+  request: { select: { id: true, subject: true } },
 } as const;
 
 @Injectable()
@@ -56,30 +43,46 @@ export class VisitsService {
       }
     }
 
-    const visit = await this.prisma.visit.create({
-      data: {
-        producerId: producer.id,
-        propertyId: dto.propertyId ?? null,
-        technicianId: user.id,
-        visitedOn,
-        diagnosis: dto.diagnosis,
-        actionPlan: dto.actionPlan,
-        returnOn,
-        impact: dto.impact || null,
-        signature: signature ? new Uint8Array(signature.data) : null,
-        latitude: dto.location?.latitude ?? null,
-        longitude: dto.location?.longitude ?? null,
-        locationAccuracy: dto.location?.accuracy ?? null,
-        photos: {
-          create: photos.map((p, i) => ({
-            position: i + 1,
-            mimeType: p.mimeType,
-            data: new Uint8Array(p.data),
-            size: p.data.length,
-          })),
+    // A solicitação atendida precisa ser deste produtor e ainda estar aberta.
+    const request = dto.requestId
+      ? await this.prisma.serviceRequest.findUnique({ where: { id: dto.requestId } })
+      : null;
+    if (dto.requestId) {
+      if (!request || request.producerId !== producer.id) {
+        throw new BadRequestException('A solicitação escolhida não é deste produtor.');
+      }
+      if (request.status === 'DONE') throw new BadRequestException('Esta solicitação já está concluída.');
+    }
+
+    // Visita e conclusão da solicitação são gravadas juntas: ou as duas, ou nenhuma.
+    const visit = await this.prisma.$transaction(async (tx) => {
+      if (request) await tx.serviceRequest.update({ where: { id: request.id }, data: statusChange(request, 'DONE') });
+      return tx.visit.create({
+        data: {
+          requestId: request?.id ?? null,
+          producerId: producer.id,
+          propertyId: dto.propertyId ?? null,
+          technicianId: user.id,
+          visitedOn,
+          diagnosis: dto.diagnosis,
+          actionPlan: dto.actionPlan,
+          returnOn,
+          impact: dto.impact || null,
+          signature: signature ? new Uint8Array(signature.data) : null,
+          latitude: dto.location?.latitude ?? null,
+          longitude: dto.location?.longitude ?? null,
+          locationAccuracy: dto.location?.accuracy ?? null,
+          photos: {
+            create: photos.map((p, i) => ({
+              position: i + 1,
+              mimeType: p.mimeType,
+              data: new Uint8Array(p.data),
+              size: p.data.length,
+            })),
+          },
         },
-      },
-      include: detailInclude,
+        include: detailInclude,
+      });
     });
 
     await this.audit.record({
@@ -87,8 +90,23 @@ export class VisitsService {
       action: 'VISIT_CREATED',
       entity: 'Visit',
       entityId: visit.id,
-      details: { producerId: producer.id, photos: photos.length, signature: !!signature, location: !!dto.location },
+      details: {
+        producerId: producer.id,
+        requestId: request?.id ?? null,
+        photos: photos.length,
+        signature: !!signature,
+        location: !!dto.location,
+      },
     });
+    if (request) {
+      await this.audit.record({
+        userId: user.id,
+        action: 'REQUEST_MOVED',
+        entity: 'ServiceRequest',
+        entityId: request.id,
+        details: { from: request.status, to: 'DONE', byVisit: visit.id },
+      });
+    }
     return visitView(visit);
   }
 

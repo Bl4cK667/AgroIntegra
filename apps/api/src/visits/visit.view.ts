@@ -1,12 +1,12 @@
 import { Property, User, Visit, VisitPhoto } from '@prisma/client';
-
-export const toDay = (d: Date | null) => (d ? d.toISOString().slice(0, 10) : null);
+import { toDay } from '../common/dates';
 
 type VisitWithRelations = Visit & {
   producer: { id: string; name: string };
   property: Pick<Property, 'id' | 'name'> | null;
   technician: Pick<User, 'name'>;
   photos: Pick<VisitPhoto, 'id' | 'position' | 'mimeType'>[];
+  request: { id: string; subject: string } | null;
 };
 
 // Formato público da visita: sem os bytes das fotos e da assinatura.
@@ -27,6 +27,7 @@ export function visitView(v: VisitWithRelations) {
         ? { latitude: v.latitude, longitude: v.longitude, accuracy: v.locationAccuracy }
         : null,
     photos: v.photos.map((p) => ({ id: p.id, position: p.position, mimeType: p.mimeType })),
+    request: v.request,
     createdAt: v.createdAt,
   };
 }

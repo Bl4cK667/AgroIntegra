@@ -3,14 +3,16 @@
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { FormEvent, useCallback, useEffect, useState } from 'react';
+import { PriorityTag } from '@/components/request/PriorityTag';
 import { VisitTable } from '@/components/visit/VisitTable';
-import { addProperty, ApiError, getProducer, ProducerDetail, registerConsent } from '@/lib/api';
-import { formatArea, formatDate, parseArea } from '@/lib/format';
+import { addProperty, ApiError, getProducer, listRequests, ProducerDetail, registerConsent, ServiceRequest, STATUS_LABEL } from '@/lib/api';
+import { formatArea, formatDate, formatDay, parseArea } from '@/lib/format';
 import styles from './produtor.module.css';
 
 export default function ProdutorPage() {
   const { id } = useParams<{ id: string }>();
   const [producer, setProducer] = useState<ProducerDetail | null>(null);
+  const [requests, setRequests] = useState<ServiceRequest[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [consentSaving, setConsentSaving] = useState(false);
   const [adding, setAdding] = useState(false);
@@ -27,8 +29,8 @@ export default function ProdutorPage() {
   }, []);
 
   const load = useCallback(() => {
-    getProducer(id)
-      .then((p) => (setProducer(p), setError(null)))
+    Promise.all([getProducer(id), listRequests({ producerId: id, open: true })])
+      .then(([p, r]) => (setProducer(p), setRequests(r.items), setError(null)))
       .catch((e) => setError(e instanceof ApiError ? e.message : 'Não foi possível carregar o produtor.'));
   }, [id]);
 
@@ -158,6 +160,55 @@ export default function ProdutorPage() {
                       <td>{p.locality}</td>
                       <td>{p.mainActivity || <span className="muted">Não informada</span>}</td>
                       <td className="right area">{formatArea(p.areaHa)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+
+          <div className={`${styles.sectionHead} ${styles.sectionGap}`}>
+            <h2>
+              Solicitações abertas <span className="muted num">{requests.length}</span>
+            </h2>
+            <Link href={`/solicitacoes/nova?produtor=${id}`} className="btn btn-secondary">
+              Nova solicitação
+            </Link>
+          </div>
+          <div className="table-wrap">
+            {requests.length === 0 ? (
+              <div className="empty">
+                <strong>Nenhuma solicitação aberta</strong>
+                Pedidos do produtor aparecem aqui até serem concluídos.
+              </div>
+            ) : (
+              <table className="table">
+                <thead>
+                  <tr>
+                    <th>Assunto</th>
+                    <th>Prioridade</th>
+                    <th>Situação</th>
+                    <th className="right">Ação</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {requests.map((r) => (
+                    <tr key={r.id}>
+                      <td>{r.subject}</td>
+                      <td>
+                        <PriorityTag priority={r.priority} />
+                      </td>
+                      <td className="nowrap">
+                        {STATUS_LABEL[r.status]}
+                        {r.status === 'SCHEDULED' && r.scheduledFor && (
+                          <span className="muted num"> · {formatDay(r.scheduledFor)}</span>
+                        )}
+                      </td>
+                      <td className="right">
+                        <Link href={`/visitas/nova?produtor=${id}&solicitacao=${r.id}`} className="nowrap">
+                          Registrar visita
+                        </Link>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
