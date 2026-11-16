@@ -8,9 +8,11 @@ import { ProducersModule } from './producers/producers.module';
 import { VisitsModule } from './visits/visits.module';
 import { RequestsModule } from './requests/requests.module';
 import { DashboardModule } from './dashboard/dashboard.module';
+import { ProgramsModule } from './programs/programs.module';
+import { ReportsModule } from './reports/reports.module';
 
 @Module({
-  imports: [ConfigModule.forRoot({ isGlobal: true }), PrismaModule, AuditModule, AuthModule, ProducersModule, VisitsModule, RequestsModule, DashboardModule],
+  imports: [ConfigModule.forRoot({ isGlobal: true }), PrismaModule, AuditModule, AuthModule, ProducersModule, VisitsModule, RequestsModule, DashboardModule, ProgramsModule, ReportsModule],
   controllers: [HealthController],
 })
 export class AppModule {}

@@ -15,6 +15,8 @@ const MENU = [
   { href: '/propriedades', label: 'Propriedades' },
   { href: '/solicitacoes', label: 'Solicitações' },
   { href: '/visitas', label: 'Visitas' },
+  { href: '/programas', label: 'Programas' },
+  { href: '/relatorios', label: 'Relatórios' },
 ];
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {

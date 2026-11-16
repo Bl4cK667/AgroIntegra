@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { MonthlyBars } from '@/components/MonthlyBars';
 import { ApiError, Dashboard, getDashboard } from '@/lib/api';
 import { useSession } from '@/lib/session';
+import fig from '@/components/figures.module.css';
 import styles from './painel.module.css';
 
 const MONTHS = [
@@ -42,11 +43,11 @@ export default function PainelPage() {
 
       {data && (
         <>
-          <section className={styles.figures} aria-label="Indicadores">
-            <Link href="/solicitacoes" className={styles.figure}>
-              <span className={styles.label}>Demandas abertas</span>
+          <section className={fig.figures} aria-label="Indicadores">
+            <Link href="/solicitacoes" className={fig.figure}>
+              <span className={fig.label}>Demandas abertas</span>
               <strong className="num">{num.format(data.openRequests)}</strong>
-              <span className={styles.note}>
+              <span className={fig.note}>
                 {data.highPriorityOpen > 0 ? (
                   <>
                     <b className="num">{data.highPriorityOpen}</b> de prioridade alta
@@ -56,20 +57,20 @@ export default function PainelPage() {
                 )}
               </span>
             </Link>
-            <div className={styles.figure}>
-              <span className={styles.label}>Concluídas em {MONTHS[data.month - 1]}</span>
+            <div className={fig.figure}>
+              <span className={fig.label}>Concluídas em {MONTHS[data.month - 1]}</span>
               <strong className="num">{num.format(data.completedThisMonth)}</strong>
-              <span className={styles.note}>solicitações encerradas no mês</span>
+              <span className={fig.note}>solicitações encerradas no mês</span>
             </div>
-            <Link href="/visitas" className={styles.figure}>
-              <span className={styles.label}>Visitas em {data.year}</span>
+            <Link href="/visitas" className={fig.figure}>
+              <span className={fig.label}>Visitas em {data.year}</span>
               <strong className="num">{num.format(data.visitsThisYear)}</strong>
-              <span className={styles.note}>atendimentos técnicos no ano</span>
+              <span className={fig.note}>atendimentos técnicos no ano</span>
             </Link>
-            <Link href="/produtores" className={styles.figure}>
-              <span className={styles.label}>Produtores atendidos</span>
+            <Link href="/produtores" className={fig.figure}>
+              <span className={fig.label}>Produtores atendidos</span>
               <strong className="num">{num.format(data.producersServed)}</strong>
-              <span className={styles.note}>
+              <span className={fig.note}>
                 de <b className="num">{num.format(data.producersTotal)}</b> cadastrados, com visita em {data.year}
               </span>
             </Link>

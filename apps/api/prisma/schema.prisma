@@ -61,6 +61,8 @@ model Producer {
   properties  Property[]
   visits      Visit[]
   requests    ServiceRequest[]
+  enrollments Enrollment[]
+  deliveries  Delivery[]
 
   @@index([searchName])
 }
@@ -166,4 +168,60 @@ model ServiceRequest {
   @@index([status])
   @@index([completedAt])
   @@index([producerId])
+}
+
+// Programa de fomento da secretaria. Na demo é só leitura: os dados vêm da carga de exemplo.
+model Program {
+  id           String       @id @default(uuid())
+  name         String
+  description  String
+  // Vagas oferecidas.
+  slots        Int
+  // Meta física: quantas unidades do item serão entregues (ex.: 120 kits).
+  goalQuantity Int
+  unit         String
+  // Orçamento em centavos, para não perder precisão.
+  budgetCents  Int
+  startsOn     DateTime     @db.Date
+  endsOn       DateTime     @db.Date
+  createdAt    DateTime     @default(now())
+  enrollments  Enrollment[]
+  deliveries   Delivery[]
+}
+
+enum EnrollmentStatus {
+  ENROLLED
+  APPROVED
+  REJECTED
+}
+
+// Inscrição de um produtor no programa; aprovada = beneficiário.
+model Enrollment {
+  id         String           @id @default(uuid())
+  programId  String
+  program    Program          @relation(fields: [programId], references: [id])
+  producerId String
+  producer   Producer         @relation(fields: [producerId], references: [id])
+  status     EnrollmentStatus @default(ENROLLED)
+  enrolledOn DateTime         @db.Date
+  createdAt  DateTime         @default(now())
+
+  @@unique([programId, producerId])
+}
+
+// Entrega feita a um beneficiário (quantidade do item e valor gasto).
+model Delivery {
+  id          String   @id @default(uuid())
+  programId   String
+  program     Program  @relation(fields: [programId], references: [id])
+  producerId  String
+  producer    Producer @relation(fields: [producerId], references: [id])
+  deliveredOn DateTime @db.Date
+  quantity    Int
+  valueCents  Int
+  note        String?
+  createdAt   DateTime @default(now())
+
+  @@index([programId])
+  @@index([producerId, deliveredOn])
 }

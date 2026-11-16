@@ -261,3 +261,94 @@ export interface Dashboard {
 }
 
 export const getDashboard = () => request<Dashboard>('/dashboard');
+
+// ---------- Programas (somente leitura) ----------
+
+export type EnrollmentStatus = 'ENROLLED' | 'APPROVED' | 'REJECTED';
+export const ENROLLMENT_LABEL: Record<EnrollmentStatus, string> = {
+  ENROLLED: 'Inscrito',
+  APPROVED: 'Beneficiário',
+  REJECTED: 'Não aprovado',
+};
+
+export interface ProgramSummary {
+  id: string;
+  name: string;
+  description: string;
+  startsOn: string;
+  endsOn: string;
+  unit: string;
+  slots: number;
+  enrolled: number;
+  approved: number;
+  rejected: number;
+  pending: number;
+  openSlots: number;
+  deliveryCount: number;
+  goalQuantity: number;
+  deliveredQuantity: number;
+  physicalPercent: number;
+  budgetCents: number;
+  spentCents: number;
+  financialPercent: number;
+}
+
+type ProducerRef = { id: string; name: string; community: string };
+
+export interface ProgramDetail extends ProgramSummary {
+  enrollments: { id: string; producer: ProducerRef; status: EnrollmentStatus; enrolledOn: string }[];
+  deliveries: { id: string; producer: ProducerRef; deliveredOn: string; quantity: number; valueCents: number; note: string | null }[];
+}
+
+export const listPrograms = () => request<{ items: ProgramSummary[]; total: number }>('/programs');
+export const getProgram = (id: string) => request<ProgramDetail>(`/programs/${id}`);
+
+// ---------- Relatório do produtor ----------
+
+export interface ProducerReport {
+  period: { from: string; to: string };
+  producer: { id: string; name: string; cpf: string; community: string; phone: string | null; consentAt: string | null };
+  properties: { name: string; locality: string; areaHa: number; mainActivity: string | null }[];
+  totals: { visits: number; requestsOpened: number; requestsCompleted: number; deliveries: number; deliveredValueCents: number };
+  visits: {
+    id: string;
+    visitedOn: string;
+    property: string | null;
+    technician: string;
+    request: string | null;
+    diagnosis: string;
+    actionPlan: string;
+    returnOn: string | null;
+    impact: string | null;
+    photoCount: number;
+    hasSignature: boolean;
+    hasLocation: boolean;
+  }[];
+  requests: { subject: string; priority: RequestPriority; status: RequestStatus; openedAt: string; completedAt: string | null }[];
+  programs: { name: string; status: EnrollmentStatus; enrolledOn: string }[];
+  deliveries: { program: string; deliveredOn: string; quantity: number; unit: string; valueCents: number; note: string | null }[];
+}
+
+const periodQs = (from: string, to: string) => `from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`;
+
+export const getProducerReport = (producerId: string, from: string, to: string) =>
+  request<ProducerReport>(`/reports/producer/${producerId}?${periodQs(from, to)}`);
+
+// O PDF exige o token, então é baixado como arquivo e aberto pelo navegador.
+export async function fetchProducerReportPdf(producerId: string, from: string, to: string) {
+  const token = getToken();
+  let res: Response;
+  try {
+    res = await fetch(`${API_URL}/reports/producer/${producerId}/pdf?${periodQs(from, to)}`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
+  } catch {
+    throw new ApiError(0, 'Não foi possível falar com o servidor. Verifique se a API está rodando.');
+  }
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new ApiError(res.status, (Array.isArray(body.message) ? body.message.join(' ') : body.message) ?? 'Erro ao gerar o PDF.');
+  }
+  const name = /filename="([^"]+)"/.exec(res.headers.get('Content-Disposition') ?? '')?.[1] ?? 'relatorio.pdf';
+  return { blob: await res.blob(), name };
+}

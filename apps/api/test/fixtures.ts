@@ -33,6 +33,9 @@ export async function resetData(prisma: PrismaService) {
   await prisma.visitPhoto.deleteMany();
   await prisma.visit.deleteMany();
   await prisma.serviceRequest.deleteMany();
+  await prisma.delivery.deleteMany();
+  await prisma.enrollment.deleteMany();
+  await prisma.program.deleteMany();
   await prisma.property.deleteMany();
   await prisma.producer.deleteMany();
   await prisma.user.deleteMany();

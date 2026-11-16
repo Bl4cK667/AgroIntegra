@@ -35,3 +35,12 @@ export function todayIso() {
 
 const coordFmt = new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 5, maximumFractionDigits: 5 });
 export const formatCoord = (n: number) => coordFmt.format(n);
+
+const moneyFmt = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
+export const formatMoney = (cents: number) => moneyFmt.format(cents / 100);
+
+const pctFmt = new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 1 });
+export const formatPercent = (pct: number) => `${pctFmt.format(pct)}%`;
+
+const intFmt = new Intl.NumberFormat('pt-BR');
+export const formatInt = (n: number) => intFmt.format(n);

@@ -70,9 +70,14 @@ export default function ProdutorPage() {
           <h1>{producer.name}</h1>
           <p>{producer.community}</p>
         </div>
-        <Link href={`/produtores/${id}/editar`} className="btn btn-secondary">
-          Editar dados
-        </Link>
+        <div className="form-actions" style={{ paddingTop: 0 }}>
+          <Link href={`/relatorios?produtor=${id}`} className="btn btn-secondary">
+            Relatório em PDF
+          </Link>
+          <Link href={`/produtores/${id}/editar`} className="btn btn-secondary">
+            Editar dados
+          </Link>
+        </div>
       </header>
 
       {error && <p className="alert">{error}</p>}

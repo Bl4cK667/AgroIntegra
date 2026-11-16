@@ -1,0 +1,117 @@
+/* Linha de escolha: produtor, período e o botão do PDF. */
+.controls {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 160px 160px auto;
+  gap: 14px;
+  align-items: end;
+  margin-bottom: 22px;
+}
+
+.who {
+  min-width: 0;
+}
+
+.loading {
+  opacity: 0.55;
+  transition: opacity 0.15s;
+}
+
+.title {
+  font-size: 1rem;
+  margin-bottom: 12px;
+  color: var(--sutil);
+  font-weight: 600;
+}
+
+.sections {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+  gap: 28px;
+  align-items: start;
+}
+
+.sections h3 {
+  font-size: 1rem;
+  font-stretch: 88%;
+  margin: 0 0 10px;
+}
+
+.visits {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0;
+  background: var(--superficie);
+  border: 1px solid var(--linha);
+  border-radius: 6px;
+}
+
+.visits li {
+  padding: 14px 16px;
+}
+
+.visits li + li {
+  border-top: 1px solid var(--linha);
+}
+
+.visits p {
+  margin: 6px 0 0;
+  font-size: 0.94rem;
+}
+
+.visitHead {
+  display: flex;
+  gap: 12px;
+  align-items: baseline;
+  flex-wrap: wrap;
+}
+
+.visitHead a {
+  font-weight: 700;
+  color: var(--tinta);
+}
+
+.small {
+  font-size: 0.85rem !important;
+  color: var(--sutil);
+}
+
+.side {
+  display: grid;
+  gap: 22px;
+}
+
+.side ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+  font-size: 0.94rem;
+}
+
+.side ul + ul {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--linha);
+}
+
+@media (max-width: 1000px) {
+  .controls {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .who {
+    grid-column: 1 / -1;
+  }
+
+  .controls > button {
+    grid-column: 1 / -1;
+    justify-self: start;
+  }
+
+  .sections {
+    grid-template-columns: 1fr;
+  }
+}
