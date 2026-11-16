@@ -34,10 +34,6 @@
   text-decoration: none;
 }
 
-.brand svg {
-  color: var(--ouro-claro);
-}
-
 .nav {
   display: grid;
   gap: 1px;

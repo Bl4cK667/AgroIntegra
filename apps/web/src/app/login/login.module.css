@@ -67,17 +67,8 @@
 
 .brand {
   display: flex;
-  align-items: center;
-  gap: 10px;
-  color: var(--mata);
-  font-weight: 700;
-  font-size: 1.15rem;
-  font-stretch: 88%;
-  margin-bottom: 40px;
-}
-
-.brand svg {
-  color: var(--ouro);
+  justify-content: center;
+  margin-bottom: 32px;
 }
 
 .title {
@@ -114,6 +105,10 @@
   }
 
   .brand {
-    margin-bottom: 24px;
+    margin-bottom: 20px;
+  }
+
+  .brand img {
+    width: 190px;
   }
 }

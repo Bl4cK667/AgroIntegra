@@ -70,7 +70,7 @@ A demo serve para:
 
 - Fase 0 concluída.
 - Fase 1 concluída: login por perfil (JWT), auditoria de login, painel vazio. Rodar: ver `README.md`.
-- Fase 2 concluída: produtores e propriedades (CPF validado e mascarado, consentimento com data, busca sem acento por palavras, auditoria). Visual refeito sem cara de template: fonte Archivo, tabelas, curvas de nível no login.
+- Fase 2 concluída: produtores e propriedades (CPF validado e mascarado, consentimento com data, busca sem acento por palavras, auditoria). Visual refeito sem cara de template: fonte Archivo, tabelas, curvas de nível no login. Logo oficial em `apps/web/public/brand` (recortada de uma captura com fundo branco; símbolo num quadrado branco no menu).
 - Fase 3 concluída: visitas (diagnóstico, plano de ação, retorno, impacto, até 3 fotos reduzidas no aparelho, assinatura desenhada, localização do aparelho sem mapa). Fotos e assinatura ficam no banco e só saem com login; o tipo é conferido pelo conteúdo do arquivo. Visita salva não é editada. Aparece na página do produtor e em Visitas.
 - Versões: NestJS 11 (o 12 é só ESM e quebra o Jest), Prisma 6, Next.js 16.
 - Sem Docker nesta máquina: `npm run db:up` usa `embedded-postgres` + `pg_ctl` (porta 5433, UTF-8).

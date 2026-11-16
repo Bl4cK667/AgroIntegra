@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { FormEvent, useState } from 'react';
-import { BrandMark } from '@/components/BrandMark';
+import { BrandLogo } from '@/components/Brand';
 import { contourPaths } from '@/components/contours';
 import { ApiError, login } from '@/lib/api';
 import styles from './login.module.css';
@@ -55,8 +55,7 @@ export default function LoginPage() {
       <section className={styles.formSide}>
         <div className={styles.formBox}>
           <div className={styles.brand}>
-            <BrandMark size={34} />
-            <span>AgroIntegra</span>
+            <BrandLogo width={250} />
           </div>
 
           <h1 className={styles.title}>Entrar</h1>

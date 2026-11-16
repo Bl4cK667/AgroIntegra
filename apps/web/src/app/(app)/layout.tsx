@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { BrandMark } from '@/components/BrandMark';
+import { BrandSymbol } from '@/components/Brand';
 import { clearSession, fetchMe, getToken, ROLE_LABEL, SessionUser } from '@/lib/api';
 import { SessionContext } from '@/lib/session';
 import styles from './shell.module.css';
@@ -48,7 +48,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       <div className={styles.shell}>
         <aside className={styles.sidebar}>
           <Link href="/painel" className={styles.brand}>
-            <BrandMark size={26} />
+            <BrandSymbol size={34} />
             <span>AgroIntegra</span>
           </Link>
           <nav className={styles.nav} aria-label="Principal">
