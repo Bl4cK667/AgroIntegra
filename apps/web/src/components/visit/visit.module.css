@@ -1,0 +1,120 @@
+.optional {
+  font-weight: 400;
+  color: var(--sutil);
+  font-size: 0.82rem;
+  margin-left: 4px;
+}
+
+/* Fotos: miniaturas lado a lado. */
+.photos {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.thumb {
+  margin: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.thumb img {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border: 1px solid var(--linha);
+  border-radius: 4px;
+  background: var(--linha);
+}
+
+.thumbRemove {
+  justify-self: start;
+  background: none;
+  border: 0;
+  padding: 0;
+  color: var(--sutil);
+  font-size: 0.85rem;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+.thumbRemove:hover {
+  color: var(--perigo);
+}
+
+.addPhoto {
+  aspect-ratio: 4 / 3;
+  border: 1px dashed var(--linha-forte);
+  border-radius: 4px;
+  background: var(--superficie);
+  color: var(--mata-2);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.addPhoto:hover:not(:disabled) {
+  border-color: var(--mata-3);
+  background: #f8f9f6;
+}
+
+/* Assinatura: área branca com a linha de base, como no papel. */
+.signature {
+  position: relative;
+  height: 160px;
+  border: 1px solid var(--linha-forte);
+  border-radius: 4px;
+  background: var(--superficie);
+}
+
+.signature canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+  cursor: crosshair;
+}
+
+.signatureLine {
+  position: absolute;
+  left: 24px;
+  right: 24px;
+  bottom: 36px;
+  border-bottom: 1px solid var(--linha-forte);
+  pointer-events: none;
+}
+
+.signatureHint {
+  position: absolute;
+  left: 24px;
+  bottom: 12px;
+  color: var(--sutil);
+  font-size: 0.85rem;
+  pointer-events: none;
+}
+
+.location {
+  display: flex;
+  gap: 14px;
+  align-items: baseline;
+  flex-wrap: wrap;
+  padding: 9px 12px;
+  border: 1px solid var(--linha);
+  border-radius: 4px;
+  background: var(--superficie);
+}
+
+/* Imagem protegida (foto ou assinatura salva). */
+.stored {
+  width: 100%;
+  border: 1px solid var(--linha);
+  border-radius: 4px;
+  background: var(--superficie);
+}
+
+@media (max-width: 640px) {
+  .photos {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

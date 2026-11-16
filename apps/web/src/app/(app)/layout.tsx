@@ -13,6 +13,7 @@ const MENU = [
   { href: '/painel', label: 'Painel' },
   { href: '/produtores', label: 'Produtores' },
   { href: '/propriedades', label: 'Propriedades' },
+  { href: '/visitas', label: 'Visitas' },
 ];
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {

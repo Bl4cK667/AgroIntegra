@@ -7,6 +7,7 @@ import { normalizeSearch, searchWords } from '../common/search';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreatePropertyDto } from '../properties/property.dto';
 import { propertySearchText, propertyView } from '../properties/property.view';
+import { visitRow, visitRowInclude } from '../visits/visit.view';
 import { CreateProducerDto, UpdateProducerDto } from './producer.dto';
 
 // Formato público do produtor: o CPF sai sempre mascarado.
@@ -62,6 +63,7 @@ export class ProducersService {
       include: {
         properties: { orderBy: { name: 'asc' } },
         createdBy: { select: { name: true } },
+        visits: { orderBy: [{ visitedOn: 'desc' }, { createdAt: 'desc' }], include: visitRowInclude },
       },
     });
     if (!p) throw new NotFoundException('Produtor não encontrado.');
@@ -69,6 +71,7 @@ export class ProducersService {
       ...producerView(p),
       createdBy: p.createdBy,
       properties: p.properties.map(propertyView),
+      visits: p.visits.map(visitRow),
     };
   }
 

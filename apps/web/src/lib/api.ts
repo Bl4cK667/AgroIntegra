@@ -101,6 +101,7 @@ export interface ProducerSummary {
 export interface ProducerDetail extends Omit<ProducerSummary, 'propertyCount'> {
   createdBy: { name: string };
   properties: Property[];
+  visits: VisitRow[];
 }
 
 export interface PropertyRow extends Property {
@@ -130,3 +131,61 @@ export const addProperty = (
 
 export const listProperties = (search?: string) =>
   request<{ items: PropertyRow[]; total: number }>(`/properties${qs(search)}`);
+
+// ---------- Visitas ----------
+
+export interface VisitRow {
+  id: string;
+  producer: { id: string; name: string };
+  property: { id: string; name: string } | null;
+  technician: { name: string };
+  visitedOn: string; // AAAA-MM-DD
+  returnOn: string | null;
+  diagnosis: string;
+  photoCount: number;
+}
+
+export interface VisitDetail {
+  id: string;
+  producer: { id: string; name: string };
+  property: { id: string; name: string } | null;
+  technician: { name: string };
+  visitedOn: string;
+  diagnosis: string;
+  actionPlan: string;
+  returnOn: string | null;
+  impact: string | null;
+  hasSignature: boolean;
+  location: { latitude: number; longitude: number; accuracy: number | null } | null;
+  photos: { id: string; position: number; mimeType: string }[];
+  createdAt: string;
+}
+
+export interface NewVisit {
+  producerId: string;
+  propertyId?: string;
+  visitedOn: string;
+  diagnosis: string;
+  actionPlan: string;
+  returnOn?: string;
+  impact?: string;
+  photos?: string[]; // data URLs
+  signature?: string; // data URL PNG
+  location?: { latitude: number; longitude: number; accuracy?: number };
+}
+
+export const listVisits = (producerId?: string) =>
+  request<{ items: VisitRow[]; total: number }>(`/visits${producerId ? `?producerId=${encodeURIComponent(producerId)}` : ''}`);
+
+export const getVisit = (id: string) => request<VisitDetail>(`/visits/${id}`);
+
+export const createVisit = (data: NewVisit) =>
+  request<VisitDetail>('/visits', { method: 'POST', body: JSON.stringify(data) });
+
+// Fotos e assinatura exigem o token, então não dá para usar a URL direto no <img>.
+export async function fetchImage(path: string): Promise<string> {
+  const token = getToken();
+  const res = await fetch(`${API_URL}${path}`, { headers: token ? { Authorization: `Bearer ${token}` } : {} });
+  if (!res.ok) throw new ApiError(res.status, 'Imagem indisponível.');
+  return URL.createObjectURL(await res.blob());
+}

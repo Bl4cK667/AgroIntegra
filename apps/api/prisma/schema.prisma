@@ -24,6 +24,7 @@ model User {
   auditLogs    AuditLog[]
   producers    Producer[]
   properties   Property[]
+  visits       Visit[]
 }
 
 // Registro de auditoria (LGPD): quem fez, o quê, quando.
@@ -57,6 +58,7 @@ model Producer {
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
   properties  Property[]
+  visits      Visit[]
 
   @@index([searchName])
 }
@@ -76,6 +78,47 @@ model Property {
   createdBy    User     @relation(fields: [createdById], references: [id])
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+  visits       Visit[]
 
   @@index([producerId])
+}
+
+// Visita técnica. Depois de salva não é editada: vale como registro do atendimento.
+model Visit {
+  id               String       @id @default(uuid())
+  producerId       String
+  producer         Producer     @relation(fields: [producerId], references: [id])
+  propertyId       String?
+  property         Property?    @relation(fields: [propertyId], references: [id])
+  technicianId     String
+  technician       User         @relation(fields: [technicianId], references: [id])
+  visitedOn        DateTime     @db.Date
+  diagnosis        String
+  actionPlan       String
+  returnOn         DateTime?    @db.Date
+  impact           String?
+  // Assinatura do produtor (PNG desenhado na tela).
+  signature        Bytes?
+  // Localização registrada pelo aparelho, sem mapa.
+  latitude         Float?
+  longitude        Float?
+  locationAccuracy Float?
+  createdAt        DateTime     @default(now())
+  photos           VisitPhoto[]
+
+  @@index([producerId, visitedOn])
+  @@index([visitedOn])
+}
+
+model VisitPhoto {
+  id        String   @id @default(uuid())
+  visitId   String
+  visit     Visit    @relation(fields: [visitId], references: [id], onDelete: Cascade)
+  position  Int
+  mimeType  String
+  data      Bytes
+  size      Int
+  createdAt DateTime @default(now())
+
+  @@index([visitId])
 }

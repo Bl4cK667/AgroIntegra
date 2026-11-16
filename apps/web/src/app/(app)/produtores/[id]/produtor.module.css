@@ -39,6 +39,10 @@
   margin-bottom: 12px;
 }
 
+.sectionGap {
+  margin-top: 32px;
+}
+
 .propertyForm {
   display: grid;
   gap: 14px;

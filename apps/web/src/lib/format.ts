@@ -19,3 +19,19 @@ export function parseArea(value: string): number | null {
   const n = Number(v.includes(',') ? v.replace(/\./g, '').replace(',', '.') : v);
   return Number.isFinite(n) && n > 0 ? n : null;
 }
+
+// Datas sem hora ("2026-11-16") são formatadas sem passar por fuso horário.
+export function formatDay(day: string) {
+  const [y, m, d] = day.split('-');
+  return `${d}/${m}/${y}`;
+}
+
+// Hoje no relógio do aparelho, no formato AAAA-MM-DD.
+export function todayIso() {
+  const d = new Date();
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+
+const coordFmt = new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 5, maximumFractionDigits: 5 });
+export const formatCoord = (n: number) => coordFmt.format(n);

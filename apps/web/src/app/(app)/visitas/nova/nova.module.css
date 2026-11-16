@@ -1,0 +1,88 @@
+.form {
+  display: grid;
+  gap: 22px;
+  max-width: 720px;
+}
+
+/* Cada bloco do formulário: título pequeno e linha forte à esquerda. */
+.group {
+  display: grid;
+  gap: 16px;
+  margin: 0;
+  padding: 18px 20px 20px;
+  border: 1px solid var(--linha);
+  border-left: 3px solid var(--mata);
+  border-radius: 4px;
+  background: var(--superficie);
+  min-width: 0;
+}
+
+.group legend {
+  padding: 0 6px;
+  margin-left: -6px;
+  font-weight: 650;
+  font-stretch: 88%;
+  font-size: 1.02rem;
+}
+
+.group:disabled {
+  opacity: 0.55;
+}
+
+.group textarea {
+  resize: vertical;
+  line-height: 1.45;
+}
+
+.chosen {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 10px 12px;
+  border: 1px solid var(--linha);
+  border-radius: 4px;
+  background: #f8f9f6;
+}
+
+.chosen > div {
+  display: grid;
+}
+
+.results {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--linha);
+  border-radius: 4px;
+}
+
+.results li + li {
+  border-top: 1px solid var(--linha);
+}
+
+.results li.muted {
+  padding: 10px 12px;
+}
+
+.results button {
+  display: grid;
+  width: 100%;
+  padding: 9px 12px;
+  border: 0;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+}
+
+.results button:hover,
+.results button:focus-visible {
+  background: #f5f7f3;
+}
+
+@media (max-width: 640px) {
+  .group {
+    padding: 14px;
+  }
+}

@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { FormEvent, useCallback, useEffect, useState } from 'react';
+import { VisitTable } from '@/components/visit/VisitTable';
 import { addProperty, ApiError, getProducer, ProducerDetail, registerConsent } from '@/lib/api';
 import { formatArea, formatDate, parseArea } from '@/lib/format';
 import styles from './produtor.module.css';
@@ -13,6 +14,17 @@ export default function ProdutorPage() {
   const [error, setError] = useState<string | null>(null);
   const [consentSaving, setConsentSaving] = useState(false);
   const [adding, setAdding] = useState(false);
+  // Volta do formulário de visita com ?visita=<id>: mostra o aviso uma vez.
+  const [savedVisit, setSavedVisit] = useState(false);
+
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    if (url.searchParams.has('visita')) {
+      setSavedVisit(true);
+      url.searchParams.delete('visita');
+      window.history.replaceState(null, '', url.pathname + url.search);
+    }
+  }, []);
 
   const load = useCallback(() => {
     getProducer(id)
@@ -62,6 +74,11 @@ export default function ProdutorPage() {
       </header>
 
       {error && <p className="alert">{error}</p>}
+      {savedVisit && (
+        <p className="notice" role="status">
+          Visita salva. Ela já aparece na lista de visitas abaixo.
+        </p>
+      )}
 
       <div className={styles.layout}>
         <dl className={styles.facts}>
@@ -145,6 +162,25 @@ export default function ProdutorPage() {
                   ))}
                 </tbody>
               </table>
+            )}
+          </div>
+
+          <div className={`${styles.sectionHead} ${styles.sectionGap}`}>
+            <h2>
+              Visitas <span className="muted num">{producer.visits.length}</span>
+            </h2>
+            <Link href={`/visitas/nova?produtor=${id}`} className="btn btn-primary">
+              Registrar visita
+            </Link>
+          </div>
+          <div className="table-wrap">
+            {producer.visits.length === 0 ? (
+              <div className="empty">
+                <strong>Nenhuma visita registrada</strong>
+                As visitas técnicas a este produtor aparecem aqui.
+              </div>
+            ) : (
+              <VisitTable visits={producer.visits} showProducer={false} />
             )}
           </div>
         </section>
