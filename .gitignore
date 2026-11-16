@@ -3,3 +3,6 @@
 dist/
 .env
 coverage/
+.pgdata/
+next-env.d.ts
+*.tsbuildinfo

@@ -1,0 +1,44 @@
+{
+  "name": "@agrointegra/api",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "build": "nest build",
+    "start": "node dist/main.js",
+    "start:dev": "nest start --watch",
+    "db:migrate": "prisma migrate deploy",
+    "db:migrate:dev": "prisma migrate dev",
+    "db:seed": "prisma db seed",
+    "test": "node test/prepare-test-db.mjs && jest --runInBand"
+  },
+  "prisma": {
+    "seed": "ts-node prisma/seed.ts"
+  },
+  "devDependencies": {
+    "@nestjs/cli": "^11.0.24",
+    "@nestjs/testing": "^11.2.10",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^26.6.6",
+    "@types/supertest": "^7.2.1",
+    "dotenv": "^18.0.10",
+    "jest": "^30.5.2",
+    "prisma": "^6.19.3",
+    "supertest": "^7.3.2",
+    "ts-jest": "^29.4.15",
+    "ts-node": "^10.9.2",
+    "typescript": "^6.0.3"
+  },
+  "dependencies": {
+    "@nestjs/common": "^11.2.10",
+    "@nestjs/config": "^4.0.4",
+    "@nestjs/core": "^11.2.10",
+    "@nestjs/jwt": "^11.0.2",
+    "@nestjs/platform-express": "^11.2.10",
+    "@prisma/client": "^6.19.3",
+    "bcryptjs": "^3.0.3",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.15.1",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.2"
+  }
+}

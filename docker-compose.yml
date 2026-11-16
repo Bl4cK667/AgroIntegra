@@ -1,0 +1,21 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: agrointegra-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: agro
+      POSTGRES_PASSWORD: agro
+      POSTGRES_DB: agrointegra
+    ports:
+      - "5433:5432"
+    volumes:
+      - agrointegra-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U agro -d agrointegra"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+volumes:
+  agrointegra-data:

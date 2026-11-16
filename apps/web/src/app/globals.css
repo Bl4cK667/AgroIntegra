@@ -1,0 +1,49 @@
+:root {
+  /* Paleta do protótipo: verdes escuros, dourado e marrom terra. */
+  --green-950: #0f241a;
+  --green-900: #163524;
+  --green-800: #1f4a32;
+  --green-700: #2b5f41;
+  --green-100: #e6efe8;
+  --gold-500: #c9a227;
+  --gold-400: #d9b84a;
+  --gold-100: #f6edcc;
+  --earth-700: #6b4528;
+  --earth-500: #8b5e3c;
+  --earth-100: #f1e6dc;
+  --bg: #f7f4ee;
+  --surface: #ffffff;
+  --text: #1d2a22;
+  --muted: #5f6b63;
+  --border: #e2dccf;
+  --danger: #a33a2a;
+  --radius: 10px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+a {
+  color: inherit;
+}
+
+button {
+  font: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--gold-500);
+  outline-offset: 2px;
+}
