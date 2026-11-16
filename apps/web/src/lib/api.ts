@@ -74,3 +74,59 @@ export async function login(email: string, password: string): Promise<SessionUse
 export function fetchMe() {
   return request<SessionUser>('/auth/me');
 }
+
+// ---------- Produtores e propriedades ----------
+
+export interface Property {
+  id: string;
+  producerId: string;
+  name: string;
+  areaHa: number;
+  locality: string;
+  mainActivity: string | null;
+  createdAt: string;
+}
+
+export interface ProducerSummary {
+  id: string;
+  name: string;
+  cpf: string; // sempre mascarado pela API
+  phone: string | null;
+  community: string;
+  consentAt: string | null;
+  createdAt: string;
+  propertyCount: number;
+}
+
+export interface ProducerDetail extends Omit<ProducerSummary, 'propertyCount'> {
+  createdBy: { name: string };
+  properties: Property[];
+}
+
+export interface PropertyRow extends Property {
+  producer: { id: string; name: string };
+}
+
+const qs = (search?: string) => (search ? `?search=${encodeURIComponent(search)}` : '');
+
+export const listProducers = (search?: string) =>
+  request<{ items: ProducerSummary[]; total: number }>(`/producers${qs(search)}`);
+
+export const getProducer = (id: string) => request<ProducerDetail>(`/producers/${id}`);
+
+export const createProducer = (data: { name: string; cpf: string; phone?: string; community: string; consent: boolean }) =>
+  request<ProducerSummary>('/producers', { method: 'POST', body: JSON.stringify(data) });
+
+export const updateProducer = (id: string, data: { name?: string; phone?: string; community?: string }) =>
+  request<ProducerSummary>(`/producers/${id}`, { method: 'PATCH', body: JSON.stringify(data) });
+
+export const registerConsent = (id: string) =>
+  request<ProducerSummary>(`/producers/${id}/consent`, { method: 'POST' });
+
+export const addProperty = (
+  producerId: string,
+  data: { name: string; areaHa: number; locality: string; mainActivity?: string },
+) => request<Property>(`/producers/${producerId}/properties`, { method: 'POST', body: JSON.stringify(data) });
+
+export const listProperties = (search?: string) =>
+  request<{ items: PropertyRow[]; total: number }>(`/properties${qs(search)}`);

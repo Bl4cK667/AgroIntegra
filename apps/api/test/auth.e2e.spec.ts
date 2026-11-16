@@ -4,7 +4,8 @@ import request from 'supertest';
 import { AppModule } from '../src/app.module';
 import { configureApp } from '../src/configure-app';
 import { PrismaService } from '../src/prisma/prisma.service';
-import { seedUsers, DEMO_PASSWORD } from '../prisma/seed-users';
+import { DEMO_PASSWORD } from '../prisma/seed-users';
+import { resetData } from './fixtures';
 
 describe('Login por perfil e auditoria', () => {
   let app: INestApplication;
@@ -16,9 +17,7 @@ describe('Login por perfil e auditoria', () => {
     configureApp(app);
     await app.init();
     prisma = app.get(PrismaService);
-    await prisma.auditLog.deleteMany();
-    await prisma.user.deleteMany();
-    await seedUsers(prisma);
+    await resetData(prisma);
   });
 
   afterAll(async () => {

@@ -1,38 +1,29 @@
 'use client';
 
-import { ROLE_LABEL } from '@/lib/api';
+import Link from 'next/link';
 import { useSession } from '@/lib/session';
-import styles from './painel.module.css';
 
-// Painel vazio da fase 1. Os números chegam na fase 4, sempre calculados do banco.
-const CARDS = ['Demandas abertas', 'Concluídas no mês', 'Visitas no ano', 'Produtores atendidos'];
-
+// Os indicadores entram junto com Solicitações e Visitas, sempre calculados do banco.
 export default function PainelPage() {
   const user = useSession();
 
   return (
     <>
-      <header className={styles.header}>
+      <header className="page-head">
         <div>
           <h1>Painel</h1>
-          <p>
-            Olá, {user?.name.split(' ')[0]}. Você entrou como <strong>{user && ROLE_LABEL[user.role]}</strong>.
-          </p>
+          <p>Bom trabalho, {user?.name.split(' ')[0]}.</p>
         </div>
       </header>
 
-      <section className={styles.cards}>
-        {CARDS.map((title) => (
-          <article key={title} className={styles.card}>
-            <h2>{title}</h2>
-            <p className={styles.empty}>Sem dados ainda</p>
-          </article>
-        ))}
-      </section>
-
-      <section className={styles.placeholder}>
-        <h2>Atendimentos por mês</h2>
-        <p>O gráfico aparece quando houver visitas registradas.</p>
+      <section className="table-wrap">
+        <div className="empty">
+          <strong>Nenhum atendimento registrado</strong>
+          Demandas abertas, visitas do ano e produtores atendidos aparecem aqui quando a equipe começar a registrar visitas.
+          <p>
+            <Link href="/produtores">Ver produtores cadastrados</Link>
+          </p>
+        </div>
       </section>
     </>
   );

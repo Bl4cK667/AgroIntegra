@@ -70,6 +70,7 @@ A demo serve para:
 
 - Fase 0 concluída.
 - Fase 1 concluída: login por perfil (JWT), auditoria de login, painel vazio. Rodar: ver `README.md`.
+- Fase 2 concluída: produtores e propriedades (CPF validado e mascarado, consentimento com data, busca sem acento por palavras, auditoria). Visual refeito sem cara de template: fonte Archivo, tabelas, curvas de nível no login.
 - Versões: NestJS 11 (o 12 é só ESM e quebra o Jest), Prisma 6, Next.js 16.
 - Sem Docker nesta máquina: `npm run db:up` usa `embedded-postgres` + `pg_ctl` (porta 5433, UTF-8).
 - Testes não usam `prisma migrate reset` (o Prisma bloqueia quando chamado por IA); usam `migrate deploy` e limpam as tabelas.

@@ -3,19 +3,16 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { BrandMark } from '@/components/BrandMark';
 import { clearSession, fetchMe, getToken, ROLE_LABEL, SessionUser } from '@/lib/api';
 import { SessionContext } from '@/lib/session';
 import styles from './shell.module.css';
 
-// Itens do menu. Os marcados como "soon" chegam nas próximas fases.
+// O menu mostra só o que já existe. Os demais módulos entram conforme ficam prontos.
 const MENU = [
   { href: '/painel', label: 'Painel' },
-  { href: '/produtores', label: 'Produtores', soon: true },
-  { href: '/propriedades', label: 'Propriedades', soon: true },
-  { href: '/solicitacoes', label: 'Solicitações', soon: true },
-  { href: '/visitas', label: 'Visitas', soon: true },
-  { href: '/programas', label: 'Programas', soon: true },
-  { href: '/relatorios', label: 'Relatórios', soon: true },
+  { href: '/produtores', label: 'Produtores' },
+  { href: '/propriedades', label: 'Propriedades' },
 ];
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
@@ -49,29 +46,27 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     <SessionContext.Provider value={user}>
       <div className={styles.shell}>
         <aside className={styles.sidebar}>
-          <div className={styles.brand}>
-            <span aria-hidden>🌱</span> AgroIntegra
-          </div>
-          <nav className={styles.nav}>
-            {MENU.map((item) =>
-              item.soon ? (
-                <span key={item.href} className={styles.navSoon} title="Disponível em breve">
-                  {item.label}
-                  <small>em breve</small>
-                </span>
-              ) : (
+          <Link href="/painel" className={styles.brand}>
+            <BrandMark size={26} />
+            <span>AgroIntegra</span>
+          </Link>
+          <nav className={styles.nav} aria-label="Principal">
+            {MENU.map((item) => {
+              const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
+              return (
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={pathname === item.href ? styles.navActive : styles.navLink}
+                  className={active ? styles.navActive : styles.navLink}
+                  aria-current={active ? 'page' : undefined}
                 >
                   {item.label}
                 </Link>
-              ),
-            )}
+              );
+            })}
           </nav>
           <div className={styles.userBox}>
-            <strong>{user.name}</strong>
+            <span className={styles.userName}>{user.name}</span>
             <span className={styles.role}>{ROLE_LABEL[user.role]}</span>
             <button onClick={logout} className={styles.logout}>
               Sair

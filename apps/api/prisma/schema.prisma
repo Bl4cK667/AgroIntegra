@@ -22,6 +22,8 @@ model User {
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
   auditLogs    AuditLog[]
+  producers    Producer[]
+  properties   Property[]
 }
 
 // Registro de auditoria (LGPD): quem fez, o quê, quando.
@@ -37,4 +39,43 @@ model AuditLog {
 
   @@index([entity, entityId])
   @@index([createdAt])
+}
+
+model Producer {
+  id          String     @id @default(uuid())
+  name        String
+  // Nome em minúsculas e sem acentos, usado na busca.
+  searchName  String
+  // Somente dígitos. Nunca sai completo da API.
+  cpf         String     @unique
+  phone       String?
+  community   String
+  // Data em que o produtor autorizou o uso dos dados (LGPD). Nulo = pendente.
+  consentAt   DateTime?
+  createdById String
+  createdBy   User       @relation(fields: [createdById], references: [id])
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  properties  Property[]
+
+  @@index([searchName])
+}
+
+model Property {
+  id           String   @id @default(uuid())
+  producerId   String
+  producer     Producer @relation(fields: [producerId], references: [id])
+  name         String
+  // Nome + localidade em minúsculas e sem acentos, usado na busca.
+  searchText   String   @default("")
+  // Área digitada (sem mapa na demo).
+  areaHa       Decimal  @db.Decimal(10, 2)
+  locality     String
+  mainActivity String?
+  createdById  String
+  createdBy    User     @relation(fields: [createdById], references: [id])
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([producerId])
 }

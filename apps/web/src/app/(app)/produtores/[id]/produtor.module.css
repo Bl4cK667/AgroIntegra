@@ -1,0 +1,58 @@
+.layout {
+  display: grid;
+  grid-template-columns: 260px minmax(0, 1fr);
+  gap: 32px;
+  align-items: start;
+}
+
+/* Ficha do produtor: rótulo pequeno acima do valor, separados por linhas finas. */
+.facts {
+  margin: 0;
+  display: grid;
+}
+
+.facts > div {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--linha);
+}
+
+.facts > div:first-child {
+  padding-top: 0;
+}
+
+.facts dt {
+  font-size: 0.85rem;
+  color: var(--sutil);
+  margin-bottom: 2px;
+}
+
+.facts dd {
+  margin: 0;
+  font-weight: 500;
+}
+
+.sectionHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.propertyForm {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+  margin-bottom: 14px;
+  background: var(--superficie);
+  border: 1px solid var(--linha);
+  border-top: 3px solid var(--mata);
+  border-radius: 4px;
+}
+
+@media (max-width: 860px) {
+  .layout {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+}

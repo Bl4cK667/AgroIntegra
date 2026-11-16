@@ -2,8 +2,14 @@
 
 import { useRouter } from 'next/navigation';
 import { FormEvent, useState } from 'react';
+import { BrandMark } from '@/components/BrandMark';
+import { contourPaths } from '@/components/contours';
 import { ApiError, login } from '@/lib/api';
 import styles from './login.module.css';
+
+// Dois "morros" de curvas de nível, como numa carta topográfica.
+const HILL_A = contourPaths({ cx: 180, cy: 620, rings: 16, baseRadius: 26, step: 30, seed: 11 });
+const HILL_B = contourPaths({ cx: 560, cy: 170, rings: 11, baseRadius: 18, step: 28, seed: 23, wobble: 0.22 });
 
 export default function LoginPage() {
   const router = useRouter();
@@ -14,65 +20,78 @@ export default function LoginPage() {
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
+    if (!email || !password) {
+      setError('Informe e-mail e senha.');
+      return;
+    }
     setError(null);
     setLoading(true);
     try {
       await login(email, password);
       router.replace('/painel');
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Erro inesperado.');
+      setError(err instanceof ApiError ? err.message : 'Não foi possível entrar. Tente de novo.');
       setLoading(false);
     }
   }
 
   return (
-    <main className={styles.wrap}>
-      <section className={styles.card}>
-        <div className={styles.brand}>
-          <span className={styles.logo} aria-hidden>
-            🌱
-          </span>
-          <div>
-            <h1>AgroIntegra</h1>
-            <p>Assistência técnica rural</p>
-          </div>
+    <main className={styles.page}>
+      <section className={styles.land} aria-hidden="true">
+        <svg className={styles.contours} viewBox="0 0 720 800" preserveAspectRatio="xMidYMid slice">
+          {HILL_A.map((d, i) => (
+            <path key={`a${i}`} d={d} className={i % 5 === 4 ? styles.index : styles.line} />
+          ))}
+          {HILL_B.map((d, i) => (
+            <path key={`b${i}`} d={d} className={i % 5 === 4 ? styles.index : styles.line} />
+          ))}
+        </svg>
+        <div className={styles.landText}>
+          <p className={styles.org}>Secretaria Municipal de Agricultura</p>
+          <p className={styles.tagline}>Assistência técnica e extensão rural, do cadastro do produtor ao relatório da visita.</p>
         </div>
+      </section>
 
-        <form onSubmit={onSubmit} className={styles.form} noValidate>
-          <label>
-            E-mail
-            <input
-              type="email"
-              autoComplete="username"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-          </label>
-          <label>
-            Senha
-            <input
-              type="password"
-              autoComplete="current-password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-          </label>
-          {error && (
-            <p role="alert" className={styles.error}>
-              {error}
-            </p>
-          )}
-          <button type="submit" disabled={loading}>
-            {loading ? 'Entrando…' : 'Entrar'}
-          </button>
-        </form>
+      <section className={styles.formSide}>
+        <div className={styles.formBox}>
+          <div className={styles.brand}>
+            <BrandMark size={34} />
+            <span>AgroIntegra</span>
+          </div>
 
-        <p className={styles.hint}>
-          Demonstração: <code>coordenacao@agrointegra.demo</code> ou <code>tecnico@agrointegra.demo</code>, senha{' '}
-          <code>demo1234</code>.
-        </p>
+          <h1 className={styles.title}>Entrar</h1>
+
+          <form onSubmit={onSubmit} className={styles.form} noValidate>
+            <label className="field">
+              <span>E-mail</span>
+              <input
+                className="input"
+                type="email"
+                autoComplete="username"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+            </label>
+            <label className="field">
+              <span>Senha</span>
+              <input
+                className="input"
+                type="password"
+                autoComplete="current-password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+            </label>
+            {error && (
+              <p role="alert" className="alert">
+                {error}
+              </p>
+            )}
+            <button type="submit" className="btn btn-primary" disabled={loading}>
+              {loading ? 'Entrando…' : 'Entrar'}
+            </button>
+          </form>
+        </div>
       </section>
     </main>
   );
