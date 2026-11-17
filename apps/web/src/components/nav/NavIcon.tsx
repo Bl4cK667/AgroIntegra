@@ -2,7 +2,7 @@ import s from './nav.module.css';
 
 export type NavIconName =
   | 'painel' | 'produtores' | 'propriedades' | 'solicitacoes' | 'visitas' | 'programas' | 'relatorios'
-  | 'mais' | 'sair' | 'sol' | 'lua' | 'recolher';
+  | 'mais' | 'sair' | 'sol' | 'lua' | 'recolher' | 'busca' | 'fechar';
 
 // Ícones desenhados para o menu. Cada parte tem uma classe própria, animada pelo CSS
 // quando o item recebe hover, é pressionado ou fica ativo.
@@ -26,6 +26,8 @@ export function NavIcon({ name }: { name: NavIconName }) {
 }
 
 const PATHS: Record<NavIconName, React.ReactNode> = {
+  busca: <><circle cx="10.5" cy="10.5" r="6.5" /><path d="m16 16 4.5 4.5" /></>,
+  fechar: <path d="m6 6 12 12M18 6 6 18" />,
   painel: (
     <>
       <path d="M3.5 20.5h17" />

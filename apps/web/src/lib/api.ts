@@ -2,12 +2,15 @@
 export const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
 
 export type Role = 'COORDINATION' | 'TECHNICIAN';
+export type NavStyle = 'topbar' | 'sidebar';
 
 export interface SessionUser {
   id: string;
   name: string;
   email: string;
   role: Role;
+  /** estilo de navegação salvo no perfil (padrão: topbar) */
+  navStyle?: NavStyle;
 }
 
 export const ROLE_LABEL: Record<Role, string> = {

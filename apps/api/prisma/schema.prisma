@@ -25,6 +25,8 @@ model User {
   avatar          Bytes?
   avatarMime      String?
   avatarUpdatedAt DateTime?
+  // Preferência de navegação escolhida em Configurações: "topbar" (padrão) ou "sidebar".
+  navStyle        String           @default("topbar")
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
   auditLogs       AuditLog[]

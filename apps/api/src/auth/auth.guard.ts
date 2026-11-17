@@ -32,10 +32,10 @@ export class AuthGuard implements CanActivate {
 
     const user = await this.prisma.user.findUnique({
       where: { id: sub },
-      select: { id: true, name: true, email: true, role: true, active: true },
+      select: { id: true, name: true, email: true, role: true, active: true, navStyle: true },
     });
     if (!user?.active) throw new UnauthorizedException('Sessão inválida ou expirada.');
-    req.user = { id: user.id, name: user.name, email: user.email, role: user.role };
+    req.user = { id: user.id, name: user.name, email: user.email, role: user.role, navStyle: user.navStyle };
 
     const roles = this.reflector.getAllAndOverride<Role[]>(ROLES, targets);
     if (roles?.length && !roles.includes(user.role)) {

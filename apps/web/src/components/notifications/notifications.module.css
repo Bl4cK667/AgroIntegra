@@ -76,6 +76,25 @@
   box-shadow: 0 0 0 2px #0e1310;
 }
 
+.bellTopbar {
+  /* mesmo visual dos botões de busca e tema da Topbar, em fundo claro ou escuro */
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--muted);
+}
+
+.bellTopbar:hover {
+  background: var(--card-2);
+  color: var(--chart-1);
+}
+
+.bellTopbar .badge {
+  top: 2px;
+  right: 2px;
+}
+
 .bellMobile .badge {
   top: -2px;
   right: -2px;

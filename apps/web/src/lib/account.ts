@@ -1,4 +1,4 @@
-import { fetchImage, request, Role } from './api';
+import { fetchImage, NavStyle, request, Role } from './api';
 
 export const ACCOUNT_UPDATED_EVENT = 'agrointegra:account-updated';
 
@@ -11,6 +11,7 @@ export interface AccountProfile {
   jobTitle: string | null;
   avatarUpdatedAt: string | null;
   hasAvatar: boolean;
+  navStyle: NavStyle;
   createdAt: string;
 }
 
@@ -22,6 +23,7 @@ export function updateAccount(input: {
   name?: string;
   phone?: string;
   jobTitle?: string;
+  navStyle?: NavStyle;
 }): Promise<AccountProfile> {
   return request<AccountProfile>('/account', {
     method: 'PATCH',

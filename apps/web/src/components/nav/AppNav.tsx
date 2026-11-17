@@ -8,23 +8,11 @@ import { ROLE_LABEL, SessionUser } from '@/lib/api';
 import { useTheme } from '@/lib/theme';
 import { Avatar } from '@/components/account/Avatar';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
-import { NavIcon, NavIconName } from './NavIcon';
+import { NavIcon } from './NavIcon';
+import { activeHref as getActiveHref, MENU } from './menu';
 import s from './nav.module.css';
 
-// O menu mostra só o que já existe. Os demais módulos entram conforme ficam prontos.
-export const MENU: { href: string; label: string; icon: NavIconName; mobile: boolean }[] = [
-  { href: '/painel', label: 'Painel', icon: 'painel', mobile: true },
-  { href: '/produtores', label: 'Produtores', icon: 'produtores', mobile: true },
-  { href: '/propriedades', label: 'Propriedades', icon: 'propriedades', mobile: false },
-  { href: '/solicitacoes', label: 'Solicitações', icon: 'solicitacoes', mobile: true },
-  { href: '/visitas', label: 'Visitas', icon: 'visitas', mobile: true },
-  { href: '/programas', label: 'Programas', icon: 'programas', mobile: false },
-  { href: '/relatorios', label: 'Relatórios', icon: 'relatorios', mobile: false },
-];
-
 const COLLAPSE_KEY = 'agrointegra.nav.collapsed';
-
-const isActive = (pathname: string, href: string) => pathname === href || pathname.startsWith(`${href}/`);
 
 interface Props {
   user: SessionUser;
@@ -53,23 +41,29 @@ export function useNavCollapsed() {
   return [collapsed, update] as const;
 }
 
-export function AppNav({ user, onLogout, collapsed, onCollapsedChange }: Props) {
+export function Sidebar({ user, onLogout, collapsed, onCollapsedChange }: Props) {
   const pathname = usePathname();
   const { theme, toggle } = useTheme();
   const navRef = useRef<HTMLElement>(null);
   const [pill, setPill] = useState<{ top: number; height: number } | null>(null);
   const [sheet, setSheet] = useState(false);
-  const activeHref = MENU.find((m) => isActive(pathname, m.href))?.href;
+  const activeHref = getActiveHref(pathname);
 
   // A pílula ativa desliza entre os itens em vez de pular.
   useLayoutEffect(() => {
+    const navEl = navRef.current;
     const measure = () => {
-      const el = navRef.current?.querySelector<HTMLElement>('[aria-current="page"]');
+      const el = navEl?.querySelector<HTMLElement>('[aria-current="page"]');
       setPill(el ? { top: el.offsetTop, height: el.offsetHeight } : null);
     };
     measure();
     window.addEventListener('resize', measure);
-    return () => window.removeEventListener('resize', measure);
+    const observer = typeof ResizeObserver !== 'undefined' && navEl ? new ResizeObserver(measure) : null;
+    if (observer && navEl) observer.observe(navEl);
+    return () => {
+      window.removeEventListener('resize', measure);
+      observer?.disconnect();
+    };
   }, [activeHref, collapsed]);
 
   useEffect(() => setSheet(false), [pathname]);
@@ -203,18 +197,22 @@ export function AppNav({ user, onLogout, collapsed, onCollapsedChange }: Props) 
               <NavIcon name="mais" />
             </Link>
             <div className={s.sheetGrid}>
-              {MENU.filter((m) => !m.mobile).map((item, i) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={s.sheetItem}
-                  data-active={item.href === activeHref || undefined}
-                  style={{ '--i': i } as React.CSSProperties}
-                >
-                  <NavIcon name={item.icon} />
-                  <span>{item.label}</span>
-                </Link>
-              ))}
+              {MENU.filter((m) => !m.mobile).map((item, i) => {
+                const active = item.href === activeHref;
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={s.sheetItem}
+                    data-active={active || undefined}
+                    aria-current={active ? 'page' : undefined}
+                    style={{ '--i': i } as React.CSSProperties}
+                  >
+                    <NavIcon name={item.icon} />
+                    <span>{item.label}</span>
+                  </Link>
+                );
+              })}
             </div>
             <button type="button" className={s.sheetLogout} onClick={onLogout}>
               <NavIcon name="sair" />
@@ -226,3 +224,5 @@ export function AppNav({ user, onLogout, collapsed, onCollapsedChange }: Props) 
     </>
   );
 }
+
+export { Sidebar as AppNav };

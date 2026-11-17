@@ -17,7 +17,7 @@ const POLL_MS = 30_000;
 
 // Sino com contador de não lidas + painel com o histórico.
 // O contador é consultado a cada 30 s e sempre que a janela volta ao foco.
-export function NotificationBell({ variant = 'sidebar' }: { variant?: 'sidebar' | 'mobile' }) {
+export function NotificationBell({ variant = 'sidebar' }: { variant?: 'sidebar' | 'mobile' | 'topbar' }) {
   const router = useRouter();
   const [unread, setUnread] = useState(0);
   const [open, setOpen] = useState(false);
@@ -53,7 +53,7 @@ export function NotificationBell({ variant = 'sidebar' }: { variant?: 'sidebar' 
     <>
       <button
         type="button"
-        className={`${s.bell} ${variant === 'mobile' ? s.bellMobile : ''}`}
+        className={`${s.bell} ${variant === 'mobile' ? s.bellMobile : variant === 'topbar' ? s.bellTopbar : ''}`}
         onClick={() => setOpen((o) => !o)}
         aria-label={unread ? `Notificações: ${unread} não ${unread === 1 ? 'lida' : 'lidas'}` : 'Notificações'}
         aria-haspopup="dialog"

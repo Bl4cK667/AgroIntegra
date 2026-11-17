@@ -3,9 +3,11 @@
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { BrandSymbol } from '@/components/Brand';
-import { AppNav, useNavCollapsed } from '@/components/nav/AppNav';
+import { Sidebar, useNavCollapsed } from '@/components/nav/AppNav';
+import { Topbar } from '@/components/nav/Topbar';
 import { ACCOUNT_UPDATED_EVENT } from '@/lib/account';
 import { clearSession, fetchMe, getToken, SessionUser } from '@/lib/api';
+import { syncNavStyle, useNavStyle } from '@/lib/navStyle';
 import { SessionContext } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
 import styles from './shell.module.css';
@@ -15,6 +17,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<SessionUser | null>(null);
   const [collapsed, setCollapsed] = useNavCollapsed();
   useTheme(); // aplica o tema salvo em qualquer página do app, não só no painel
+  const navStyle = useNavStyle(); // Topbar (padrão) ou Sidebar, escolhido em Configurações
 
   useEffect(() => {
     if (!getToken()) {
@@ -22,7 +25,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       return;
     }
     fetchMe()
-      .then(setUser)
+      .then((me) => {
+        syncNavStyle(me.navStyle); // aplica a preferência do perfil antes de desenhar o menu
+        setUser(me);
+      })
       .catch(() => {
         clearSession();
         router.replace('/login');
@@ -53,8 +59,13 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <SessionContext.Provider value={user}>
-      <div className={styles.shell} data-collapsed={collapsed || undefined}>
-        <AppNav user={user} onLogout={logout} collapsed={collapsed} onCollapsedChange={setCollapsed} />
+      {/* Os dois estilos usam as mesmas rotas e páginas; só a moldura muda. */}
+      <div className={styles.shell} data-nav={navStyle} data-collapsed={(navStyle === 'sidebar' && collapsed) || undefined}>
+        {navStyle === 'topbar' ? (
+          <Topbar user={user} onLogout={logout} />
+        ) : (
+          <Sidebar user={user} onLogout={logout} collapsed={collapsed} onCollapsedChange={setCollapsed} />
+        )}
         <main className={styles.content}>{children}</main>
       </div>
     </SessionContext.Provider>

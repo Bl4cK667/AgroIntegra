@@ -1,0 +1,61 @@
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  width: 100%;
+  height: var(--topbar-h, 72px);
+  background: var(--superficie);
+  border-bottom: 1px solid var(--card-border);
+  box-shadow: 0 3px 18px rgba(24, 33, 28, 0.035);
+}
+
+.inner { display: flex; align-items: center; justify-content: space-between; gap: 20px; height: 100%; padding: 0 28px; }
+.brand { display: inline-flex; align-items: center; gap: 9px; color: var(--tinta); text-decoration: none; font-size: 19px; font-weight: 720; letter-spacing: -0.7px; flex-shrink: 0; }
+.brandMark { display: grid; place-items: center; color: var(--chart-1); }
+.brandAccent { font-weight: 480; }
+.nav { position: relative; display: flex; align-items: center; gap: 3px; isolation: isolate; min-width: 0; }
+.link { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 40px; padding: 0 10px; border-radius: 10px; text-decoration: none; color: var(--muted); font-size: 12px; font-weight: 560; white-space: nowrap; transition: color 180ms, background 180ms, transform 180ms; }
+.link svg { width: 18px; height: 18px; flex-shrink: 0; }
+.link:hover { color: var(--chart-1); background: color-mix(in srgb, var(--chart-1) 5%, transparent); }
+.link:active { transform: scale(0.96); }
+.link[aria-current] { color: var(--chart-1); }
+.pill { position: absolute; z-index: -1; left: 0; height: 40px; border-radius: 10px; background: color-mix(in srgb, var(--chart-1) 10%, var(--superficie)); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--chart-1) 6%, transparent); transition: transform 350ms var(--ease-out), width 350ms var(--ease-out); pointer-events: none; }
+.actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+.iconButton { width: 36px; height: 36px; display: grid; place-items: center; background: transparent; color: var(--muted); border: 0; border-radius: 10px; cursor: pointer; transition: background 180ms, color 180ms; }
+.iconButton:hover { background: var(--card-2); color: var(--chart-1); }
+.profile { position: relative; margin-left: 6px; }
+.profileTrigger { display: flex; align-items: center; gap: 5px; border-radius: 30px; cursor: pointer; list-style: none; }
+.profileTrigger::-webkit-details-marker { display: none; }
+.chevron { color: var(--muted); font-size: 15px; }
+.profileMenu { position: absolute; top: calc(100% + 16px); right: 0; width: 250px; padding: 6px; border: 1px solid var(--card-border); border-radius: 15px; background: var(--superficie); box-shadow: var(--shadow-lift); animation: enter 180ms var(--ease-out); }
+.user { display: grid; gap: 3px; padding: 12px; border-bottom: 1px solid var(--linha); margin-bottom: 5px; overflow-wrap: anywhere; }
+.user strong { font-size: 13px; }.user small { color: var(--muted); font-size: 12px; }
+.profileMenu a, .profileMenu button { display: flex; align-items: center; gap: 9px; width: 100%; padding: 11px 12px; border: 0; border-radius: 9px; background: none; color: var(--tinta); font-size: 13px; text-align: left; text-decoration: none; cursor: pointer; }
+.profileMenu a:hover, .profileMenu button:hover { background: var(--card-2); color: var(--chart-1); }
+.profileMenu .mobileTheme { display: none; }
+.search { width: min(520px, calc(100vw - 32px)); max-height: calc(100dvh - 48px); margin: 12vh auto auto; padding: 20px; color: var(--tinta); background: var(--superficie); border: 1px solid var(--linha); border-radius: 20px; box-shadow: var(--shadow-lift); }
+.search[open] { animation: enter 180ms var(--ease-out); }
+.search::backdrop { background: rgba(10, 20, 14, 0.4); backdrop-filter: blur(4px); }
+.searchHead { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }.searchHead h2 { font-size: 16px; }
+.searchField { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border: 1px solid var(--linha-forte); border-radius: 10px; color: var(--muted); }.searchField:focus-within { outline: 2px solid var(--chart-1); outline-offset: 2px; }
+.searchField input { min-width: 0; width: 100%; border: 0; outline: 0; background: none; font-size: 16px; }
+.results { display: grid; gap: 3px; padding: 12px 0; }.results a { display: flex; align-items: center; gap: 12px; padding: 11px 12px; color: var(--tinta); text-decoration: none; border-radius: 10px; font-size: 14px; }.results a:hover, .results a:focus-visible { background: var(--card-2); color: var(--chart-1); }.resultArrow { margin-left: auto; color: var(--muted); }.results p { color: var(--muted); text-align: center; }
+.searchFoot { border-top: 1px solid var(--linha); padding-top: 12px; font-size: 11px; color: var(--muted); }
+@keyframes enter { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+
+@media (max-width: 1279px) {
+  .inner { gap: 12px; padding: 0 20px; }
+  .link { width: 42px; padding: 0; }.link span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+}
+@media (max-width: 760px) {
+  .topbar { height: 112px; }
+  .inner { height: 112px; display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-rows: 60px 52px; gap: 0 8px; padding: 0 16px; }
+  .brand { font-size: 18px; gap: 7px; }.brandMark svg { width: 26px; height: 26px; }
+  .actions { grid-column: 2; grid-row: 1; gap: 2px; }.theme { display: none; }.profile { margin-left: 4px; }.chevron { display: none; }.profileMenu .mobileTheme { display: flex; }
+  .nav { grid-row: 2; grid-column: 1 / -1; overflow-x: auto; align-self: stretch; margin: 0 -16px; padding: 0 12px; scrollbar-width: thin; scrollbar-color: var(--linha) transparent; }
+  .link { width: auto; flex-shrink: 0; min-height: 36px; padding: 0 10px; font-size: 12px; gap: 6px; }.link span { position: static; width: auto; height: auto; overflow: visible; clip-path: none; }.link svg { width: 16px; height: 16px; }.pill { height: 36px; }
+  .profileMenu { top: calc(100% + 12px); }.search { margin-top: 24px; padding: 16px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .link, .pill, .iconButton { transition: none; }.profileMenu, .search[open] { animation: none; }
+}

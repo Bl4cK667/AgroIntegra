@@ -1,4 +1,7 @@
-import { IsNotEmpty, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
+import { IsIn, IsNotEmpty, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
+
+export const NAV_STYLES = ['topbar', 'sidebar'] as const;
+export type NavStyle = (typeof NAV_STYLES)[number];
 
 export class UpdateAccountDto {
   @IsOptional()
@@ -16,6 +19,10 @@ export class UpdateAccountDto {
   @IsString({ message: 'Informe um cargo ou função válida.' })
   @MaxLength(80, { message: 'O cargo pode ter no máximo 80 caracteres.' })
   jobTitle?: string;
+
+  @IsOptional()
+  @IsIn(NAV_STYLES, { message: 'Escolha um estilo de navegação válido.' })
+  navStyle?: NavStyle;
 }
 
 export class UpdateAvatarDto {

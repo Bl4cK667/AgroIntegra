@@ -2,6 +2,7 @@
 
 import { ChangeEvent, CSSProperties, FormEvent, useEffect, useRef, useState } from 'react';
 import { Avatar } from '@/components/account/Avatar';
+import { NavStylePicker } from '@/components/account/NavStylePicker';
 import { Toast } from '@/components/feedback/Toast';
 import {
   AccountProfile,
@@ -207,7 +208,7 @@ export default function ConfiguracoesPage() {
         <div>
           <span className="eyebrow">Sua conta</span>
           <h1>Configurações</h1>
-          <p>Gerencie sua foto, seus dados de contato e a senha de acesso ao sistema.</p>
+          <p>Gerencie sua foto, seus dados de contato, a senha de acesso e a aparência do sistema.</p>
         </div>
       </header>
 
@@ -480,6 +481,8 @@ export default function ConfiguracoesPage() {
           </div>
         </div>
       )}
+      {/* Seção 5: Personalização da interface (escolha da navegação) */}
+      {account && <NavStylePicker index={5} />}
       <Toast message={toast} onClose={() => setToast(null)} />
     </>
   );

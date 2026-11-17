@@ -89,6 +89,36 @@ describe('Conta e perfil (e2e)', () => {
     expect(log).not.toBeNull();
   });
 
+  it('salva o estilo de navegação: Topbar por padrão e mantém a escolha entre sessões', async () => {
+    const token = await tokenFor(app, 'tecnico@agrointegra.demo');
+    const auth = { Authorization: `Bearer ${token}` };
+
+    const me = await request(app.getHttpServer()).get('/auth/me').set(auth).expect(200);
+    expect(me.body.navStyle).toBe('topbar');
+
+    const updated = await request(app.getHttpServer()).patch('/account').set(auth).send({ navStyle: 'sidebar' }).expect(200);
+    expect(updated.body.navStyle).toBe('sidebar');
+
+    await request(app.getHttpServer()).patch('/account').set(auth).send({ navStyle: 'flutuante' }).expect(400);
+
+    // Novo login (sair e entrar de novo) devolve a preferência salva.
+    const login = await request(app.getHttpServer())
+      .post('/auth/login')
+      .send({ email: 'tecnico@agrointegra.demo', password: DEMO_PASSWORD })
+      .expect(200);
+    expect(login.body.user.navStyle).toBe('sidebar');
+    const again = await request(app.getHttpServer())
+      .get('/auth/me')
+      .set('Authorization', `Bearer ${login.body.accessToken}`)
+      .expect(200);
+    expect(again.body.navStyle).toBe('sidebar');
+
+    // Preferência é por usuário: a coordenação continua na Topbar.
+    const other = await tokenFor(app, 'coordenacao@agrointegra.demo');
+    const otherMe = await request(app.getHttpServer()).get('/auth/me').set('Authorization', `Bearer ${other}`).expect(200);
+    expect(otherMe.body.navStyle).toBe('topbar');
+  });
+
   it('envia, exibe e remove a foto de perfil validando o tipo do arquivo', async () => {
     const token = await tokenFor(app, 'coordenacao@agrointegra.demo');
 

@@ -1,4 +1,6 @@
-/* Moldura do app: menu (components/nav) + área de conteúdo. */
+/* Moldura do app: menu (components/nav) + área de conteúdo.
+   data-nav="sidebar": grade com a barra lateral à esquerda.
+   data-nav="topbar":  coluna única, Topbar fixa no topo e conteúdo centralizado. */
 
 .loading {
   min-height: 100vh;
@@ -26,6 +28,17 @@
   grid-template-columns: 80px minmax(0, 1fr);
 }
 
+.shell[data-nav='topbar'] {
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto 1fr;
+  align-content: start;
+}
+
+.shell[data-nav='topbar'] .content {
+  margin-inline: auto;
+  padding-top: 28px;
+}
+
 .content {
   width: 100%;
   max-width: 1400px;
@@ -34,7 +47,8 @@
 }
 
 @media (max-width: 1100px) {
-  .content {
+  .content,
+  .shell[data-nav='topbar'] .content {
     padding: 28px 24px 48px;
   }
 }
@@ -47,8 +61,13 @@
   }
 
   .content {
-    /* espaço para a barra de abas flutuante */
+    /* espaço para a barra de abas flutuante (sidebar no celular) */
     padding: 18px 16px calc(110px + env(safe-area-inset-bottom));
+  }
+
+  /* Topbar no celular não tem abas inferiores: só o respiro da área segura */
+  .shell[data-nav='topbar'] .content {
+    padding: 18px 16px calc(32px + env(safe-area-inset-bottom));
   }
 }
 
