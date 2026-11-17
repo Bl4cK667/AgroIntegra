@@ -1,0 +1,187 @@
+-- ============================================================================
+-- ESPECIFICAÇÃO DE DESIGN — NÃO EXECUTÁVEL / NÃO PRONTA PARA APLICAÇÃO
+-- Arquivo: supabase/planned/01_identity_and_tenants.sql.example
+--
+-- Este arquivo é apenas uma especificação de referência (.sql.example).
+-- NÃO mover para supabase/migrations/ nem executar sem:
+--   1. Plano de backfill de tenant_id e tenant_memberships;
+--   2. Definição final do vínculo (app_metadata provisório -> User.authUserId FK);
+--   3. Alinhamento com schema.prisma e aprovação explícita.
+-- ============================================================================
+
+-- 1. Organizações / secretarias municipais (tenants)
+CREATE TABLE IF NOT EXISTS public.tenants (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  slug text NOT NULL UNIQUE,
+  name text NOT NULL,
+  active boolean NOT NULL DEFAULT true,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+
+-- 2. Membership validado (fonte de verdade de tenant e papel; nunca usar user_metadata)
+CREATE TABLE IF NOT EXISTS public.tenant_memberships (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL REFERENCES public.tenants(id) ON DELETE RESTRICT,
+  user_id text NOT NULL REFERENCES public."User"(id) ON DELETE CASCADE,
+  role text NOT NULL CHECK (role IN ('COORDINATION', 'TECHNICIAN')),
+  active boolean NOT NULL DEFAULT true,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  UNIQUE (tenant_id, user_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_tenant_memberships_user_active
+  ON public.tenant_memberships (user_id, active);
+
+-- 3. Vínculo futuro de identidade no banco (substitui ou complementa app_metadata provisório)
+-- Opção A (coluna no legado): ALTER TABLE public."User" ADD COLUMN "authUserId" uuid UNIQUE REFERENCES auth.users(id);
+-- Opção B (tabela dedicada, gerenciada apenas por service_role):
+CREATE TABLE IF NOT EXISTS public.user_identities (
+  auth_user_id uuid PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  legacy_user_id text NOT NULL UNIQUE REFERENCES public."User"(id) ON DELETE CASCADE,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+
+-- 4. Adição planejada de tenant_id + FKs compostas obrigatórias (integridade cross-tenant)
+-- Durante transição: adicionar coluna nullable, popular backfill e só então aplicar NOT NULL.
+ALTER TABLE public."Notification"   ADD COLUMN IF NOT EXISTS tenant_id uuid REFERENCES public.tenants(id);
+ALTER TABLE public."AuditLog"       ADD COLUMN IF NOT EXISTS tenant_id uuid REFERENCES public.tenants(id);
+ALTER TABLE public."Producer"       ADD COLUMN IF NOT EXISTS tenant_id uuid REFERENCES public.tenants(id);
+ALTER TABLE public."Property"       ADD COLUMN IF NOT EXISTS tenant_id uuid REFERENCES public.tenants(id);
+ALTER TABLE public."Visit"          ADD COLUMN IF NOT EXISTS tenant_id uuid REFERENCES public.tenants(id);
+ALTER TABLE public."ServiceRequest" ADD COLUMN IF NOT EXISTS tenant_id uuid REFERENCES public.tenants(id);
+ALTER TABLE public."Program"        ADD COLUMN IF NOT EXISTS tenant_id uuid REFERENCES public.tenants(id);
+
+-- Índices únicos compostos para permitir FKs compostas (id, tenant_id)
+ALTER TABLE public."Producer"       ADD CONSTRAINT uq_producer_id_tenant UNIQUE (id, tenant_id);
+ALTER TABLE public."Property"       ADD CONSTRAINT uq_property_id_tenant UNIQUE (id, tenant_id);
+ALTER TABLE public."Visit"          ADD CONSTRAINT uq_visit_id_tenant    UNIQUE (id, tenant_id);
+ALTER TABLE public."ServiceRequest" ADD CONSTRAINT uq_request_id_tenant  UNIQUE (id, tenant_id);
+ALTER TABLE public."Program"        ADD CONSTRAINT uq_program_id_tenant  UNIQUE (id, tenant_id);
+
+-- FKs compostas obrigatórias (impedem vínculos cross-tenant mesmo em bypass de RLS)
+ALTER TABLE public."Property"
+  ADD CONSTRAINT fk_property_producer_tenant
+  FOREIGN KEY ("producerId", tenant_id) REFERENCES public."Producer"(id, tenant_id);
+
+ALTER TABLE public."ServiceRequest"
+  ADD CONSTRAINT fk_request_producer_tenant
+  FOREIGN KEY ("producerId", tenant_id) REFERENCES public."Producer"(id, tenant_id);
+
+ALTER TABLE public."ServiceRequest"
+  ADD CONSTRAINT fk_request_property_tenant
+  FOREIGN KEY ("propertyId", tenant_id) REFERENCES public."Property"(id, tenant_id);
+
+ALTER TABLE public."Visit"
+  ADD CONSTRAINT fk_visit_producer_tenant
+  FOREIGN KEY ("producerId", tenant_id) REFERENCES public."Producer"(id, tenant_id);
+
+ALTER TABLE public."Visit"
+  ADD CONSTRAINT fk_visit_property_tenant
+  FOREIGN KEY ("propertyId", tenant_id) REFERENCES public."Property"(id, tenant_id);
+
+ALTER TABLE public."Visit"
+  ADD CONSTRAINT fk_visit_request_tenant
+  FOREIGN KEY ("requestId", tenant_id) REFERENCES public."ServiceRequest"(id, tenant_id);
+
+-- Enrollment e Delivery também devem carregar tenant_id (ou validar via FKs compostas com Program e Producer)
+ALTER TABLE public."Enrollment" ADD COLUMN IF NOT EXISTS tenant_id uuid REFERENCES public.tenants(id);
+ALTER TABLE public."Enrollment"
+  ADD CONSTRAINT fk_enrollment_program_tenant
+  FOREIGN KEY ("programId", tenant_id) REFERENCES public."Program"(id, tenant_id);
+ALTER TABLE public."Enrollment"
+  ADD CONSTRAINT fk_enrollment_producer_tenant
+  FOREIGN KEY ("producerId", tenant_id) REFERENCES public."Producer"(id, tenant_id);
+
+ALTER TABLE public."Delivery" ADD COLUMN IF NOT EXISTS tenant_id uuid REFERENCES public.tenants(id);
+ALTER TABLE public."Delivery"
+  ADD CONSTRAINT fk_delivery_program_tenant
+  FOREIGN KEY ("programId", tenant_id) REFERENCES public."Program"(id, tenant_id);
+ALTER TABLE public."Delivery"
+  ADD CONSTRAINT fk_delivery_producer_tenant
+  FOREIGN KEY ("producerId", tenant_id) REFERENCES public."Producer"(id, tenant_id);
+
+-- 5. Funções SECURITY DEFINER (sem leitura de user_metadata; sem recursão de RLS)
+CREATE OR REPLACE FUNCTION public.current_legacy_user_id()
+RETURNS text
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = public, auth
+AS $$
+  SELECT ui.legacy_user_id
+  FROM public.user_identities ui
+  JOIN public."User" u ON u.id = ui.legacy_user_id
+  WHERE ui.auth_user_id = auth.uid()
+    AND u.active = true
+  LIMIT 1;
+$$;
+
+CREATE OR REPLACE FUNCTION public.is_tenant_member(p_tenant_id uuid)
+RETURNS boolean
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = public, auth
+AS $$
+  SELECT EXISTS (
+    SELECT 1
+    FROM public.tenant_memberships tm
+    JOIN public.tenants t ON t.id = tm.tenant_id
+    WHERE tm.tenant_id = p_tenant_id
+      AND tm.user_id = public.current_legacy_user_id()
+      AND tm.active = true
+      AND t.active = true
+  );
+$$;
+
+CREATE OR REPLACE FUNCTION public.has_tenant_role(p_tenant_id uuid, p_roles text[])
+RETURNS boolean
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = public, auth
+AS $$
+  SELECT EXISTS (
+    SELECT 1
+    FROM public.tenant_memberships tm
+    JOIN public.tenants t ON t.id = tm.tenant_id
+    WHERE tm.tenant_id = p_tenant_id
+      AND tm.user_id = public.current_legacy_user_id()
+      AND tm.active = true
+      AND t.active = true
+      AND tm.role = ANY (p_roles)
+  );
+$$;
+
+CREATE OR REPLACE FUNCTION public.shares_active_tenant_with(p_other_user_id text)
+RETURNS boolean
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = public, auth
+AS $$
+  SELECT EXISTS (
+    SELECT 1
+    FROM public.tenant_memberships tm_target
+    JOIN public.tenant_memberships tm_me ON tm_me.tenant_id = tm_target.tenant_id
+    JOIN public.tenants t ON t.id = tm_target.tenant_id
+    JOIN public."User" u_target ON u_target.id = tm_target.user_id
+    WHERE tm_target.user_id = p_other_user_id
+      AND tm_me.user_id = public.current_legacy_user_id()
+      AND tm_target.active = true
+      AND tm_me.active = true
+      AND t.active = true
+      AND u_target.active = true
+  );
+$$;
+
+REVOKE ALL ON FUNCTION public.current_legacy_user_id() FROM PUBLIC;
+REVOKE ALL ON FUNCTION public.is_tenant_member(uuid) FROM PUBLIC;
+REVOKE ALL ON FUNCTION public.has_tenant_role(uuid, text[]) FROM PUBLIC;
+REVOKE ALL ON FUNCTION public.shares_active_tenant_with(text) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.current_legacy_user_id() TO authenticated;
+GRANT EXECUTE ON FUNCTION public.is_tenant_member(uuid) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.has_tenant_role(uuid, text[]) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.shares_active_tenant_with(text) TO authenticated;

@@ -1,6 +1,6 @@
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
-import { PrismaService } from '../src/prisma/prisma.service';
+import { TestDatabase } from './test-database';
 import { createTestApp, makeCpf, resetData, tokenFor } from './fixtures';
 
 function isoDay(offsetDays = 0) {
@@ -12,7 +12,7 @@ function isoDay(offsetDays = 0) {
 
 describe('Solicitações', () => {
   let app: INestApplication;
-  let prisma: PrismaService;
+  let prisma: TestDatabase;
   let tech: string;
   let producerId: string;
   let propertyId: string;
@@ -28,7 +28,7 @@ describe('Solicitações', () => {
 
   beforeAll(async () => {
     app = await createTestApp();
-    prisma = app.get(PrismaService);
+    prisma = app.get(TestDatabase);
     await resetData(prisma);
     tech = await tokenFor(app, 'tecnico@agrointegra.demo');
     const p = await api()

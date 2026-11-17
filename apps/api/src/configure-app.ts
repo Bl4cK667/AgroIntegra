@@ -1,11 +1,32 @@
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import type { NestExpressApplication } from '@nestjs/platform-express';
+import { AllExceptionsFilter } from './common/all-exceptions.filter';
+import {
+  createLoginRateLimiter,
+  createRequestRateLimiter,
+  loginRateLimitOptions,
+  registrationRateLimitOptions,
+  resolveCorsOrigins,
+  resolveTrustProxy,
+  securityHeaders,
+} from './common/http-security';
 
 // Configuração comum ao servidor e aos testes.
-export function configureApp(app: INestApplication) {
+export function configureApp(app: INestApplication, env: Record<string, string | undefined> = process.env) {
+  const express = app as NestExpressApplication;
+  express.disable('x-powered-by');
+  const trustProxy = resolveTrustProxy(env);
+  if (trustProxy) express.set('trust proxy', trustProxy);
+
   // Visitas trazem até 3 fotos e a assinatura em base64.
-  (app as NestExpressApplication).useBodyParser('json', { limit: '12mb' });
+  express.useBodyParser('json', { limit: '12mb' });
+  app.use(securityHeaders);
+  app.use('/auth/login', createLoginRateLimiter(loginRateLimitOptions(env)));
+  // Cadastro por convite: limite por IP antes do processamento (bucket único para as duas rotas).
+  app.use(['/auth/registration', '/auth/register'], createRequestRateLimiter(registrationRateLimitOptions(env)));
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true, transform: true }));
+  app.useGlobalFilters(new AllExceptionsFilter());
   // Content-Disposition liberado para o painel saber o nome do PDF.
-  app.enableCors({ origin: process.env.WEB_ORIGIN ?? 'http://localhost:3000', exposedHeaders: ['Content-Disposition'] });
+  const origins = resolveCorsOrigins(env);
+  app.enableCors({ origin: origins.length === 1 ? origins[0] : origins, exposedHeaders: ['Content-Disposition'] });
 }

@@ -1,7 +1,9 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, NotFoundException, ServiceUnavailableException } from '@nestjs/common';
 import bcrypt from 'bcryptjs';
 import { AuditService } from '../audit/audit.service';
+import { PASSWORD_MESSAGE, PASSWORD_RULE } from '../invitations/invitation.dto';
 import { PrismaService } from '../prisma/prisma.service';
+import { SupabaseAuthClient, SupabaseAuthError } from '../supabase/supabase-auth.client';
 import { decodeImage } from '../visits/image';
 import { ChangePasswordDto, UpdateAccountDto } from './account.dto';
 
@@ -38,11 +40,16 @@ function toAccountView(user: SelectedAccount) {
   };
 }
 
+export const PASSWORD_CHANGE_UNAVAILABLE = 'Não foi possível alterar a senha agora. Tente novamente em instantes.';
+
 @Injectable()
 export class AccountService {
+  private readonly logger = new Logger(AccountService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly audit: AuditService,
+    private readonly supabase: SupabaseAuthClient,
   ) {}
 
   async get(userId: string) {
@@ -154,9 +161,19 @@ export class AccountService {
   async changePassword(userId: string, dto: ChangePasswordDto) {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
-      select: { id: true, passwordHash: true },
+      select: { id: true, email: true, passwordHash: true, authUserId: true },
     });
     if (!user) throw new NotFoundException('Conta não encontrada.');
+
+    // Conta Supabase: senha vive só no Supabase (passwordHash local é aleatório). Nunca usa bcrypt aqui.
+    if (user.authUserId) {
+      if (dto.currentPassword === dto.newPassword) {
+        throw new BadRequestException('A nova senha precisa ser diferente da senha atual.');
+      }
+      await this.changeSupabasePassword(user.email, user.authUserId, dto);
+      await this.audit.record({ userId, action: 'ACCOUNT_PASSWORD_CHANGED', entity: 'User', entityId: userId });
+      return { ok: true };
+    }
 
     const matches = await bcrypt.compare(dto.currentPassword, user.passwordHash);
     if (!matches) {
@@ -181,5 +198,20 @@ export class AccountService {
     });
 
     return { ok: true };
+  }
+
+  private async changeSupabasePassword(email: string, authUserId: string, dto: ChangePasswordDto) {
+    if (!PASSWORD_RULE.test(dto.newPassword)) throw new BadRequestException(PASSWORD_MESSAGE);
+    if (!this.supabase.enabled) throw new ServiceUnavailableException(PASSWORD_CHANGE_UNAVAILABLE);
+    try {
+      await this.supabase.changeOwnPassword(email, dto.currentPassword, dto.newPassword, authUserId);
+    } catch (err) {
+      if (!(err instanceof SupabaseAuthError)) throw err;
+      if (err.kind === 'invalid_credentials') throw new BadRequestException('A senha atual está incorreta.');
+      if (err.kind === 'rejected') throw new BadRequestException('A nova senha não foi aceita. Escolha uma senha mais forte.');
+      // identity_mismatch: e-mail no Supabase pertence a outra identidade; falha fechado sem alterar nada.
+      this.logger.warn(`Troca de senha no Supabase falhou (${err.kind}).`);
+      throw new ServiceUnavailableException(PASSWORD_CHANGE_UNAVAILABLE);
+    }
   }
 }

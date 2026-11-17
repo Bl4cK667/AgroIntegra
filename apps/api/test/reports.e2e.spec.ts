@@ -1,6 +1,6 @@
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
-import { PrismaService } from '../src/prisma/prisma.service';
+import { TestDatabase } from './test-database';
 import { day, money } from '../src/reports/report.pdf';
 import { createTestApp, makeCpf, resetData, tokenFor } from './fixtures';
 import { pdfText, squash } from './pdf-text';
@@ -14,7 +14,7 @@ const binary = (res: request.Response, cb: (err: Error | null, body: Buffer) => 
 
 describe('Relatório do produtor (tela e PDF)', () => {
   let app: INestApplication;
-  let prisma: PrismaService;
+  let prisma: TestDatabase;
   let token: string;
   let producerId: string;
   const cpf = makeCpf(321);
@@ -25,7 +25,7 @@ describe('Relatório do produtor (tela e PDF)', () => {
 
   beforeAll(async () => {
     app = await createTestApp();
-    prisma = app.get(PrismaService);
+    prisma = app.get(TestDatabase);
     await resetData(prisma);
     token = await tokenFor(app, 'tecnico@agrointegra.demo');
 

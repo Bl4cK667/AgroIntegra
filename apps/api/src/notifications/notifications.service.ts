@@ -1,6 +1,7 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { Role } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { TenancyService } from '../tenancy/tenancy.service';
 
 export interface NotificationInput {
   type: string; // identificador estável (ex.: 'REQUEST_CREATED'), usado pela tela para escolher o ícone
@@ -17,12 +18,16 @@ const PAGE = 20;
 export class NotificationsService {
   private readonly log = new Logger(NotificationsService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService, private readonly tenancy: TenancyService) {}
 
   async notifyUsers(userIds: string[], n: NotificationInput) {
-    const ids = [...new Set(userIds)];
-    if (!ids.length) return;
     try {
+      const members = await this.prisma.organizationMembership.findMany({
+        where: { organizationId: this.tenancy.organizationId(), active: true, userId: { in: [...new Set(userIds)] }, user: { active: true } },
+        select: { userId: true },
+      });
+      const ids = members.map((member) => member.userId);
+      if (!ids.length) return;
       await this.prisma.notification.createMany({ data: ids.map((userId) => ({ userId, ...n, href: n.href ?? null })) });
     } catch (e) {
       this.log.error(`Falha ao criar notificação ${n.type}`, e as Error);
@@ -32,11 +37,11 @@ export class NotificationsService {
   // Avisa toda a equipe ativa (ou só alguns perfis), menos quem fez a ação.
   async notifyTeam(n: NotificationInput, opts: { except?: string; roles?: Role[] } = {}) {
     try {
-      const users = await this.prisma.user.findMany({
-        where: { active: true, ...(opts.roles ? { role: { in: opts.roles } } : {}), ...(opts.except ? { id: { not: opts.except } } : {}) },
-        select: { id: true },
+      const memberships = await this.prisma.organizationMembership.findMany({
+        where: { organizationId: this.tenancy.organizationId(), active: true, user: { active: true }, ...(opts.roles ? { role: { in: opts.roles } } : {}), ...(opts.except ? { userId: { not: opts.except } } : {}) },
+        select: { userId: true },
       });
-      await this.notifyUsers(users.map((u) => u.id), n);
+      await this.notifyUsers(memberships.map((member) => member.userId), n);
     } catch (e) {
       this.log.error(`Falha ao buscar destinatários de ${n.type}`, e as Error);
     }

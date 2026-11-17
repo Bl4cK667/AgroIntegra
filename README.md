@@ -1,6 +1,8 @@
 # AgroIntegra — demo
 
-Versão de demonstração do sistema de assistência técnica rural. Veja `CLAUDE.md` e `docs/plano_mvp_agrointegra.md`.
+Versão de demonstração do sistema de assistência técnica rural. Veja [o plano do MVP](docs/plano_mvp_agrointegra.md).
+
+O [cadastro fechado por convite](docs/cadastro-por-convite.md) está implementado com área administrativa, vínculo de organização e integração server-only com Supabase Auth. O documento explica ativação, segurança e testes. Supabase Auth/cadastro remoto permanecem desativados até configurar e homologar o projeto. O [plano anterior de preparação](docs/preparacao-supabase.md) registra a arquitetura de partida.
 
 ## Como rodar
 
@@ -9,6 +11,7 @@ Requisitos: Node.js 22 ou mais novo. Docker é opcional.
 ```bash
 npm install
 cp apps/api/.env.example apps/api/.env
+cp apps/web/.env.example apps/web/.env.local
 npm run setup        # sobe o banco, aplica as migrações e cria os usuários da demo
 npm run demo:reset   # carrega os dados fictícios da demonstração (apaga os atendimentos atuais)
 npm run dev          # API (http://localhost:3001) e painel (http://localhost:3000) juntos; Ctrl+C encerra os dois

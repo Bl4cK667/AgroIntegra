@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { ChangeEvent, CSSProperties, FormEvent, useEffect, useRef, useState } from 'react';
 import { Avatar } from '@/components/account/Avatar';
 import { NavStylePicker } from '@/components/account/NavStylePicker';
@@ -479,6 +480,28 @@ export default function ConfiguracoesPage() {
                 </div>
               </dl>
             </section>
+
+            {/* Administração de convites: exibida apenas para Coordenação */}
+            {account.role === 'COORDINATION' && (
+              <section className="card enter" style={{ '--i': 5 } as CSSProperties} aria-labelledby="sec-convites">
+                <div className="card-head">
+                  <span className="card-icon">
+                    <Icon path="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 7a4 4 0 1 0 0-8 4 4 0 0 0 0 8M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
+                  </span>
+                  <h2 id="sec-convites" className="card-title">
+                    Equipe e convites
+                  </h2>
+                </div>
+                <p style={{ margin: '0 0 14px', color: 'var(--muted)', fontSize: '0.92rem' }}>
+                  Gere e gerencie links de convite individuais para novos membros da organização.
+                </p>
+                <div className="form-actions">
+                  <Link href="/configuracoes/usuarios" className="btn btn-secondary">
+                    Gerenciar convites e usuários
+                  </Link>
+                </div>
+              </section>
+            )}
           </div>
         </div>
       )}

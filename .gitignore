@@ -2,6 +2,9 @@
 .next/
 dist/
 .env
+.env.*
+!.env.example
+!.env.test
 coverage/
 .pgdata/
 next-env.d.ts

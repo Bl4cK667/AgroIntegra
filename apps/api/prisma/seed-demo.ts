@@ -259,10 +259,16 @@ export async function seedDemo(prisma: PrismaClient, now = new Date()) {
   await seedUsers(prisma);
   const hash = await bcrypt.hash(DEMO_PASSWORD, 10);
   for (const t of EXTRA_TECHNICIANS) {
-    await prisma.user.upsert({
+    const user = await prisma.user.upsert({
       where: { email: t.email },
       update: { name: t.name, role: Role.TECHNICIAN, active: true },
       create: { ...t, role: Role.TECHNICIAN, passwordHash: hash },
+    });
+    const organizationId = '00000000-0000-4000-8000-000000000001';
+    await prisma.organizationMembership.upsert({
+      where: { userId_organizationId: { userId: user.id, organizationId } },
+      create: { userId: user.id, organizationId, role: Role.TECHNICIAN },
+      update: { active: true, role: Role.TECHNICIAN },
     });
   }
   const coordination = await prisma.user.findUniqueOrThrow({ where: { email: 'coordenacao@agrointegra.demo' } });

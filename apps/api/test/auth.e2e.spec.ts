@@ -3,20 +3,20 @@ import { Test } from '@nestjs/testing';
 import request from 'supertest';
 import { AppModule } from '../src/app.module';
 import { configureApp } from '../src/configure-app';
-import { PrismaService } from '../src/prisma/prisma.service';
+import { TestDatabase } from './test-database';
 import { DEMO_PASSWORD } from '../prisma/seed-users';
 import { resetData } from './fixtures';
 
 describe('Login por perfil e auditoria', () => {
   let app: INestApplication;
-  let prisma: PrismaService;
+  let prisma: TestDatabase;
 
   beforeAll(async () => {
-    const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).compile();
+    const moduleRef = await Test.createTestingModule({ imports: [AppModule], providers: [TestDatabase] }).compile();
     app = moduleRef.createNestApplication();
     configureApp(app);
     await app.init();
-    prisma = app.get(PrismaService);
+    prisma = app.get(TestDatabase);
     await resetData(prisma);
   });
 

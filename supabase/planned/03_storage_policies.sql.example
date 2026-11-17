@@ -1,0 +1,93 @@
+-- ============================================================================
+-- ESPECIFICAÇÃO DE DESIGN — NÃO EXECUTÁVEL / NÃO PRONTA PARA APLICAÇÃO
+-- Arquivo: supabase/planned/03_storage_policies.sql.example
+--
+-- Buckets privados planejados (alinhados aos nomes da API: visit-photos,
+-- visit-signatures, avatars).
+-- Convenção de caminho:
+--   - visit-photos / visit-signatures: <tenant_id>/<visit_id>/<filename>
+--   - avatars:                         <tenant_id>/<legacy_user_id>/<filename>
+--
+-- Valida recurso pai (Visit) e imutabilidade (sem UPDATE/DELETE em mídias de visita).
+-- ============================================================================
+
+INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+VALUES
+  ('visit-photos',     'visit-photos',     false, 5242880, ARRAY['image/jpeg', 'image/png', 'image/webp']),
+  ('visit-signatures', 'visit-signatures', false, 1048576, ARRAY['image/png']),
+  ('avatars',          'avatars',          false, 2097152, ARRAY['image/jpeg', 'image/png', 'image/webp'])
+ON CONFLICT (id) DO NOTHING;
+
+-- Leitura de fotos/assinaturas: exige membership no tenant E existência da Visit no mesmo tenant
+CREATE POLICY storage_visit_media_select ON storage.objects
+  FOR SELECT TO authenticated
+  USING (
+    bucket_id IN ('visit-photos', 'visit-signatures')
+    AND (storage.foldername(name))[1] ~ '^[0-9a-fA-F-]{36}$'
+    AND (storage.foldername(name))[2] IS NOT NULL
+    AND public.is_tenant_member(((storage.foldername(name))[1])::uuid)
+    AND EXISTS (
+      SELECT 1 FROM public."Visit" v
+      WHERE v.id = (storage.foldername(name))[2]
+        AND v.tenant_id = ((storage.foldername(name))[1])::uuid
+    )
+  );
+
+-- Upload de fotos/assinaturas: exige que Visit pertença ao tenant e ao técnico atual;
+-- sem políticas de UPDATE ou DELETE (mídia de visita é imutável).
+CREATE POLICY storage_visit_media_insert ON storage.objects
+  FOR INSERT TO authenticated
+  WITH CHECK (
+    bucket_id IN ('visit-photos', 'visit-signatures')
+    AND (storage.foldername(name))[1] ~ '^[0-9a-fA-F-]{36}$'
+    AND (storage.foldername(name))[2] IS NOT NULL
+    AND public.is_tenant_member(((storage.foldername(name))[1])::uuid)
+    AND EXISTS (
+      SELECT 1 FROM public."Visit" v
+      WHERE v.id = (storage.foldername(name))[2]
+        AND v.tenant_id = ((storage.foldername(name))[1])::uuid
+        AND v."technicianId" = public.current_legacy_user_id()
+    )
+  );
+
+-- Avatares: leitura por membros ativos do tenant; escrita/atualização/remoção apenas pelo próprio usuário
+CREATE POLICY storage_avatars_select ON storage.objects
+  FOR SELECT TO authenticated
+  USING (
+    bucket_id = 'avatars'
+    AND (storage.foldername(name))[1] ~ '^[0-9a-fA-F-]{36}$'
+    AND public.is_tenant_member(((storage.foldername(name))[1])::uuid)
+  );
+
+CREATE POLICY storage_avatars_insert_self ON storage.objects
+  FOR INSERT TO authenticated
+  WITH CHECK (
+    bucket_id = 'avatars'
+    AND (storage.foldername(name))[1] ~ '^[0-9a-fA-F-]{36}$'
+    AND public.is_tenant_member(((storage.foldername(name))[1])::uuid)
+    AND (storage.foldername(name))[2] = public.current_legacy_user_id()
+  );
+
+CREATE POLICY storage_avatars_update_self ON storage.objects
+  FOR UPDATE TO authenticated
+  USING (
+    bucket_id = 'avatars'
+    AND (storage.foldername(name))[1] ~ '^[0-9a-fA-F-]{36}$'
+    AND public.is_tenant_member(((storage.foldername(name))[1])::uuid)
+    AND (storage.foldername(name))[2] = public.current_legacy_user_id()
+  )
+  WITH CHECK (
+    bucket_id = 'avatars'
+    AND (storage.foldername(name))[1] ~ '^[0-9a-fA-F-]{36}$'
+    AND public.is_tenant_member(((storage.foldername(name))[1])::uuid)
+    AND (storage.foldername(name))[2] = public.current_legacy_user_id()
+  );
+
+CREATE POLICY storage_avatars_delete_self ON storage.objects
+  FOR DELETE TO authenticated
+  USING (
+    bucket_id = 'avatars'
+    AND (storage.foldername(name))[1] ~ '^[0-9a-fA-F-]{36}$'
+    AND public.is_tenant_member(((storage.foldername(name))[1])::uuid)
+    AND (storage.foldername(name))[2] = public.current_legacy_user_id()
+  );

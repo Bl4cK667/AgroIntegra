@@ -1,7 +1,7 @@
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { DEMO_PASSWORD } from '../prisma/seed-users';
-import { PrismaService } from '../src/prisma/prisma.service';
+import { TestDatabase } from './test-database';
 import { createTestApp, resetData, tokenFor } from './fixtures';
 
 // PNG 1x1 válido em base64 para testar upload e leitura de foto de perfil.
@@ -10,11 +10,11 @@ const TINY_PNG =
 
 describe('Conta e perfil (e2e)', () => {
   let app: INestApplication;
-  let prisma: PrismaService;
+  let prisma: TestDatabase;
 
   beforeAll(async () => {
     app = await createTestApp();
-    prisma = app.get(PrismaService);
+    prisma = app.get(TestDatabase);
   });
 
   beforeEach(async () => {

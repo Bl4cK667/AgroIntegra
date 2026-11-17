@@ -3,7 +3,7 @@ import { Test } from '@nestjs/testing';
 import request from 'supertest';
 import { AppModule } from '../src/app.module';
 import { configureApp } from '../src/configure-app';
-import { PrismaService } from '../src/prisma/prisma.service';
+import { TestDatabase } from './test-database';
 import { DEMO_PASSWORD, seedUsers } from '../prisma/seed-users';
 
 // Gera um CPF fictício válido a partir de uma semente (sempre o mesmo para a mesma semente).
@@ -20,7 +20,7 @@ export function makeCpf(seed: number): string {
 }
 
 export async function createTestApp() {
-  const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).compile();
+  const moduleRef = await Test.createTestingModule({ imports: [AppModule], providers: [TestDatabase] }).compile();
   const app = moduleRef.createNestApplication();
   configureApp(app);
   await app.init();
@@ -28,7 +28,7 @@ export async function createTestApp() {
 }
 
 // Apaga os dados na ordem certa por causa das chaves estrangeiras.
-export async function resetData(prisma: PrismaService) {
+export async function resetData(prisma: TestDatabase) {
   await prisma.auditLog.deleteMany();
   await prisma.visitPhoto.deleteMany();
   await prisma.visit.deleteMany();
@@ -38,6 +38,8 @@ export async function resetData(prisma: PrismaService) {
   await prisma.program.deleteMany();
   await prisma.property.deleteMany();
   await prisma.producer.deleteMany();
+  await prisma.invitation.deleteMany();
+  await prisma.organizationMembership.deleteMany();
   await prisma.user.deleteMany();
   await seedUsers(prisma);
 }

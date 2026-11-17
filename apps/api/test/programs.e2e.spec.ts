@@ -1,11 +1,11 @@
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
-import { PrismaService } from '../src/prisma/prisma.service';
+import { TestDatabase } from './test-database';
 import { createTestApp, makeCpf, resetData, tokenFor } from './fixtures';
 
 describe('Programas (somente leitura)', () => {
   let app: INestApplication;
-  let prisma: PrismaService;
+  let prisma: TestDatabase;
   let token: string;
   let kitsId: string;
   let emptyId: string;
@@ -14,7 +14,7 @@ describe('Programas (somente leitura)', () => {
 
   beforeAll(async () => {
     app = await createTestApp();
-    prisma = app.get(PrismaService);
+    prisma = app.get(TestDatabase);
     await resetData(prisma);
     token = await tokenFor(app, 'coordenacao@agrointegra.demo');
     const admin = await prisma.user.findUniqueOrThrow({ where: { email: 'coordenacao@agrointegra.demo' } });

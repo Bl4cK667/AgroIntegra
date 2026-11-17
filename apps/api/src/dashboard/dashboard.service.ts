@@ -1,14 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import { periods } from '../common/dates';
 import { PrismaService } from '../prisma/prisma.service';
+import { TenancyService } from '../tenancy/tenancy.service';
 
 // Indicadores do painel. Nenhum número é fixo: tudo sai do banco a cada chamada.
 // Regra de consistência: a soma dos meses e a soma das comunidades são iguais às visitas do ano.
 @Injectable()
 export class DashboardService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService, private readonly tenancy: TenancyService) {}
 
   async summary(now = new Date()) {
+    const organizationId = this.tenancy.organizationId();
     const p = periods(now);
     const inYear = { visitedOn: { gte: p.yearStartDay, lt: p.nextYearStartDay } };
 
@@ -25,13 +27,13 @@ export class DashboardService {
         this.prisma.$queryRaw<{ month: number; visits: number }[]>`
           SELECT EXTRACT(MONTH FROM "visitedOn")::int AS month, COUNT(*)::int AS visits
           FROM "Visit"
-          WHERE "visitedOn" >= ${p.yearStartDay} AND "visitedOn" < ${p.nextYearStartDay}
+          WHERE "organizationId" = ${organizationId} AND "visitedOn" >= ${p.yearStartDay} AND "visitedOn" < ${p.nextYearStartDay}
           GROUP BY 1`,
         this.prisma.$queryRaw<{ community: string; visits: number; producers: number }[]>`
           SELECT pr."community" AS community, COUNT(*)::int AS visits, COUNT(DISTINCT v."producerId")::int AS producers
           FROM "Visit" v
-          JOIN "Producer" pr ON pr."id" = v."producerId"
-          WHERE v."visitedOn" >= ${p.yearStartDay} AND v."visitedOn" < ${p.nextYearStartDay}
+          JOIN "Producer" pr ON pr."id" = v."producerId" AND pr."organizationId" = v."organizationId"
+          WHERE v."organizationId" = ${organizationId} AND v."visitedOn" >= ${p.yearStartDay} AND v."visitedOn" < ${p.nextYearStartDay}
           GROUP BY pr."community"
           ORDER BY visits DESC, community ASC`,
       ]);

@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
-import { PrismaService } from '../src/prisma/prisma.service';
+import { TestDatabase } from './test-database';
 import { createTestApp, makeCpf, resetData, tokenFor } from './fixtures';
 
 // Imagens mínimas reais (PNG 1x1) e um "JPEG" com a assinatura de bytes correta.
@@ -21,7 +21,7 @@ function isoDay(offsetDays = 0) {
 
 describe('Visitas', () => {
   let app: INestApplication;
-  let prisma: PrismaService;
+  let prisma: TestDatabase;
   let tech: string;
   let producerId: string;
   let propertyId: string;
@@ -43,7 +43,7 @@ describe('Visitas', () => {
 
   beforeAll(async () => {
     app = await createTestApp();
-    prisma = app.get(PrismaService);
+    prisma = app.get(TestDatabase);
     await prisma.visitPhoto.deleteMany();
     await prisma.visit.deleteMany();
     await resetData(prisma);

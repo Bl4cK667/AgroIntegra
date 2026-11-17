@@ -3,18 +3,21 @@ import { AuthUser, CurrentUser } from '../auth/current-user.decorator';
 import { ChangePasswordDto, UpdateAccountDto, UpdateAvatarDto } from './account.dto';
 import { AccountService } from './account.service';
 
+// Perfil exibido é o da membership na organização atual (não o User.role legado).
+const withMembership = <T extends object>(user: AuthUser, view: T) => ({ ...view, role: user.role, organizationId: user.organizationId });
+
 @Controller('account')
 export class AccountController {
   constructor(private readonly account: AccountService) {}
 
   @Get()
-  get(@CurrentUser() user: AuthUser) {
-    return this.account.get(user.id);
+  async get(@CurrentUser() user: AuthUser) {
+    return withMembership(user, await this.account.get(user.id));
   }
 
   @Patch()
-  update(@CurrentUser() user: AuthUser, @Body() dto: UpdateAccountDto) {
-    return this.account.update(user.id, dto);
+  async update(@CurrentUser() user: AuthUser, @Body() dto: UpdateAccountDto) {
+    return withMembership(user, await this.account.update(user.id, dto));
   }
 
   @Get('avatar')
@@ -25,13 +28,13 @@ export class AccountController {
   }
 
   @Put('avatar')
-  setAvatar(@CurrentUser() user: AuthUser, @Body() dto: UpdateAvatarDto) {
-    return this.account.setAvatar(user.id, dto.image);
+  async setAvatar(@CurrentUser() user: AuthUser, @Body() dto: UpdateAvatarDto) {
+    return withMembership(user, await this.account.setAvatar(user.id, dto.image));
   }
 
   @Delete('avatar')
-  removeAvatar(@CurrentUser() user: AuthUser) {
-    return this.account.removeAvatar(user.id);
+  async removeAvatar(@CurrentUser() user: AuthUser) {
+    return withMembership(user, await this.account.removeAvatar(user.id));
   }
 
   @Patch('password')

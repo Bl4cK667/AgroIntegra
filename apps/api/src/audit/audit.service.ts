@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { TenancyService } from '../tenancy/tenancy.service';
 
 export interface AuditEntry {
   userId?: string | null;
@@ -12,10 +13,13 @@ export interface AuditEntry {
 
 @Injectable()
 export class AuditService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService, private readonly tenancy: TenancyService) {}
 
-  record(entry: AuditEntry) {
-    return this.prisma.auditLog.create({ data: entry });
+  async record(entry: AuditEntry) {
+    // Resolve the lazy PrismaPromise while the caller's AsyncLocalStorage context is active.
+    // Returning it synchronously from tenancy.run would start the query after that scope ended.
+    if (!this.tenancy.current()?.organizationId) return await this.prisma.recordSecurityEvent(entry);
+    return await this.prisma.auditLog.create({ data: entry });
   }
 
   latest(limit = 100) {

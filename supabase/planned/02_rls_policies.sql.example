@@ -1,0 +1,298 @@
+-- ============================================================================
+-- ESPECIFICAÇÃO DE DESIGN — NÃO EXECUTÁVEL / NÃO PRONTA PARA APLICAÇÃO
+-- Arquivo: supabase/planned/02_rls_policies.sql.example
+--
+-- Rascunho de políticas RLS para revisão e testes em banco descartável:
+--   - Sem FOR ALL que libere DELETE acidentalmente
+--   - GRANT por coluna em User (sem passwordHash/role/active) e Notification (só readAt)
+--   - Validação de todas as relações cruzadas dentro do mesmo tenant_id
+--   - Sem subquery recursiva em tenant_memberships (usa SECURITY DEFINER)
+--   - View producers_safe com security_barrier (sem security_invoker quebrando cpf)
+-- ============================================================================
+
+ALTER TABLE public.tenants            ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.tenant_memberships ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.user_identities    ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public."User"             ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public."Notification"     ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public."AuditLog"         ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public."Producer"         ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public."Property"         ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public."Visit"            ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public."VisitPhoto"       ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public."ServiceRequest"   ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public."Program"          ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public."Enrollment"       ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public."Delivery"         ENABLE ROW LEVEL SECURITY;
+
+-- 1. Tenants, Memberships e Identidades (escrita exclusiva service_role)
+CREATE POLICY tenants_select_member ON public.tenants
+  FOR SELECT TO authenticated
+  USING (active = true AND public.is_tenant_member(id));
+
+CREATE POLICY memberships_select_self_or_coord ON public.tenant_memberships
+  FOR SELECT TO authenticated
+  USING (
+    (user_id = public.current_legacy_user_id() AND active = true AND public.is_tenant_member(tenant_id))
+    OR public.has_tenant_role(tenant_id, ARRAY['COORDINATION'])
+  );
+
+CREATE POLICY user_identities_select_self ON public.user_identities
+  FOR SELECT TO authenticated
+  USING (auth_user_id = auth.uid());
+
+-- 2. User (nunca expor passwordHash; nunca alterar role/active; sem recursão RLS)
+REVOKE SELECT, UPDATE ON public."User" FROM anon, authenticated;
+GRANT SELECT (id, name, email, role, active, phone, "jobTitle", "navStyle", theme, "avatarUpdatedAt", "createdAt", "updatedAt")
+  ON public."User" TO authenticated;
+GRANT UPDATE (name, phone, "jobTitle", "navStyle", theme)
+  ON public."User" TO authenticated;
+
+CREATE POLICY user_select_same_active_tenant ON public."User"
+  FOR SELECT TO authenticated
+  USING (
+    id = public.current_legacy_user_id()
+    OR public.shares_active_tenant_with(id)
+  );
+
+CREATE POLICY user_update_self ON public."User"
+  FOR UPDATE TO authenticated
+  USING (id = public.current_legacy_user_id())
+  WITH CHECK (id = public.current_legacy_user_id());
+
+-- 3. Notification (UPDATE restrito exclusivamente à coluna readAt)
+REVOKE UPDATE ON public."Notification" FROM anon, authenticated;
+GRANT UPDATE ("readAt") ON public."Notification" TO authenticated;
+
+CREATE POLICY notification_select_own ON public."Notification"
+  FOR SELECT TO authenticated
+  USING ("userId" = public.current_legacy_user_id() AND public.is_tenant_member(tenant_id));
+
+CREATE POLICY notification_update_read_own ON public."Notification"
+  FOR UPDATE TO authenticated
+  USING ("userId" = public.current_legacy_user_id() AND public.is_tenant_member(tenant_id))
+  WITH CHECK ("userId" = public.current_legacy_user_id() AND public.is_tenant_member(tenant_id));
+
+-- 4. AuditLog (leitura apenas Coordenação; escrita apenas service_role)
+CREATE POLICY audit_select_coordination ON public."AuditLog"
+  FOR SELECT TO authenticated
+  USING (public.has_tenant_role(tenant_id, ARRAY['COORDINATION']));
+
+-- 5. Producer (LGPD: tabela base sem SELECT de cpf; view producers_safe com security_barrier)
+REVOKE SELECT ON public."Producer" FROM anon, authenticated;
+GRANT SELECT (id, name, "searchName", phone, community, "consentAt", "createdById", "createdAt", "updatedAt", tenant_id)
+  ON public."Producer" TO authenticated;
+
+-- View pertencente a role privilegiada (NÃO usar security_invoker = true, pois authenticated não tem SELECT em cpf)
+CREATE OR REPLACE VIEW public.producers_safe
+WITH (security_barrier = true) AS
+SELECT
+  id,
+  name,
+  "searchName",
+  '***.***.***-' || right(cpf, 2) AS cpf_masked,
+  phone,
+  community,
+  "consentAt",
+  "createdById",
+  "createdAt",
+  "updatedAt",
+  tenant_id
+FROM public."Producer"
+WHERE public.is_tenant_member(tenant_id);
+
+GRANT SELECT ON public.producers_safe TO authenticated;
+
+CREATE POLICY producer_select_member ON public."Producer"
+  FOR SELECT TO authenticated
+  USING (public.is_tenant_member(tenant_id));
+
+CREATE POLICY producer_insert_member ON public."Producer"
+  FOR INSERT TO authenticated
+  WITH CHECK (
+    public.is_tenant_member(tenant_id)
+    AND "createdById" = public.current_legacy_user_id()
+  );
+
+CREATE POLICY producer_update_member ON public."Producer"
+  FOR UPDATE TO authenticated
+  USING (public.is_tenant_member(tenant_id))
+  WITH CHECK (public.is_tenant_member(tenant_id));
+
+-- 6. Property (INSERT e UPDATE validam que Producer pertence ao mesmo tenant_id)
+CREATE POLICY property_select_member ON public."Property"
+  FOR SELECT TO authenticated
+  USING (public.is_tenant_member(tenant_id));
+
+CREATE POLICY property_insert_member ON public."Property"
+  FOR INSERT TO authenticated
+  WITH CHECK (
+    public.is_tenant_member(tenant_id)
+    AND "createdById" = public.current_legacy_user_id()
+    AND EXISTS (
+      SELECT 1 FROM public."Producer" p
+      WHERE p.id = "producerId" AND p.tenant_id = public."Property".tenant_id
+    )
+  );
+
+CREATE POLICY property_update_member ON public."Property"
+  FOR UPDATE TO authenticated
+  USING (public.is_tenant_member(tenant_id))
+  WITH CHECK (
+    public.is_tenant_member(tenant_id)
+    AND EXISTS (
+      SELECT 1 FROM public."Producer" p
+      WHERE p.id = "producerId" AND p.tenant_id = public."Property".tenant_id
+    )
+  );
+
+-- 7. Visit e VisitPhoto (imutáveis após criação; valida Producer, Property e ServiceRequest no mesmo tenant)
+CREATE POLICY visit_select_member ON public."Visit"
+  FOR SELECT TO authenticated
+  USING (public.is_tenant_member(tenant_id));
+
+CREATE POLICY visit_insert_member ON public."Visit"
+  FOR INSERT TO authenticated
+  WITH CHECK (
+    public.is_tenant_member(tenant_id)
+    AND "technicianId" = public.current_legacy_user_id()
+    AND EXISTS (
+      SELECT 1 FROM public."Producer" p
+      WHERE p.id = "producerId" AND p.tenant_id = public."Visit".tenant_id
+    )
+    AND (
+      "propertyId" IS NULL OR EXISTS (
+        SELECT 1 FROM public."Property" pr
+        WHERE pr.id = "propertyId"
+          AND pr.tenant_id = public."Visit".tenant_id
+          AND pr."producerId" = public."Visit"."producerId"
+      )
+    )
+    AND (
+      "requestId" IS NULL OR EXISTS (
+        SELECT 1 FROM public."ServiceRequest" sr
+        WHERE sr.id = "requestId"
+          AND sr.tenant_id = public."Visit".tenant_id
+          AND sr."producerId" = public."Visit"."producerId"
+      )
+    )
+  );
+
+CREATE POLICY visit_photo_select_member ON public."VisitPhoto"
+  FOR SELECT TO authenticated
+  USING (
+    EXISTS (
+      SELECT 1 FROM public."Visit" v
+      WHERE v.id = "visitId" AND public.is_tenant_member(v.tenant_id)
+    )
+  );
+
+CREATE POLICY visit_photo_insert_member ON public."VisitPhoto"
+  FOR INSERT TO authenticated
+  WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM public."Visit" v
+      WHERE v.id = "visitId"
+        AND public.is_tenant_member(v.tenant_id)
+        AND v."technicianId" = public.current_legacy_user_id()
+    )
+  );
+
+-- 8. ServiceRequest (INSERT e UPDATE validam Producer e Property no mesmo tenant)
+CREATE POLICY request_select_member ON public."ServiceRequest"
+  FOR SELECT TO authenticated
+  USING (public.is_tenant_member(tenant_id));
+
+CREATE POLICY request_insert_member ON public."ServiceRequest"
+  FOR INSERT TO authenticated
+  WITH CHECK (
+    public.is_tenant_member(tenant_id)
+    AND "createdById" = public.current_legacy_user_id()
+    AND EXISTS (
+      SELECT 1 FROM public."Producer" p
+      WHERE p.id = "producerId" AND p.tenant_id = public."ServiceRequest".tenant_id
+    )
+    AND (
+      "propertyId" IS NULL OR EXISTS (
+        SELECT 1 FROM public."Property" pr
+        WHERE pr.id = "propertyId"
+          AND pr.tenant_id = public."ServiceRequest".tenant_id
+          AND pr."producerId" = public."ServiceRequest"."producerId"
+      )
+    )
+  );
+
+CREATE POLICY request_update_member ON public."ServiceRequest"
+  FOR UPDATE TO authenticated
+  USING (public.is_tenant_member(tenant_id))
+  WITH CHECK (
+    public.is_tenant_member(tenant_id)
+    AND EXISTS (
+      SELECT 1 FROM public."Producer" p
+      WHERE p.id = "producerId" AND p.tenant_id = public."ServiceRequest".tenant_id
+    )
+    AND (
+      "propertyId" IS NULL OR EXISTS (
+        SELECT 1 FROM public."Property" pr
+        WHERE pr.id = "propertyId"
+          AND pr.tenant_id = public."ServiceRequest".tenant_id
+          AND pr."producerId" = public."ServiceRequest"."producerId"
+      )
+    )
+  );
+
+-- 9. Program, Enrollment e Delivery (apenas SELECT/INSERT/UPDATE; DELETE negado explicitamente)
+CREATE POLICY program_select_member ON public."Program"
+  FOR SELECT TO authenticated
+  USING (public.is_tenant_member(tenant_id));
+
+CREATE POLICY program_insert_coordination ON public."Program"
+  FOR INSERT TO authenticated
+  WITH CHECK (public.has_tenant_role(tenant_id, ARRAY['COORDINATION']));
+
+CREATE POLICY program_update_coordination ON public."Program"
+  FOR UPDATE TO authenticated
+  USING (public.has_tenant_role(tenant_id, ARRAY['COORDINATION']))
+  WITH CHECK (public.has_tenant_role(tenant_id, ARRAY['COORDINATION']));
+
+CREATE POLICY enrollment_select_member ON public."Enrollment"
+  FOR SELECT TO authenticated
+  USING (public.is_tenant_member(tenant_id));
+
+CREATE POLICY enrollment_insert_coordination ON public."Enrollment"
+  FOR INSERT TO authenticated
+  WITH CHECK (
+    public.has_tenant_role(tenant_id, ARRAY['COORDINATION'])
+    AND EXISTS (SELECT 1 FROM public."Program" pr WHERE pr.id = "programId" AND pr.tenant_id = public."Enrollment".tenant_id)
+    AND EXISTS (SELECT 1 FROM public."Producer" p  WHERE p.id = "producerId" AND p.tenant_id = public."Enrollment".tenant_id)
+  );
+
+CREATE POLICY enrollment_update_coordination ON public."Enrollment"
+  FOR UPDATE TO authenticated
+  USING (public.has_tenant_role(tenant_id, ARRAY['COORDINATION']))
+  WITH CHECK (
+    public.has_tenant_role(tenant_id, ARRAY['COORDINATION'])
+    AND EXISTS (SELECT 1 FROM public."Program" pr WHERE pr.id = "programId" AND pr.tenant_id = public."Enrollment".tenant_id)
+    AND EXISTS (SELECT 1 FROM public."Producer" p  WHERE p.id = "producerId" AND p.tenant_id = public."Enrollment".tenant_id)
+  );
+
+CREATE POLICY delivery_select_member ON public."Delivery"
+  FOR SELECT TO authenticated
+  USING (public.is_tenant_member(tenant_id));
+
+CREATE POLICY delivery_insert_coordination ON public."Delivery"
+  FOR INSERT TO authenticated
+  WITH CHECK (
+    public.has_tenant_role(tenant_id, ARRAY['COORDINATION'])
+    AND EXISTS (SELECT 1 FROM public."Program" pr WHERE pr.id = "programId" AND pr.tenant_id = public."Delivery".tenant_id)
+    AND EXISTS (SELECT 1 FROM public."Producer" p  WHERE p.id = "producerId" AND p.tenant_id = public."Delivery".tenant_id)
+  );
+
+CREATE POLICY delivery_update_coordination ON public."Delivery"
+  FOR UPDATE TO authenticated
+  USING (public.has_tenant_role(tenant_id, ARRAY['COORDINATION']))
+  WITH CHECK (
+    public.has_tenant_role(tenant_id, ARRAY['COORDINATION'])
+    AND EXISTS (SELECT 1 FROM public."Program" pr WHERE pr.id = "programId" AND pr.tenant_id = public."Delivery".tenant_id)
+    AND EXISTS (SELECT 1 FROM public."Producer" p  WHERE p.id = "producerId" AND p.tenant_id = public."Delivery".tenant_id)
+  );

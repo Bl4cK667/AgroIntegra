@@ -1,11 +1,11 @@
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
-import { PrismaService } from '../src/prisma/prisma.service';
+import { TestDatabase } from './test-database';
 import { createTestApp, makeCpf, resetData, tokenFor } from './fixtures';
 
 describe('Produtores e propriedades', () => {
   let app: INestApplication;
-  let prisma: PrismaService;
+  let prisma: TestDatabase;
   let tech: string;
   let coord: string;
 
@@ -23,7 +23,7 @@ describe('Produtores e propriedades', () => {
 
   beforeAll(async () => {
     app = await createTestApp();
-    prisma = app.get(PrismaService);
+    prisma = app.get(TestDatabase);
     await resetData(prisma);
     tech = await tokenFor(app, 'tecnico@agrointegra.demo');
     coord = await tokenFor(app, 'coordenacao@agrointegra.demo');

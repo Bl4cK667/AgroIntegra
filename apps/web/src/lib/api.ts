@@ -1,5 +1,8 @@
-// Cliente da API do AgroIntegra. A sessão da demo fica no navegador (sessionStorage).
-export const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
+import { getBackendConfig } from './backend-config';
+
+// Cliente da API do AgroIntegra. A sessão atual fica no navegador (sessionStorage);
+// a validação de papel (role) e autorização ocorre exclusivamente no backend (/auth/me e guards).
+export const API_URL = getBackendConfig().apiUrl;
 
 export type Role = 'COORDINATION' | 'TECHNICIAN';
 export type NavStyle = 'topbar' | 'sidebar';
@@ -9,6 +12,7 @@ export interface SessionUser {
   name: string;
   email: string;
   role: Role;
+  organizationId?: string;
   /** estilo de navegação salvo no perfil (padrão: topbar) */
   navStyle?: NavStyle;
   /** tema salvo na conta (Configurações → Aparência); null = nunca escolheu */

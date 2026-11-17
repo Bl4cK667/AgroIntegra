@@ -2,7 +2,7 @@ import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { DEMO_PRODUCER, seedDemo } from '../prisma/seed-demo';
 import { isValidCpf } from '../src/common/cpf';
-import { PrismaService } from '../src/prisma/prisma.service';
+import { TestDatabase } from './test-database';
 import { countFromDatabase } from './dashboard-count';
 import { createTestApp, resetData, tokenFor } from './fixtures';
 
@@ -13,12 +13,12 @@ const localDay = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad
 // Fase 6: a carga da demonstração precisa ser coerente, porque é o que a secretaria vai ver.
 describe('Dados da demonstração', () => {
   let app: INestApplication;
-  let prisma: PrismaService;
+  let prisma: TestDatabase;
   const api = () => request(app.getHttpServer());
 
   beforeAll(async () => {
     app = await createTestApp();
-    prisma = app.get(PrismaService);
+    prisma = app.get(TestDatabase);
   });
 
   afterAll(async () => {

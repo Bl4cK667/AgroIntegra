@@ -1,12 +1,12 @@
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
-import { PrismaService } from '../src/prisma/prisma.service';
+import { TestDatabase } from './test-database';
 import { countFromDatabase, localDay } from './dashboard-count';
 import { createTestApp, makeCpf, resetData, tokenFor } from './fixtures';
 
 describe('Painel', () => {
   let app: INestApplication;
-  let prisma: PrismaService;
+  let prisma: TestDatabase;
   let token: string;
   const api = () => request(app.getHttpServer());
   const auth = () => ({ Authorization: `Bearer ${token}` });
@@ -35,7 +35,7 @@ describe('Painel', () => {
 
   beforeAll(async () => {
     app = await createTestApp();
-    prisma = app.get(PrismaService);
+    prisma = app.get(TestDatabase);
     await resetData(prisma);
     token = await tokenFor(app, 'coordenacao@agrointegra.demo');
   });

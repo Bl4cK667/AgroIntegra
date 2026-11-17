@@ -14,6 +14,9 @@ enum Role {
 
 model User {
   id              String           @id @default(uuid())
+  authUserId      String?          @unique
+  memberships     OrganizationMembership[]
+  invitations     Invitation[]
   name            String
   email           String           @unique
   passwordHash    String
@@ -43,6 +46,9 @@ model User {
 // Aviso para um usuário da equipe. Criado pelo backend quando algo relevante acontece
 // (nova solicitação, mudança de situação, visita registrada...). readAt nulo = não lida.
 model Notification {
+  organizationId String @default("00000000-0000-4000-8000-000000000001")
+  organization Organization @relation(fields: [organizationId], references: [id])
+
   id        String    @id @default(uuid())
   userId    String
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -55,9 +61,14 @@ model Notification {
 
   @@index([userId, readAt])
   @@index([userId, createdAt])
+  @@index([organizationId])
+  @@unique([id, organizationId])
 }
 
 model AuditLog {
+  organizationId String?
+  organization Organization? @relation(fields: [organizationId], references: [id])
+
   id        String   @id @default(uuid())
   userId    String?
   user      User?    @relation(fields: [userId], references: [id])
@@ -69,9 +80,14 @@ model AuditLog {
 
   @@index([entity, entityId])
   @@index([createdAt])
+  @@index([organizationId])
+  @@unique([id, organizationId])
 }
 
 model Producer {
+  organizationId String @default("00000000-0000-4000-8000-000000000001")
+  organization Organization @relation(fields: [organizationId], references: [id])
+
   id          String           @id @default(uuid())
   name        String
   // Nome em minúsculas e sem acentos, usado na busca.
@@ -93,12 +109,17 @@ model Producer {
   deliveries  Delivery[]
 
   @@index([searchName])
+  @@index([organizationId])
+  @@unique([id, organizationId])
 }
 
 model Property {
+  organizationId String @default("00000000-0000-4000-8000-000000000001")
+  organization Organization @relation(fields: [organizationId], references: [id])
+
   id           String           @id @default(uuid())
   producerId   String
-  producer     Producer         @relation(fields: [producerId], references: [id])
+  producer     Producer         @relation(fields: [producerId, organizationId], references: [id, organizationId])
   name         String
   // Nome + localidade em minúsculas e sem acentos, usado na busca.
   searchText   String           @default("")
@@ -120,15 +141,20 @@ model Property {
   requests     ServiceRequest[]
 
   @@index([producerId])
+  @@index([organizationId])
+  @@unique([id, organizationId])
 }
 
 // Visita técnica. Depois de salva não é editada: vale como registro do atendimento.
 model Visit {
+  organizationId String @default("00000000-0000-4000-8000-000000000001")
+  organization Organization @relation(fields: [organizationId], references: [id])
+
   id               String          @id @default(uuid())
   producerId       String
-  producer         Producer        @relation(fields: [producerId], references: [id])
+  producer         Producer        @relation(fields: [producerId, organizationId], references: [id, organizationId])
   propertyId       String?
-  property         Property?       @relation(fields: [propertyId], references: [id])
+  property         Property?       @relation(fields: [propertyId, organizationId], references: [id, organizationId])
   technicianId     String
   technician       User            @relation(fields: [technicianId], references: [id])
   visitedOn        DateTime        @db.Date
@@ -144,18 +170,23 @@ model Visit {
   locationAccuracy Float?
   // Solicitação que esta visita atendeu (opcional).
   requestId        String?
-  request          ServiceRequest? @relation(fields: [requestId], references: [id])
+  request          ServiceRequest? @relation(fields: [requestId, organizationId], references: [id, organizationId])
   createdAt        DateTime        @default(now())
   photos           VisitPhoto[]
 
   @@index([producerId, visitedOn])
   @@index([visitedOn])
+  @@index([organizationId])
+  @@unique([id, organizationId])
 }
 
 model VisitPhoto {
+  organizationId String @default("00000000-0000-4000-8000-000000000001")
+  organization Organization @relation(fields: [organizationId], references: [id])
+
   id        String   @id @default(uuid())
   visitId   String
-  visit     Visit    @relation(fields: [visitId], references: [id], onDelete: Cascade)
+  visit     Visit    @relation(fields: [visitId, organizationId], references: [id, organizationId], onDelete: Cascade)
   position  Int
   mimeType  String
   data      Bytes
@@ -163,6 +194,8 @@ model VisitPhoto {
   createdAt DateTime @default(now())
 
   @@index([visitId])
+  @@index([organizationId])
+  @@unique([id, organizationId])
 }
 
 enum RequestStatus {
@@ -180,11 +213,14 @@ enum RequestPriority {
 
 // Pedido de atendimento do produtor, acompanhado no quadro de Solicitações.
 model ServiceRequest {
+  organizationId String @default("00000000-0000-4000-8000-000000000001")
+  organization Organization @relation(fields: [organizationId], references: [id])
+
   id           String          @id @default(uuid())
   producerId   String
-  producer     Producer        @relation(fields: [producerId], references: [id])
+  producer     Producer        @relation(fields: [producerId, organizationId], references: [id, organizationId])
   propertyId   String?
-  property     Property?       @relation(fields: [propertyId], references: [id])
+  property     Property?       @relation(fields: [propertyId, organizationId], references: [id, organizationId])
   subject      String
   description  String?
   priority     RequestPriority @default(MEDIUM)
@@ -202,10 +238,15 @@ model ServiceRequest {
   @@index([status])
   @@index([completedAt])
   @@index([producerId])
+  @@index([organizationId])
+  @@unique([id, organizationId])
 }
 
 // Programa de fomento da secretaria. Na demo é só leitura: os dados vêm da carga de exemplo.
 model Program {
+  organizationId String @default("00000000-0000-4000-8000-000000000001")
+  organization Organization @relation(fields: [organizationId], references: [id])
+
   id           String       @id @default(uuid())
   name         String
   description  String
@@ -223,6 +264,8 @@ model Program {
   createdAt    DateTime     @default(now())
   enrollments  Enrollment[]
   deliveries   Delivery[]
+  @@index([organizationId])
+  @@unique([id, organizationId])
 }
 
 enum EnrollmentStatus {
@@ -233,25 +276,33 @@ enum EnrollmentStatus {
 
 // Inscrição de um produtor no programa; aprovada = beneficiário.
 model Enrollment {
+  organizationId String @default("00000000-0000-4000-8000-000000000001")
+  organization Organization @relation(fields: [organizationId], references: [id])
+
   id         String           @id @default(uuid())
   programId  String
-  program    Program          @relation(fields: [programId], references: [id])
+  program    Program          @relation(fields: [programId, organizationId], references: [id, organizationId])
   producerId String
-  producer   Producer         @relation(fields: [producerId], references: [id])
+  producer   Producer         @relation(fields: [producerId, organizationId], references: [id, organizationId])
   status     EnrollmentStatus @default(ENROLLED)
   enrolledOn DateTime         @db.Date
   createdAt  DateTime         @default(now())
 
   @@unique([programId, producerId])
+  @@index([organizationId])
+  @@unique([id, organizationId])
 }
 
 // Entrega feita a um beneficiário (quantidade do item e valor gasto).
 model Delivery {
+  organizationId String @default("00000000-0000-4000-8000-000000000001")
+  organization Organization @relation(fields: [organizationId], references: [id])
+
   id          String   @id @default(uuid())
   programId   String
-  program     Program  @relation(fields: [programId], references: [id])
+  program     Program  @relation(fields: [programId, organizationId], references: [id, organizationId])
   producerId  String
-  producer    Producer @relation(fields: [producerId], references: [id])
+  producer    Producer @relation(fields: [producerId, organizationId], references: [id, organizationId])
   deliveredOn DateTime @db.Date
   quantity    Int
   valueCents  Int
@@ -260,4 +311,55 @@ model Delivery {
 
   @@index([programId])
   @@index([producerId, deliveredOn])
+  @@index([organizationId])
+  @@unique([id, organizationId])
+}
+
+
+model Organization {
+  id String @id @default(uuid())
+  name String
+  active Boolean @default(true)
+  createdAt DateTime @default(now())
+  memberships OrganizationMembership[]
+  invitations Invitation[]
+  notifications Notification[]
+  auditLogs AuditLog[]
+  producers Producer[]
+  properties Property[]
+  visits Visit[]
+  visitPhotos VisitPhoto[]
+  requests ServiceRequest[]
+  programs Program[]
+  enrollments Enrollment[]
+  deliveries Delivery[]
+}
+
+model OrganizationMembership {
+  id String @id @default(uuid())
+  userId String
+  user User @relation(fields: [userId], references: [id])
+  organizationId String
+  organization Organization @relation(fields: [organizationId], references: [id])
+  role Role
+  active Boolean @default(true)
+  createdAt DateTime @default(now())
+  @@unique([userId, organizationId])
+  @@index([organizationId, active])
+}
+
+model Invitation {
+  id String @id @default(uuid())
+  email String
+  tokenHash String @unique
+  organizationId String
+  organization Organization @relation(fields: [organizationId], references: [id])
+  role Role
+  createdById String
+  createdBy User @relation(fields: [createdById], references: [id])
+  expiresAt DateTime
+  usedAt DateTime?
+  revokedAt DateTime?
+  createdAt DateTime @default(now())
+  @@index([organizationId, createdAt])
 }

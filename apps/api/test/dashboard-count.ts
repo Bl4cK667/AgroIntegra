@@ -1,4 +1,4 @@
-import { PrismaService } from '../src/prisma/prisma.service';
+import { TestDatabase } from './test-database';
 
 const pad = (n: number) => String(n).padStart(2, '0');
 export const localDay = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
@@ -6,7 +6,7 @@ export const localDay = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)
 // Regra da fase 4: todo número do painel confere com uma contagem feita direto no banco.
 // As contagens de referência abaixo leem as linhas cruas e filtram em JavaScript,
 // por um caminho diferente do usado pela API.
-export async function countFromDatabase(prisma: PrismaService) {
+export async function countFromDatabase(prisma: TestDatabase) {
   const now = new Date();
   const year = now.getFullYear();
   const month = now.getMonth();
