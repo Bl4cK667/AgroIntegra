@@ -13,22 +13,46 @@ enum Role {
 }
 
 model User {
-  id           String           @id @default(uuid())
-  name         String
-  email        String           @unique
-  passwordHash String
-  role         Role
-  active       Boolean          @default(true)
-  createdAt    DateTime         @default(now())
-  updatedAt    DateTime         @updatedAt
-  auditLogs    AuditLog[]
-  producers    Producer[]
-  properties   Property[]
-  visits       Visit[]
-  requests     ServiceRequest[]
+  id              String           @id @default(uuid())
+  name            String
+  email           String           @unique
+  passwordHash    String
+  role            Role
+  active          Boolean          @default(true)
+  // Dados da conta editáveis em Configurações.
+  phone           String?
+  jobTitle        String?
+  avatar          Bytes?
+  avatarMime      String?
+  avatarUpdatedAt DateTime?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  auditLogs       AuditLog[]
+  notifications   Notification[]
+  producers       Producer[]
+  properties      Property[]
+  visits          Visit[]
+  requests        ServiceRequest[]
 }
 
 // Registro de auditoria (LGPD): quem fez, o quê, quando.
+// Aviso para um usuário da equipe. Criado pelo backend quando algo relevante acontece
+// (nova solicitação, mudança de situação, visita registrada...). readAt nulo = não lida.
+model Notification {
+  id        String    @id @default(uuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String
+  title     String
+  body      String
+  href      String?
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId, readAt])
+  @@index([userId, createdAt])
+}
+
 model AuditLog {
   id        String   @id @default(uuid())
   userId    String?

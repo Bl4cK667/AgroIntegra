@@ -1,8 +1,10 @@
 'use client';
 
 import Link from 'next/link';
+import { FormFeedback } from '@/components/property/FormFeedback';
+import { checkRequiredFields, clearFieldError } from '@/components/property/formValidation';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { FormEvent, Suspense, useEffect, useState } from 'react';
+import { FormEvent, Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import styles from '@/components/form.module.css';
 import { ProducerSearch } from '@/components/ProducerSearch';
 import { FieldHeading } from '@/components/property/FieldUI';
@@ -29,21 +31,34 @@ function NovaSolicitacao() {
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
-  function choose(id: string) {
+  const [choosing, setChoosing] = useState(false);
+  const choiceVersion = useRef(0);
+  const resetProducer = useCallback(() => {
+    choiceVersion.current += 1; setProducer(null); setPropertyId(''); setSubject(''); setDescription(''); setPriority('MEDIUM'); setError(null); setChoosing(false);
+  }, []);
+
+  const choose = useCallback((id: string) => {
+    resetProducer();
+    const version = choiceVersion.current;
+    setChoosing(true);
     getProducer(id)
       .then((p) => {
+        if (version !== choiceVersion.current) return;
         setProducer(p);
         setPropertyId(p.properties.length === 1 ? p.properties[0].id : '');
       })
-      .catch((e) => setError(e instanceof ApiError ? e.message : 'Não foi possível carregar o produtor.'));
-  }
+      .catch((e) => { if (version === choiceVersion.current) setError(e instanceof ApiError ? e.message : 'Não foi possível carregar o produtor.'); })
+      .finally(() => { if (version === choiceVersion.current) setChoosing(false); });
+  }, [resetProducer]);
 
   useEffect(() => {
     if (fromProducer) choose(fromProducer);
-  }, [fromProducer]);
+    return () => { choiceVersion.current += 1; };
+  }, [fromProducer, choose]);
 
-  async function onSubmit(e: FormEvent) {
+  async function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (saving || choosing || !checkRequiredFields(e.currentTarget)) return;
     if (!producer) return setError('Escolha o produtor que fez o pedido.');
     if (!subject.trim()) return setError('Informe o assunto da solicitação.');
     setError(null);
@@ -52,11 +67,11 @@ function NovaSolicitacao() {
       await createRequest({
         producerId: producer.id,
         propertyId: propertyId || undefined,
-        subject,
-        description: description || undefined,
+        subject: subject.trim(),
+        description: description.trim() || undefined,
         priority,
       });
-      router.replace(fromProducer ? `/produtores/${producer.id}` : '/solicitacoes');
+      router.replace(fromProducer ? `/produtores/${producer.id}?solicitacao=criada` : '/solicitacoes?salvo=1');
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Não foi possível salvar a solicitação.');
       setSaving(false);
@@ -72,9 +87,11 @@ function NovaSolicitacao() {
       </Link>
       <FieldHeading icon="inbox" eyebrow="Fluxo de atendimento" title="Nova solicitação" description="Registre o pedido do produtor. Ele entra no quadro na coluna Nova." />
 
-      <form className={`${styles.form} enter`} style={{ '--i': 1 } as React.CSSProperties} onSubmit={onSubmit} noValidate>
-        <fieldset className={styles.group}>
-          <legend>Produtor</legend>
+      <p className="muted">Os campos com * são obrigatórios. Você pode completar o pedido com uma descrição.</p>
+      <form className={`${styles.form} enter`} style={{ '--i': 1 } as React.CSSProperties} onSubmit={onSubmit} onInput={clearFieldError} noValidate>
+          <FormFeedback />
+        <fieldset className={styles.group} disabled={saving || choosing}>
+          <legend>01 · Quem precisa de atendimento?</legend>
           {producer ? (
             <div className={styles.chosen}>
               <div>
@@ -84,7 +101,7 @@ function NovaSolicitacao() {
                 </span>
               </div>
               {!fromProducer && (
-                <button type="button" className="btn-link" onClick={() => setProducer(null)}>
+                <button type="button" className="btn-link" onClick={resetProducer}>
                   Trocar produtor
                 </button>
               )}
@@ -92,6 +109,7 @@ function NovaSolicitacao() {
           ) : (
             <ProducerSearch onPick={choose} />
           )}
+          {choosing && <p className="muted" role="status">Carregando os dados do produtor…</p>}
           {producer && (
             <label className="field">
               <span>Propriedade</span>
@@ -107,13 +125,13 @@ function NovaSolicitacao() {
           )}
         </fieldset>
 
-        <fieldset className={styles.group} disabled={!producer}>
-          <legend>Pedido</legend>
+        <fieldset className={styles.group} disabled={!producer || saving || choosing}>
+          <legend>02 · Como podemos ajudar?</legend>
           <label className="field">
-            <span>Assunto</span>
+            <span>Qual é o pedido? *</span>
             <input
               className="input"
-              maxLength={120}
+              name="subject" required data-required-message="Conte em poucas palavras o que o produtor precisa." maxLength={120}
               placeholder="Ex.: orientação sobre silagem de milho"
               value={subject}
               onChange={(e) => setSubject(e.target.value)}
@@ -133,7 +151,7 @@ function NovaSolicitacao() {
             />
           </label>
           <div className="field" role="radiogroup" aria-label="Prioridade">
-            <span>Prioridade</span>
+            <span>Com que urgência precisa de atendimento?</span>
             <div className={styles.segmented}>
               {PRIORITY_ORDER.map((p) => (
                 <label key={p} className={priority === p ? styles.segOn : styles.seg}>
@@ -152,7 +170,7 @@ function NovaSolicitacao() {
         )}
 
         <div className="form-actions">
-          <button type="submit" className="btn btn-primary" disabled={saving || !producer}>
+          <button type="submit" className="btn btn-primary" disabled={saving || !producer || choosing}>
             {saving ? 'Salvando…' : 'Abrir solicitação'}
           </button>
           <Link href={back} className="btn btn-secondary">

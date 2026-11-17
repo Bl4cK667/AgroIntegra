@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { formatCoord } from '@/lib/format';
 import styles from './visit.module.css';
 import { FieldIcon } from '@/components/property/FieldUI';
@@ -21,6 +21,8 @@ const ERRORS: Record<number, string> = {
 export function LocationField({ value, onChange }: { value: Location | null; onChange: (v: Location | null) => void }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const alive = useRef(true);
+  useEffect(() => { alive.current = true; return () => { alive.current = false; }; }, []);
 
   function capture() {
     if (!('geolocation' in navigator)) {
@@ -31,6 +33,7 @@ export function LocationField({ value, onChange }: { value: Location | null; onC
     setError(null);
     navigator.geolocation.getCurrentPosition(
       (pos) => {
+        if (!alive.current) return;
         onChange({
           latitude: pos.coords.latitude,
           longitude: pos.coords.longitude,
@@ -39,6 +42,7 @@ export function LocationField({ value, onChange }: { value: Location | null; onC
         setBusy(false);
       },
       (err) => {
+        if (!alive.current) return;
         setError(ERRORS[err.code] ?? 'Não foi possível obter a localização.');
         setBusy(false);
       },

@@ -34,30 +34,30 @@ export class LocationDto {
 }
 
 export class CreateVisitDto {
-  @IsUUID('4', { message: 'Produtor inválido.' })
+  @IsUUID('4', { message: 'Escolha um produtor da lista.' })
   producerId: string;
 
   @IsOptional()
-  @IsUUID('4', { message: 'Propriedade inválida.' })
+  @IsUUID('4', { message: 'Escolha uma propriedade da lista.' })
   propertyId?: string;
 
   @IsOptional()
-  @IsUUID('4', { message: 'Solicitação inválida.' })
+  @IsUUID('4', { message: 'Escolha uma solicitação da lista.' })
   requestId?: string;
 
   @Matches(DAY, { message: 'Informe a data da visita.' })
   visitedOn: string;
 
   @Transform(trim)
-  @IsString()
+  @IsString({ message: 'Preencha este campo com texto.' })
   @IsNotEmpty({ message: 'Descreva o diagnóstico.' })
-  @MaxLength(5000)
+  @MaxLength(5000, { message: 'Use no máximo 5000 caracteres neste campo.' })
   diagnosis: string;
 
   @Transform(trim)
-  @IsString()
+  @IsString({ message: 'Preencha este campo com texto.' })
   @IsNotEmpty({ message: 'Descreva o plano de ação.' })
-  @MaxLength(5000)
+  @MaxLength(5000, { message: 'Use no máximo 5000 caracteres neste campo.' })
   actionPlan: string;
 
   @IsOptional()
@@ -66,8 +66,8 @@ export class CreateVisitDto {
 
   @Transform(trim)
   @IsOptional()
-  @IsString()
-  @MaxLength(2000)
+  @IsString({ message: 'Preencha este campo com texto.' })
+  @MaxLength(2000, { message: 'Use no máximo 2000 caracteres neste campo.' })
   impact?: string;
 
   @IsOptional()
@@ -77,7 +77,7 @@ export class CreateVisitDto {
   photos?: string[];
 
   @IsOptional()
-  @IsString()
+  @IsString({ message: 'Preencha este campo com texto.' })
   signature?: string;
 
   @IsOptional()

@@ -691,3 +691,83 @@
     opacity: 1;
   }
 }
+
+/* ---------- Fase 3: sino, link do perfil ---------- */
+
+.topActions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.sidebar[data-collapsed] .topActions {
+  flex-direction: column;
+  gap: 6px;
+}
+
+.profile {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: -6px -6px -6px -8px;
+  padding: 6px 6px 6px 8px;
+  border-radius: 12px;
+  color: inherit;
+  text-decoration: none;
+  transition: background-color var(--dur-fast, 150ms) var(--ease-out, ease);
+}
+
+.profile:hover,
+.profile[data-active] {
+  background: var(--nav-hover);
+}
+
+.profile .avatar {
+  transition: transform var(--dur-med, 300ms) var(--ease-spring, ease), box-shadow var(--dur-med, 300ms);
+}
+
+.profile:hover .avatar {
+  transform: scale(1.06);
+  box-shadow: 0 0 0 2px var(--nav-accent);
+}
+
+.sidebar[data-collapsed] .profile {
+  flex: none;
+  margin: 0;
+  padding: 0;
+  background: none;
+}
+
+.avatarLink {
+  display: grid;
+  border-radius: 50%;
+  text-decoration: none;
+}
+
+.sheetUser {
+  color: inherit;
+  text-decoration: none;
+  padding: 10px 12px;
+  margin: 0 -6px;
+  border-radius: 16px;
+  background: var(--card-2);
+  border: 1px solid var(--card-border);
+}
+
+.sheetUser > .icon {
+  margin-left: auto;
+  color: var(--muted);
+}
+
+.avatarRing {
+  flex: none;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.14);
+  transition: transform var(--dur-med, 300ms) var(--ease-spring, ease), box-shadow var(--dur-med, 300ms);
+}
+
+.profile:hover .avatarRing {
+  transform: scale(1.06);
+  box-shadow: 0 0 0 2px var(--nav-accent);
+}

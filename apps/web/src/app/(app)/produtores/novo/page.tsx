@@ -1,6 +1,8 @@
 'use client';
 
 import Link from 'next/link';
+import { FormFeedback } from '@/components/property/FormFeedback';
+import { checkRequiredFields, clearFieldError, reportFieldError, validCpf } from '@/components/property/formValidation';
 import { FieldHeading, FieldIcon, fieldStyles as ui } from '@/components/property/FieldUI';
 import { useRouter } from 'next/navigation';
 import { FormEvent, useState } from 'react';
@@ -17,13 +19,15 @@ export default function NovoProdutorPage() {
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
-  async function onSubmit(e: FormEvent) {
+  async function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (saving || !checkRequiredFields(e.currentTarget)) return;
+    if (!validCpf(cpf)) { reportFieldError(e.currentTarget, 'cpf', 'Confira o CPF. Digite os 11 números de um CPF válido.'); return; }
     setError(null);
     setSaving(true);
     try {
-      const p = await createProducer({ name, cpf, phone: phone || undefined, community, consent });
-      router.replace(`/produtores/${p.id}`);
+      const p = await createProducer({ name: name.trim(), cpf, phone: phone.trim() || undefined, community: community.trim(), consent });
+      router.replace(`/produtores/${p.id}?cadastro=criado`);
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Não foi possível cadastrar o produtor.');
       setSaving(false);
@@ -37,18 +41,22 @@ export default function NovoProdutorPage() {
       </Link>
       <FieldHeading icon="people" eyebrow="Cadastro de produtores" title="Novo produtor" description="Comece pela identificação. Propriedades e visitas podem ser adicionadas após o cadastro." />
 
-      <form className={ui.form} onSubmit={onSubmit} noValidate>
-          <fieldset className={`card enter ${ui.formSection}`}><legend><FieldIcon name="people" /> Identificação e contato</legend>
+      <form className={ui.form} onSubmit={onSubmit} onInput={clearFieldError} noValidate>
+          <FormFeedback />
+          <fieldset disabled={saving} className={`card enter ${ui.formSection}`}><legend><FieldIcon name="people" /> Identificação e contato</legend>
+        <p className="muted">Os campos com * são obrigatórios.</p>
         <label className="field">
-          <span>Nome completo</span>
-          <input className="input" value={name} onChange={(e) => setName(e.target.value)} required maxLength={120} />
+          <span>Nome completo *</span>
+          <input className="input" name="name" required data-required-message="Informe o nome completo do produtor." autoComplete="name" placeholder="Ex.: Maria da Silva" value={name} onChange={(e) => setName(e.target.value)} maxLength={120} />
         </label>
 
         <div className="form-row">
           <label className="field">
-            <span>CPF</span>
+            <span>CPF *</span>
             <input
               className="input num"
+              name="cpf"
+              data-required-message="Informe os 11 números do CPF."
               inputMode="numeric"
               placeholder="000.000.000-00"
               value={cpf}
@@ -59,17 +67,17 @@ export default function NovoProdutorPage() {
           </label>
           <label className="field">
             <span>Telefone</span>
-            <input className="input" inputMode="tel" value={phone} onChange={(e) => setPhone(e.target.value)} maxLength={30} />
+            <input className="input" name="phone" autoComplete="tel" placeholder="Ex.: (91) 99999-9999" inputMode="tel" value={phone} onChange={(e) => setPhone(e.target.value)} maxLength={30} />
           </label>
         </div>
 
         <label className="field">
-          <span>Comunidade</span>
-          <input className="input" value={community} onChange={(e) => setCommunity(e.target.value)} required maxLength={80} />
+          <span>Comunidade *</span>
+          <input className="input" name="community" required data-required-message="Informe a comunidade onde o produtor mora." placeholder="Ex.: Comunidade Riacho Verde" value={community} onChange={(e) => setCommunity(e.target.value)} maxLength={80} />
         </label>
 
           </fieldset>
-          <fieldset className={`card enter ${ui.formSection}`} style={{ '--i': 1 } as React.CSSProperties}><legend><FieldIcon name="check" /> Consentimento e privacidade</legend>
+          <fieldset disabled={saving} className={`card enter ${ui.formSection}`} style={{ '--i': 1 } as React.CSSProperties}><legend><FieldIcon name="check" /> Consentimento e privacidade</legend>
         <label className="check">
           <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} />
           <span>

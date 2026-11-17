@@ -3,6 +3,7 @@ import { Prisma, RequestStatus, ServiceRequest } from '@prisma/client';
 import { AuditService } from '../audit/audit.service';
 import { AuthUser } from '../auth/current-user.decorator';
 import { parseDay, toDay } from '../common/dates';
+import { NotificationsService } from '../notifications/notifications.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateRequestDto, MoveRequestDto, PriorityDto } from './request.dto';
 
@@ -46,6 +47,7 @@ export class RequestsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly audit: AuditService,
+    private readonly notifications: NotificationsService,
   ) {}
 
   async list(filter: { producerId?: string; open?: boolean }) {
@@ -89,6 +91,15 @@ export class RequestsService {
       entityId: r.id,
       details: { producerId: producer.id, priority: r.priority },
     });
+    await this.notifications.notifyTeam(
+      {
+        type: r.priority === 'HIGH' ? 'REQUEST_URGENT' : 'REQUEST_CREATED',
+        title: r.priority === 'HIGH' ? 'Pedido urgente chegou' : 'Novo pedido de atendimento',
+        body: `${r.producer.name} (${r.producer.community}): ${r.subject}`,
+        href: '/solicitacoes',
+      },
+      { except: user.id },
+    );
     return requestView(r);
   }
 
@@ -113,6 +124,7 @@ export class RequestsService {
       entityId: id,
       details: { from: current.status, to: r.status, scheduledFor: toDay(r.scheduledFor) },
     });
+    await this.notifyMove(current, r, user);
     return requestView(r);
   }
 
@@ -126,6 +138,39 @@ export class RequestsService {
       entityId: id,
       details: { from: current.priority, to: r.priority },
     });
+    if (r.priority === 'HIGH' && current.priority !== 'HIGH') {
+      await this.notifications.notifyTeam(
+        {
+          type: 'REQUEST_URGENT',
+          title: 'Pedido passou para prioridade alta',
+          body: `${r.producer.name} (${r.producer.community}): ${r.subject}`,
+          href: '/solicitacoes',
+        },
+        { except: user.id },
+      );
+    }
     return requestView(r);
+  }
+
+  // Quem abriu o pedido fica sabendo quando ele é agendado ou concluído.
+  private async notifyMove(current: ServiceRequest, r: RequestWithRelations, user: AuthUser) {
+    const changedDate = toDay(current.scheduledFor) !== toDay(r.scheduledFor);
+    if (r.createdById === user.id) return;
+    if (r.status === 'SCHEDULED' && r.scheduledFor && (current.status !== 'SCHEDULED' || changedDate)) {
+      const [y, m, d] = toDay(r.scheduledFor)!.split('-');
+      await this.notifications.notifyUsers([r.createdById], {
+        type: 'REQUEST_SCHEDULED',
+        title: 'Visita agendada',
+        body: `${r.subject} — ${r.producer.name}, no dia ${d}/${m}/${y}.`,
+        href: '/solicitacoes',
+      });
+    } else if (r.status === 'DONE' && current.status !== 'DONE') {
+      await this.notifications.notifyUsers([r.createdById], {
+        type: 'REQUEST_DONE',
+        title: 'Pedido concluído',
+        body: `${r.subject} — ${r.producer.name}.`,
+        href: '/solicitacoes',
+      });
+    }
   }
 }

@@ -1,6 +1,8 @@
 'use client';
 
 import Link from 'next/link';
+import { FormFeedback } from '@/components/property/FormFeedback';
+import { checkRequiredFields, clearFieldError, reportFieldError } from '@/components/property/formValidation';
 import { FieldHeading, FieldIcon, FieldLoading, fieldStyles as ui } from '@/components/property/FieldUI';
 import { useParams, useRouter } from 'next/navigation';
 import { FormEvent, useEffect, useState } from 'react';
@@ -27,13 +29,14 @@ export default function EditarProdutorPage() {
       .catch((e) => setError(e instanceof ApiError ? e.message : 'Não foi possível carregar o produtor.'));
   }, [id]);
 
-  async function onSubmit(e: FormEvent) {
+  async function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (saving || !checkRequiredFields(e.currentTarget)) return;
     setError(null);
     setSaving(true);
     try {
-      await updateProducer(id, { name, phone, community });
-      router.replace(`/produtores/${id}`);
+      await updateProducer(id, { name: name.trim(), phone: phone.trim(), community: community.trim() });
+      router.replace(`/produtores/${id}?cadastro=atualizado`);
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Não foi possível salvar as alterações.');
       setSaving(false);
@@ -50,11 +53,12 @@ export default function EditarProdutorPage() {
       {!producer && !error && <FieldLoading />}
 
       {producer && (
-        <form className={ui.form} onSubmit={onSubmit} noValidate>
-          <fieldset className={`card enter ${ui.formSection}`}><legend><FieldIcon name="people" /> Identificação e contato</legend>
+        <form className={ui.form} onSubmit={onSubmit} onInput={clearFieldError} noValidate>
+          <FormFeedback />
+          <fieldset disabled={saving} className={`card enter ${ui.formSection}`}><legend><FieldIcon name="people" /> Identificação e contato</legend>
           <label className="field">
-            <span>Nome completo</span>
-            <input className="input" value={name} onChange={(e) => setName(e.target.value)} maxLength={120} />
+            <span>Nome completo *</span>
+            <input className="input" name="name" required data-required-message="Informe o nome completo do produtor." autoComplete="name" placeholder="Ex.: Maria da Silva" value={name} onChange={(e) => setName(e.target.value)} maxLength={120} />
           </label>
           <div className="form-row">
             <label className="field">
@@ -64,12 +68,12 @@ export default function EditarProdutorPage() {
             </label>
             <label className="field">
               <span>Telefone</span>
-              <input className="input" inputMode="tel" value={phone} onChange={(e) => setPhone(e.target.value)} maxLength={30} />
+              <input className="input" name="phone" autoComplete="tel" placeholder="Ex.: (91) 99999-9999" inputMode="tel" value={phone} onChange={(e) => setPhone(e.target.value)} maxLength={30} />
             </label>
           </div>
           <label className="field">
-            <span>Comunidade</span>
-            <input className="input" value={community} onChange={(e) => setCommunity(e.target.value)} maxLength={80} />
+            <span>Comunidade *</span>
+            <input className="input" name="community" required data-required-message="Informe a comunidade onde o produtor mora." placeholder="Ex.: Comunidade Riacho Verde" value={community} onChange={(e) => setCommunity(e.target.value)} maxLength={80} />
           </label>
           </fieldset>
           {error && (

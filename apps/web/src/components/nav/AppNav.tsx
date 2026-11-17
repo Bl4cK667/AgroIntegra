@@ -6,6 +6,8 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { BrandSymbol } from '@/components/Brand';
 import { ROLE_LABEL, SessionUser } from '@/lib/api';
 import { useTheme } from '@/lib/theme';
+import { Avatar } from '@/components/account/Avatar';
+import { NotificationBell } from '@/components/notifications/NotificationBell';
 import { NavIcon, NavIconName } from './NavIcon';
 import s from './nav.module.css';
 
@@ -21,9 +23,6 @@ export const MENU: { href: string; label: string; icon: NavIconName; mobile: boo
 ];
 
 const COLLAPSE_KEY = 'agrointegra.nav.collapsed';
-
-const initials = (name: string) =>
-  name.split(' ').filter(Boolean).slice(0, 2).map((p) => p[0]).join('').toUpperCase();
 
 const isActive = (pathname: string, href: string) => pathname === href || pathname.startsWith(`${href}/`);
 
@@ -95,15 +94,19 @@ export function AppNav({ user, onLogout, collapsed, onCollapsedChange }: Props) 
             </span>
             <span className={s.brandName}>AgroIntegra</span>
           </Link>
-          <button
-            type="button"
-            className={s.collapse}
-            onClick={() => onCollapsedChange(!collapsed)}
-            aria-label={collapsed ? 'Expandir menu' : 'Recolher menu'}
-            aria-expanded={!collapsed}
-          >
-            <NavIcon name="recolher" />
-          </button>
+          <div className={s.topActions}>
+            <NotificationBell />
+            <button
+              type="button"
+              className={s.collapse}
+              onClick={() => onCollapsedChange(!collapsed)}
+              aria-label={collapsed ? 'Expandir menu' : 'Recolher menu'}
+              aria-expanded={!collapsed}
+              data-tip={collapsed ? 'Expandir menu' : undefined}
+            >
+              <NavIcon name="recolher" />
+            </button>
+          </div>
         </div>
 
         <nav ref={navRef} className={s.nav} aria-label="Principal">
@@ -133,11 +136,19 @@ export function AppNav({ user, onLogout, collapsed, onCollapsedChange }: Props) 
             <span className={s.label}>{theme === 'dark' ? 'Tema claro' : 'Tema escuro'}</span>
           </button>
           <div className={s.user}>
-            <span className={s.avatar} aria-hidden="true">{initials(user.name)}</span>
-            <span className={s.userText}>
-              <strong>{user.name}</strong>
-              <small>{ROLE_LABEL[user.role]}</small>
-            </span>
+            <Link
+              href="/configuracoes"
+              className={s.profile}
+              data-active={pathname.startsWith('/configuracoes') || undefined}
+              aria-label={`${user.name} — configurações da conta`}
+              data-tip="Configurações da conta"
+            >
+              <Avatar name={user.name} size={36} className={s.avatarRing} />
+              <span className={s.userText}>
+                <strong>{user.name}</strong>
+                <small>{ROLE_LABEL[user.role]}</small>
+              </span>
+            </Link>
             <button type="button" className={s.logout} onClick={onLogout} aria-label="Sair" data-tip="Sair">
               <NavIcon name="sair" />
             </button>
@@ -153,10 +164,13 @@ export function AppNav({ user, onLogout, collapsed, onCollapsedChange }: Props) 
           </span>
           <span className={s.brandName}>AgroIntegra</span>
         </Link>
+        <NotificationBell variant="mobile" />
         <button type="button" className={s.roundBtn} onClick={toggle} aria-label={theme === 'dark' ? 'Usar tema claro' : 'Usar tema escuro'}>
           <NavIcon name={theme === 'dark' ? 'sol' : 'lua'} />
         </button>
-        <span className={s.avatar} aria-hidden="true">{initials(user.name)}</span>
+        <Link href="/configuracoes" className={s.avatarLink} aria-label="Configurações da conta">
+          <Avatar name={user.name} size={36} className={s.avatarRing} />
+        </Link>
       </header>
 
       <nav className={s.tabbar} aria-label="Principal (celular)">
@@ -180,13 +194,14 @@ export function AppNav({ user, onLogout, collapsed, onCollapsedChange }: Props) 
           <div className={s.backdrop} onClick={() => setSheet(false)} aria-hidden="true" />
           <div className={s.sheet} role="dialog" aria-modal="true" aria-label="Mais opções">
             <span className={s.grabber} aria-hidden="true" />
-            <div className={s.sheetUser}>
-              <span className={s.avatar} aria-hidden="true">{initials(user.name)}</span>
+            <Link href="/configuracoes" className={s.sheetUser}>
+              <Avatar name={user.name} size={36} className={s.avatarRing} />
               <span className={s.userText}>
                 <strong>{user.name}</strong>
-                <small>{ROLE_LABEL[user.role]}</small>
+                <small>{ROLE_LABEL[user.role]} · Configurações da conta</small>
               </span>
-            </div>
+              <NavIcon name="mais" />
+            </Link>
             <div className={s.sheetGrid}>
               {MENU.filter((m) => !m.mobile).map((item, i) => (
                 <Link

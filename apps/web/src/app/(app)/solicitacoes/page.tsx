@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
+import { Toast } from '@/components/feedback/Toast';
 import { FieldHeading, FieldIcon, FieldLoading, FieldStats } from '@/components/property/FieldUI';
 import { PriorityTag } from '@/components/request/PriorityTag';
 import {
@@ -30,6 +31,16 @@ export default function SolicitacoesPage() {
   const [dragging, setDragging] = useState<string | null>(null);
   const [over, setOver] = useState<RequestStatus | null>(null);
   const [filter, setFilter] = useState<RequestPriority | 'ALL'>('ALL');
+  const [saved, setSaved] = useState<string | null>(null);
+
+  // Volta de "Nova solicitação" com ?salvo=1: confirma e limpa o endereço.
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    if (url.searchParams.get('salvo') !== '1') return;
+    setSaved('Solicitação registrada com sucesso. Ela já está na coluna Nova.');
+    url.searchParams.delete('salvo');
+    window.history.replaceState(window.history.state, '', url.pathname + url.search);
+  }, []);
 
   const load = useCallback(() => {
     listRequests()
@@ -98,6 +109,7 @@ export default function SolicitacoesPage() {
         />
       )}
 
+      <Toast message={saved} onClose={() => setSaved(null)} />
       {error && <p className="alert" role="alert">{error}</p>}
       {!items && !error && <FieldLoading />}
 

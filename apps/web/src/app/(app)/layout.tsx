@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { BrandSymbol } from '@/components/Brand';
 import { AppNav, useNavCollapsed } from '@/components/nav/AppNav';
+import { ACCOUNT_UPDATED_EVENT } from '@/lib/account';
 import { clearSession, fetchMe, getToken, SessionUser } from '@/lib/api';
 import { SessionContext } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
@@ -27,6 +28,13 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         router.replace('/login');
       });
   }, [router]);
+
+  // Nome ou foto alterados em Configurações aparecem no menu sem recarregar a página.
+  useEffect(() => {
+    const onUpdate = () => fetchMe().then(setUser).catch(() => undefined);
+    window.addEventListener(ACCOUNT_UPDATED_EVENT, onUpdate);
+    return () => window.removeEventListener(ACCOUNT_UPDATED_EVENT, onUpdate);
+  }, []);
 
   function logout() {
     clearSession();

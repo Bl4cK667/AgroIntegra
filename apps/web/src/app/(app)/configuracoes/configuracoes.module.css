@@ -1,0 +1,120 @@
+.grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+
+.stack {
+  display: grid;
+  gap: 20px;
+  min-width: 0;
+}
+
+.profileRow {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.profileMeta {
+  flex: 1;
+  min-width: 200px;
+  display: grid;
+  gap: 4px;
+}
+
+.profileMeta strong {
+  font-size: 1.08rem;
+  color: var(--ink);
+}
+
+.profileMeta span {
+  font-size: 0.88rem;
+  color: var(--muted);
+}
+
+.photoActions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+}
+
+.fileInput {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.form {
+  display: grid;
+  gap: 16px;
+}
+
+.required {
+  color: var(--perigo);
+  margin-left: 3px;
+}
+
+.infoList {
+  display: grid;
+  gap: 14px;
+  margin: 0;
+}
+
+.infoItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--card-border);
+}
+
+.infoItem:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.infoItem dt {
+  font-size: 0.88rem;
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.infoItem dd {
+  margin: 0;
+  font-size: 0.94rem;
+  font-weight: 600;
+  color: var(--ink);
+  word-break: break-word;
+}
+
+.loadingGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  gap: 20px;
+}
+
+.loadingCard {
+  min-height: 220px;
+}
+
+@media (max-width: 860px) {
+  .grid,
+  .loadingGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .photoActions button {
+    min-height: 44px;
+  }
+}

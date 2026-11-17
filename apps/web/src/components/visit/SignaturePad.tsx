@@ -35,10 +35,13 @@ export const SignaturePad = forwardRef<SignaturePadHandle>(function SignaturePad
 
   function point(e: React.PointerEvent<HTMLCanvasElement>) {
     const r = e.currentTarget.getBoundingClientRect();
-    return { x: e.clientX - r.left, y: e.clientY - r.top };
+    const ctx = e.currentTarget.getContext('2d')!;
+    const scale = ctx.getTransform().a;
+    return { x: (e.clientX - r.left) * e.currentTarget.width / scale / r.width, y: (e.clientY - r.top) * e.currentTarget.height / scale / r.height };
   }
 
   function down(e: React.PointerEvent<HTMLCanvasElement>) {
+    if (e.currentTarget.closest('fieldset[disabled]')) return;
     e.currentTarget.setPointerCapture(e.pointerId);
     drawing.current = true;
     const ctx = e.currentTarget.getContext('2d')!;
@@ -51,7 +54,7 @@ export const SignaturePad = forwardRef<SignaturePadHandle>(function SignaturePad
   }
 
   function move(e: React.PointerEvent<HTMLCanvasElement>) {
-    if (!drawing.current) return;
+    if (!drawing.current || e.currentTarget.closest('fieldset[disabled]')) return;
     const ctx = e.currentTarget.getContext('2d')!;
     const { x, y } = point(e);
     ctx.lineTo(x, y);

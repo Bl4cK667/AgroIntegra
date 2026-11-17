@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Coordinates, Property, PropertyLocationInput } from '@/lib/api';
 import { formatCoord, formatPlace, mapUrl, parseCoord } from '@/lib/format';
 import styles from './property.module.css';
@@ -57,6 +57,11 @@ const GEO_ERRORS: Record<number, string> = {
 export function LocationFields({ value, onChange }: { value: LocationDraft; onChange: (v: LocationDraft) => void }) {
   const [busy, setBusy] = useState(false);
   const [geoError, setGeoError] = useState<string | null>(null);
+  const [expanded, setExpanded] = useState(Boolean(value.address || value.city || value.state || value.latitude || value.longitude));
+  const alive = useRef(true);
+  const current = useRef(value);
+  useEffect(() => { current.current = value; }, [value]);
+  useEffect(() => { alive.current = true; return () => { alive.current = false; }; }, []);
   const set = (field: keyof LocationDraft) => (e: { target: { value: string } }) =>
     onChange({ ...value, [field]: e.target.value });
 
@@ -69,14 +74,16 @@ export function LocationFields({ value, onChange }: { value: LocationDraft; onCh
     setGeoError(null);
     navigator.geolocation.getCurrentPosition(
       (pos) => {
+        if (!alive.current) return;
         onChange({
-          ...value,
+          ...current.current,
           latitude: coordText(Number(pos.coords.latitude.toFixed(6))),
           longitude: coordText(Number(pos.coords.longitude.toFixed(6))),
         });
         setBusy(false);
       },
       (err) => {
+        if (!alive.current) return;
         setGeoError(GEO_ERRORS[err.code] ?? 'Não foi possível obter a localização.');
         setBusy(false);
       },
@@ -88,10 +95,9 @@ export function LocationFields({ value, onChange }: { value: LocationDraft; onCh
   const lon = parseCoord(value.longitude);
 
   return (
-    <fieldset className={styles.location}>
-      <legend>
-        Localização <span className="muted">opcional</span>
-      </legend>
+    <details className={styles.optionalLocation} open={expanded} onToggle={event => setExpanded(event.currentTarget.open)}>
+      <summary>Endereço e localização <span className="muted">(opcional)</span></summary>
+    <fieldset className={styles.location} aria-label="Endereço e localização">
       <label className="field">
         <span>Endereço ou acesso</span>
         <input
@@ -141,6 +147,7 @@ export function LocationFields({ value, onChange }: { value: LocationDraft; onCh
       </div>
       {geoError && <span className="field-error">{geoError}</span>}
     </fieldset>
+    </details>
   );
 }
 

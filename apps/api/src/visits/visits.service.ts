@@ -2,6 +2,7 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { AuditService } from '../audit/audit.service';
 import { AuthUser } from '../auth/current-user.decorator';
 import { parseDay, today } from '../common/dates';
+import { NotificationsService } from '../notifications/notifications.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { statusChange } from '../requests/requests.service';
 import { decodeImage } from './image';
@@ -21,6 +22,7 @@ export class VisitsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly audit: AuditService,
+    private readonly notifications: NotificationsService,
   ) {}
 
   async create(dto: CreateVisitDto, user: AuthUser) {
@@ -106,7 +108,26 @@ export class VisitsService {
         entityId: request.id,
         details: { from: request.status, to: 'DONE', byVisit: visit.id },
       });
+      // Quem abriu o pedido fica sabendo que ele foi atendido.
+      if (request.createdById !== user.id) {
+        await this.notifications.notifyUsers([request.createdById], {
+          type: 'REQUEST_DONE',
+          title: 'Pedido atendido com visita',
+          body: `${request.subject} — ${producer.name}. Visita feita por ${user.name}.`,
+          href: `/visitas/${visit.id}`,
+        });
+      }
     }
+    // A coordenação acompanha as visitas registradas pela equipe.
+    await this.notifications.notifyTeam(
+      {
+        type: 'VISIT_CREATED',
+        title: 'Nova visita registrada',
+        body: `${user.name} visitou ${producer.name} (${producer.community}).`,
+        href: `/visitas/${visit.id}`,
+      },
+      { except: user.id, roles: ['COORDINATION'] },
+    );
     return visitView(visit);
   }
 

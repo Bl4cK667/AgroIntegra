@@ -182,6 +182,17 @@ describe('Produtores e propriedades', () => {
       const logs = await prisma.auditLog.count({ where: { action: 'PRODUCER_CONSENT', entityId: id } });
       expect(logs).toBe(1);
     });
+
+    it('recusa apagar nome ou comunidade com null e preserva o cadastro', async () => {
+      const before = await prisma.producer.findUniqueOrThrow({ where: { id } });
+      for (const field of ['name', 'community']) {
+        const res = await api().patch(`/producers/${id}`).set(auth(tech)).send({ [field]: null }).expect(400);
+        expect(res.body.message.join(' ')).toContain('Informe');
+      }
+      const after = await prisma.producer.findUniqueOrThrow({ where: { id } });
+      expect(after.name).toBe(before.name);
+      expect(after.community).toBe(before.community);
+    });
   });
 
   describe('propriedades', () => {
@@ -253,6 +264,19 @@ describe('Produtores e propriedades', () => {
       expect(res.body.areaHa).toBe(14);
       const log = await prisma.auditLog.findFirstOrThrow({ where: { action: 'PROPERTY_UPDATED', entityId: propId } });
       expect(log.details).toMatchObject({ changed: ['areaHa'] });
+    });
+
+    it('recusa apagar campos obrigatórios da propriedade com null', async () => {
+      const { body } = await api().get('/properties').query({ search: 'boa esperanca' }).set(auth(tech));
+      const propertyId = body.items[0].id;
+      const before = await prisma.property.findUniqueOrThrow({ where: { id: propertyId } });
+      for (const field of ['name', 'areaHa', 'locality']) {
+        await api().patch(`/properties/${propertyId}`).set(auth(tech)).send({ [field]: null }).expect(400);
+      }
+      const after = await prisma.property.findUniqueOrThrow({ where: { id: propertyId } });
+      expect(after.name).toBe(before.name);
+      expect(after.areaHa.toString()).toBe(before.areaHa.toString());
+      expect(after.locality).toBe(before.locality);
     });
 
     describe('localização', () => {

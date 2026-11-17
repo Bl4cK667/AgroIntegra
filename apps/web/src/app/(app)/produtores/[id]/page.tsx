@@ -1,6 +1,9 @@
 'use client';
 
 import Link from 'next/link';
+import { FormFeedback } from '@/components/property/FormFeedback';
+import { Toast } from '@/components/feedback/Toast';
+import { checkRequiredFields, clearFieldError, propertyArea, reportFieldError } from '@/components/property/formValidation';
 import { FieldHeading, FieldIcon, FieldLoading, FieldStats, SectionTitle, fieldStyles as ui } from '@/components/property/FieldUI';
 import { useParams } from 'next/navigation';
 import { FormEvent, useCallback, useEffect, useState } from 'react';
@@ -19,7 +22,7 @@ import {
   STATUS_LABEL,
   updateProperty,
 } from '@/lib/api';
-import { formatArea, formatDate, formatDay, parseArea } from '@/lib/format';
+import { formatArea, formatDate, formatDay } from '@/lib/format';
 import styles from './produtor.module.css';
 
 export default function ProdutorPage() {
@@ -32,9 +35,21 @@ export default function ProdutorPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   // Volta do formulário de visita com ?visita=<id>: mostra o aviso uma vez.
   const [savedVisit, setSavedVisit] = useState(false);
+  const [success, setSuccess] = useState<string | null>(null);
 
   useEffect(() => {
     const url = new URL(window.location.href);
+    if (url.searchParams.get('solicitacao') === 'criada') {
+      setSuccess('Solicitação registrada com sucesso.');
+      url.searchParams.delete('solicitacao');
+      window.history.replaceState(null, '', url.pathname + url.search);
+    }
+    const saved = url.searchParams.get('cadastro');
+    if (saved === 'criado' || saved === 'atualizado') {
+      setSuccess(saved === 'criado' ? 'Produtor cadastrado com sucesso. Agora você pode adicionar uma propriedade ou registrar uma visita.' : 'Dados do produtor atualizados com sucesso.');
+      url.searchParams.delete('cadastro');
+      window.history.replaceState(null, '', url.pathname + url.search);
+    }
     if (url.searchParams.has('visita')) {
       setSavedVisit(true);
       url.searchParams.delete('visita');
@@ -54,6 +69,7 @@ export default function ProdutorPage() {
     setConsentSaving(true);
     try {
       await registerConsent(id);
+      setSuccess('Autorização para uso dos dados registrada.');
       load();
     } catch (e) {
       setError(e instanceof ApiError ? e.message : 'Não foi possível registrar o consentimento.');
@@ -87,6 +103,7 @@ export default function ProdutorPage() {
       ]} />
 
       {error && <p className="alert">{error}</p>}
+      <Toast message={success} onClose={() => setSuccess(null)} />
       {savedVisit && (
         <p className="notice" role="status">
           Visita salva. Ela já aparece na lista de visitas abaixo.
@@ -144,6 +161,7 @@ export default function ProdutorPage() {
               producerId={id}
               onDone={() => {
                 setAdding(false);
+                setSuccess('Propriedade cadastrada com sucesso.');
                 load();
               }}
               onCancel={() => setAdding(false)}
@@ -178,6 +196,7 @@ export default function ProdutorPage() {
                             property={p}
                             onDone={() => {
                               setEditingId(null);
+                              setSuccess('Propriedade atualizada com sucesso.');
                               load();
                             }}
                             onCancel={() => setEditingId(null)}
@@ -300,11 +319,12 @@ function PropertyForm({
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
-  async function onSubmit(e: FormEvent) {
+  async function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const areaHa = parseArea(area);
+    if (saving || !checkRequiredFields(e.currentTarget)) return;
+    const areaHa = propertyArea(area);
     if (areaHa === null) {
-      setError('Informe a área em hectares, maior que zero. Exemplo: 12,5');
+      reportFieldError(e.currentTarget, 'area', 'Informe uma área maior que zero, até 99.999.999 hectares, com no máximo duas casas após a vírgula. Exemplo: 12,5.');
       return;
     }
     const place = locationInput(location);
@@ -316,9 +336,9 @@ function PropertyForm({
     setSaving(true);
     try {
       if (property) {
-        await updateProperty(property.id, { name, areaHa, locality, mainActivity: activity, ...place });
+        await updateProperty(property.id, { name: name.trim(), areaHa, locality: locality.trim(), mainActivity: activity.trim(), ...place });
       } else {
-        await addProperty(producerId, { name, areaHa, locality, mainActivity: activity || undefined, ...place });
+        await addProperty(producerId, { name: name.trim(), areaHa, locality: locality.trim(), mainActivity: activity.trim() || undefined, ...place });
       }
       onDone();
     } catch (err) {
@@ -328,22 +348,25 @@ function PropertyForm({
   }
 
   return (
-    <form className={`enter ${styles.propertyForm}`} onSubmit={onSubmit} noValidate>
+    <form className={`enter ${styles.propertyForm}`} onSubmit={onSubmit} onInput={clearFieldError} noValidate>
+          <FormFeedback />
       <SectionTitle icon="land">{property ? 'Editar propriedade' : 'Nova propriedade'}</SectionTitle>
+      <p className="muted">Os campos com * são obrigatórios.</p>
+      <fieldset disabled={saving} className={styles.propertyFields}>
       <div className="form-row">
         <label className="field">
-          <span>Nome da propriedade</span>
-          <input className="input" value={name} onChange={(e) => setName(e.target.value)} maxLength={120} autoFocus />
+          <span>Nome da propriedade *</span>
+          <input className="input" name="name" required data-required-message="Informe o nome da propriedade." placeholder="Ex.: Sítio Boa Vista" value={name} onChange={(e) => setName(e.target.value)} maxLength={120} autoFocus />
         </label>
         <label className="field">
-          <span>Área (hectares)</span>
-          <input className="input num" inputMode="decimal" placeholder="12,5" value={area} onChange={(e) => setArea(e.target.value)} />
+          <span>Área (hectares) *</span>
+          <input className="input num" name="area" required data-required-message="Informe a área da propriedade. Exemplo: 12,5 hectares." inputMode="decimal" placeholder="12,5" value={area} onChange={(e) => setArea(e.target.value)} />
         </label>
       </div>
       <div className="form-row">
         <label className="field">
-          <span>Localidade</span>
-          <input className="input" value={locality} onChange={(e) => setLocality(e.target.value)} maxLength={80} />
+          <span>Localidade *</span>
+          <input className="input" name="locality" required data-required-message="Informe onde fica a propriedade." placeholder="Ex.: Estrada do Lago" value={locality} onChange={(e) => setLocality(e.target.value)} maxLength={80} />
         </label>
         <label className="field">
           <span>Atividade principal</span>
@@ -357,6 +380,7 @@ function PropertyForm({
         </label>
       </div>
       <LocationFields value={location} onChange={setLocation} />
+      </fieldset>
       {error && (
         <p role="alert" className="alert">
           {error}
@@ -366,7 +390,7 @@ function PropertyForm({
         <button type="submit" className="btn btn-primary" disabled={saving}>
           {saving ? 'Salvando…' : 'Salvar propriedade'}
         </button>
-        <button type="button" className="btn btn-secondary" onClick={onCancel}>
+        <button type="button" className="btn btn-secondary" onClick={onCancel} disabled={saving}>
           Cancelar
         </button>
       </div>

@@ -1,5 +1,5 @@
 import { Transform } from 'class-transformer';
-import { IsBoolean, IsNotEmpty, IsOptional, IsString, MaxLength, Validate, ValidatorConstraint, ValidatorConstraintInterface } from 'class-validator';
+import { IsBoolean, IsNotEmpty, IsOptional, IsString, MaxLength, Validate, ValidateIf, ValidatorConstraint, ValidatorConstraintInterface } from 'class-validator';
 import { isValidCpf } from '../common/cpf';
 import { trim } from '../common/search';
 
@@ -15,9 +15,9 @@ class CpfConstraint implements ValidatorConstraintInterface {
 
 export class CreateProducerDto {
   @Transform(trim)
-  @IsString()
+  @IsString({ message: 'Preencha este campo com texto.' })
   @IsNotEmpty({ message: 'Informe o nome do produtor.' })
-  @MaxLength(120)
+  @MaxLength(120, { message: 'Use no máximo 120 caracteres neste campo.' })
   name: string;
 
   @Validate(CpfConstraint)
@@ -25,14 +25,14 @@ export class CreateProducerDto {
 
   @Transform(trim)
   @IsOptional()
-  @IsString()
-  @MaxLength(30)
+  @IsString({ message: 'Preencha este campo com texto.' })
+  @MaxLength(30, { message: 'Use no máximo 30 caracteres neste campo.' })
   phone?: string;
 
   @Transform(trim)
-  @IsString()
+  @IsString({ message: 'Preencha este campo com texto.' })
   @IsNotEmpty({ message: 'Informe a comunidade.' })
-  @MaxLength(80)
+  @MaxLength(80, { message: 'Use no máximo 80 caracteres neste campo.' })
   community: string;
 
   @IsOptional()
@@ -43,22 +43,22 @@ export class CreateProducerDto {
 // O CPF não pode ser alterado depois do cadastro.
 export class UpdateProducerDto {
   @Transform(trim)
-  @IsOptional()
-  @IsString()
+  @ValidateIf((_object, value) => value !== undefined)
+  @IsString({ message: 'Preencha este campo com texto.' })
   @IsNotEmpty({ message: 'Informe o nome do produtor.' })
-  @MaxLength(120)
+  @MaxLength(120, { message: 'Use no máximo 120 caracteres neste campo.' })
   name?: string;
 
   @Transform(trim)
   @IsOptional()
-  @IsString()
-  @MaxLength(30)
+  @IsString({ message: 'Preencha este campo com texto.' })
+  @MaxLength(30, { message: 'Use no máximo 30 caracteres neste campo.' })
   phone?: string;
 
   @Transform(trim)
-  @IsOptional()
-  @IsString()
+  @ValidateIf((_object, value) => value !== undefined)
+  @IsString({ message: 'Preencha este campo com texto.' })
   @IsNotEmpty({ message: 'Informe a comunidade.' })
-  @MaxLength(80)
+  @MaxLength(80, { message: 'Use no máximo 80 caracteres neste campo.' })
   community?: string;
 }

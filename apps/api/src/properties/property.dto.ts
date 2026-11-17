@@ -11,6 +11,7 @@ import {
   Max,
   MaxLength,
   ValidateNested,
+  ValidateIf,
 } from 'class-validator';
 import { trim } from '../common/search';
 
@@ -44,14 +45,14 @@ export class CoordinatesDto {
 class PropertyLocationFields {
   @Transform(blankToNull)
   @IsOptional()
-  @IsString()
-  @MaxLength(160)
+  @IsString({ message: 'Preencha este campo com texto.' })
+  @MaxLength(160, { message: 'Use no máximo 160 caracteres neste campo.' })
   address?: string | null;
 
   @Transform(blankToNull)
   @IsOptional()
-  @IsString()
-  @MaxLength(80)
+  @IsString({ message: 'Preencha este campo com texto.' })
+  @MaxLength(80, { message: 'Use no máximo 80 caracteres neste campo.' })
   city?: string | null;
 
   @Transform(stateCode)
@@ -67,9 +68,9 @@ class PropertyLocationFields {
 
 export class CreatePropertyDto extends PropertyLocationFields {
   @Transform(trim)
-  @IsString()
+  @IsString({ message: 'Preencha este campo com texto.' })
   @IsNotEmpty({ message: 'Informe o nome da propriedade.' })
-  @MaxLength(120)
+  @MaxLength(120, { message: 'Use no máximo 120 caracteres neste campo.' })
   name: string;
 
   @IsNumber({ maxDecimalPlaces: 2 }, { message: AREA_MSG })
@@ -78,42 +79,42 @@ export class CreatePropertyDto extends PropertyLocationFields {
   areaHa: number;
 
   @Transform(trim)
-  @IsString()
+  @IsString({ message: 'Preencha este campo com texto.' })
   @IsNotEmpty({ message: 'Informe a localidade.' })
-  @MaxLength(80)
+  @MaxLength(80, { message: 'Use no máximo 80 caracteres neste campo.' })
   locality: string;
 
   @Transform(trim)
   @IsOptional()
-  @IsString()
-  @MaxLength(80)
+  @IsString({ message: 'Preencha este campo com texto.' })
+  @MaxLength(80, { message: 'Use no máximo 80 caracteres neste campo.' })
   mainActivity?: string;
 }
 
 export class UpdatePropertyDto extends PropertyLocationFields {
   @Transform(trim)
-  @IsOptional()
-  @IsString()
+  @ValidateIf((_object, value) => value !== undefined)
+  @IsString({ message: 'Preencha este campo com texto.' })
   @IsNotEmpty({ message: 'Informe o nome da propriedade.' })
-  @MaxLength(120)
+  @MaxLength(120, { message: 'Use no máximo 120 caracteres neste campo.' })
   name?: string;
 
-  @IsOptional()
+  @ValidateIf((_object, value) => value !== undefined)
   @IsNumber({ maxDecimalPlaces: 2 }, { message: AREA_MSG })
   @IsPositive({ message: AREA_MSG })
   @Max(99999999, { message: AREA_MSG })
   areaHa?: number;
 
   @Transform(trim)
-  @IsOptional()
-  @IsString()
+  @ValidateIf((_object, value) => value !== undefined)
+  @IsString({ message: 'Preencha este campo com texto.' })
   @IsNotEmpty({ message: 'Informe a localidade.' })
-  @MaxLength(80)
+  @MaxLength(80, { message: 'Use no máximo 80 caracteres neste campo.' })
   locality?: string;
 
   @Transform(trim)
   @IsOptional()
-  @IsString()
-  @MaxLength(80)
+  @IsString({ message: 'Preencha este campo com texto.' })
+  @MaxLength(80, { message: 'Use no máximo 80 caracteres neste campo.' })
   mainActivity?: string;
 }

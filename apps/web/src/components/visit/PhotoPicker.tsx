@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import styles from './visit.module.css';
 import { FieldIcon } from '@/components/property/FieldUI';
 
@@ -19,18 +19,26 @@ async function shrink(file: File): Promise<string> {
   return canvas.toDataURL('image/jpeg', 0.82);
 }
 
-export function PhotoPicker({ value, onChange }: { value: string[]; onChange: (photos: string[]) => void }) {
+export function PhotoPicker({ value, onChange, onBusyChange }: { value: string[]; onChange: (photos: string[]) => void; onBusyChange?: (busy: boolean) => void }) {
   const input = useRef<HTMLInputElement>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const processing = useRef(false);
+  const alive = useRef(true);
+  useEffect(() => {
+    alive.current = true;
+    return () => { alive.current = false; };
+  }, []);
 
   async function onFiles(files: FileList | null) {
-    if (!files?.length) return;
+    if (!files?.length || processing.current) return;
     setError(null);
     const room = MAX_PHOTOS - value.length;
     const chosen = Array.from(files).slice(0, room);
     if (files.length > room) setError(`Cabem no máximo ${MAX_PHOTOS} fotos por visita.`);
     setBusy(true);
+    processing.current = true;
+    onBusyChange?.(true);
     try {
       const added: string[] = [];
       for (const f of chosen) {
@@ -40,11 +48,12 @@ export function PhotoPicker({ value, onChange }: { value: string[]; onChange: (p
         }
         added.push(await shrink(f));
       }
-      onChange([...value, ...added]);
+      if (alive.current) onChange([...value, ...added]);
     } catch {
-      setError('Não foi possível ler a imagem. Tente outra foto.');
+      if (alive.current) setError('Não foi possível ler a imagem. Tente outra foto.');
     } finally {
-      setBusy(false);
+      processing.current = false;
+      if (alive.current) { setBusy(false); onBusyChange?.(false); }
       if (input.current) input.current.value = '';
     }
   }
@@ -59,7 +68,7 @@ export function PhotoPicker({ value, onChange }: { value: string[]; onChange: (p
           <figure key={i} className={styles.thumb}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={src} alt={`Foto ${i + 1}`} />
-            <button type="button" className={styles.thumbRemove} onClick={() => onChange(value.filter((_, j) => j !== i))}>
+            <button type="button" className={styles.thumbRemove} disabled={busy} onClick={() => onChange(value.filter((_, j) => j !== i))}>
               Remover
             </button>
           </figure>

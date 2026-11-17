@@ -39,7 +39,8 @@ export class ApiError extends Error {
   }
 }
 
-async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
+// Exportada para os clientes de cada módulo (lib/account.ts, lib/notifications.ts...).
+export async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   const token = getToken();
   let res: Response;
   try {
@@ -52,7 +53,7 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
       },
     });
   } catch {
-    throw new ApiError(0, 'Não foi possível falar com o servidor. Verifique se a API está rodando.');
+    throw new ApiError(0, 'Não foi possível conectar. Confira sua conexão e tente novamente.');
   }
   const body = await res.json().catch(() => ({}));
   if (!res.ok) {
@@ -65,7 +66,7 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
 export async function login(email: string, password: string): Promise<SessionUser> {
   const data = await request<{ accessToken: string; user: SessionUser }>('/auth/login', {
     method: 'POST',
-    body: JSON.stringify({ email, password }),
+    body: JSON.stringify({ email: email.trim().toLowerCase(), password }),
   });
   sessionStorage.setItem(TOKEN_KEY, data.accessToken);
   return data.user;
@@ -366,7 +367,7 @@ export async function fetchProducerReportPdf(producerId: string, from: string, t
       headers: token ? { Authorization: `Bearer ${token}` } : {},
     });
   } catch {
-    throw new ApiError(0, 'Não foi possível falar com o servidor. Verifique se a API está rodando.');
+    throw new ApiError(0, 'Não foi possível conectar. Confira sua conexão e tente novamente.');
   }
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));

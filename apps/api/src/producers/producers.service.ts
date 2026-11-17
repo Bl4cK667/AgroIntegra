@@ -4,6 +4,7 @@ import { AuditService } from '../audit/audit.service';
 import { AuthUser } from '../auth/current-user.decorator';
 import { maskCpf, onlyDigits } from '../common/cpf';
 import { normalizeSearch, searchWords } from '../common/search';
+import { NotificationsService } from '../notifications/notifications.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreatePropertyDto } from '../properties/property.dto';
 import { locationData, propertySearchText, propertyView } from '../properties/property.view';
@@ -28,6 +29,7 @@ export class ProducersService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly audit: AuditService,
+    private readonly notifications: NotificationsService,
   ) {}
 
   async list(search?: string) {
@@ -96,6 +98,15 @@ export class ProducersService {
         entityId: p.id,
         details: { consent: !!dto.consent },
       });
+      await this.notifications.notifyTeam(
+        {
+          type: 'PRODUCER_CREATED',
+          title: 'Novo produtor cadastrado',
+          body: `${p.name}, da comunidade ${p.community}, por ${user.name}.`,
+          href: `/produtores/${p.id}`,
+        },
+        { except: user.id, roles: ['COORDINATION'] },
+      );
       return producerView(p);
     } catch (e) {
       if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2002') {

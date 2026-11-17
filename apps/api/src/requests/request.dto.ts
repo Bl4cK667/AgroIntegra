@@ -6,23 +6,23 @@ import { trim } from '../common/search';
 const DAY = /^\d{4}-\d{2}-\d{2}$/;
 
 export class CreateRequestDto {
-  @IsUUID('4', { message: 'Produtor inválido.' })
+  @IsUUID('4', { message: 'Escolha um produtor da lista.' })
   producerId: string;
 
   @IsOptional()
-  @IsUUID('4', { message: 'Propriedade inválida.' })
+  @IsUUID('4', { message: 'Escolha uma propriedade da lista.' })
   propertyId?: string;
 
   @Transform(trim)
-  @IsString()
+  @IsString({ message: 'Preencha este campo com texto.' })
   @IsNotEmpty({ message: 'Informe o assunto da solicitação.' })
-  @MaxLength(120)
+  @MaxLength(120, { message: 'Use no máximo 120 caracteres neste campo.' })
   subject: string;
 
   @Transform(trim)
   @IsOptional()
-  @IsString()
-  @MaxLength(2000)
+  @IsString({ message: 'Preencha este campo com texto.' })
+  @MaxLength(2000, { message: 'Use no máximo 2000 caracteres neste campo.' })
   description?: string;
 
   @IsEnum(RequestPriority, { message: 'Prioridade inválida.' })
