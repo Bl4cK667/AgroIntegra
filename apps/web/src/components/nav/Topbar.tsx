@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { type CSSProperties, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { BrandSymbol } from '@/components/Brand';
 import { Avatar } from '@/components/account/Avatar';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
@@ -11,6 +11,7 @@ import { useTheme } from '@/lib/theme';
 import { NavIcon } from './NavIcon';
 import { activeHref, MENU } from './menu';
 import s from './topbar.module.css';
+import motion from './nav.module.css';
 
 const normalize = (value: string) => value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
 
@@ -84,30 +85,30 @@ export function Topbar({ user, onLogout }: { user: SessionUser; onLogout: () => 
 
         <nav ref={nav} className={s.nav} aria-label="Principal">
           {pill && <span className={s.pill} style={{ width: pill.width, transform: `translateX(${pill.left}px)` }} aria-hidden="true" />}
-          {MENU.map((item) => (
-            <Link key={item.href} href={item.href} className={s.link} aria-current={current === item.href ? 'page' : undefined} title={item.label}>
+          {MENU.map((item, index) => (
+            <Link key={item.href} href={item.href} className={`${s.link} ${motion.motionLink}`} data-active={current === item.href || undefined} aria-current={current === item.href ? 'page' : undefined} aria-label={item.label} data-tip={item.label} style={{ '--i': index } as CSSProperties}>
               <NavIcon name={item.icon} /><span>{item.label}</span>
             </Link>
           ))}
         </nav>
 
         <div className={s.actions}>
-          <button type="button" className={s.iconButton} onClick={openSearch} aria-label="Pesquisar páginas" aria-keyshortcuts="Control+k Meta+k" title="Pesquisar páginas (Ctrl/⌘ K)">
+          <button type="button" className={`${s.iconButton} ${motion.motionButton}`} onClick={openSearch} aria-label="Pesquisar páginas" aria-keyshortcuts="Control+k Meta+k" title="Pesquisar páginas (Ctrl/⌘ K)">
             <NavIcon name="busca" />
           </button>
           <NotificationBell variant="topbar" />
-          <button type="button" className={`${s.iconButton} ${s.theme}`} onClick={toggle} aria-label={theme === 'dark' ? 'Usar tema claro' : 'Usar tema escuro'} title={theme === 'dark' ? 'Tema claro' : 'Tema escuro'}>
+          <button type="button" className={`${s.iconButton} ${s.theme} ${motion.motionButton}`} onClick={toggle} aria-label={theme === 'dark' ? 'Usar tema claro' : 'Usar tema escuro'} title={theme === 'dark' ? 'Tema claro' : 'Tema escuro'}>
             <NavIcon name={theme === 'dark' ? 'sol' : 'lua'} />
           </button>
           <details ref={profile} className={s.profile}>
             <summary className={s.profileTrigger} aria-label={`${user.name} — opções da conta`}>
-              <Avatar name={user.name} size={34} /><span className={s.chevron} aria-hidden="true">⌄</span>
+              <Avatar name={user.name} size={34} className={s.avatarMotion} /><span className={s.chevron} aria-hidden="true">⌄</span>
             </summary>
             <div className={s.profileMenu}>
               <div className={s.user}><strong>{user.name}</strong><small>{ROLE_LABEL[user.role]}</small></div>
               <Link href="/configuracoes" onClick={() => { if (profile.current) profile.current.open = false; }}>Configurações da conta</Link>
-              <button type="button" className={s.mobileTheme} onClick={toggle}><NavIcon name={theme === 'dark' ? 'sol' : 'lua'} />{theme === 'dark' ? 'Tema claro' : 'Tema escuro'}</button>
-              <button type="button" onClick={onLogout}><NavIcon name="sair" />Sair da conta</button>
+              <button type="button" className={`${s.mobileTheme} ${motion.motionButton}`} onClick={toggle}><NavIcon name={theme === 'dark' ? 'sol' : 'lua'} />{theme === 'dark' ? 'Tema claro' : 'Tema escuro'}</button>
+              <button type="button" className={`${motion.motionLogout} ${motion.motionButton}`} onClick={onLogout}><NavIcon name="sair" />Sair da conta</button>
             </div>
           </details>
         </div>
@@ -116,7 +117,7 @@ export function Topbar({ user, onLogout }: { user: SessionUser; onLogout: () => 
       <dialog ref={search} className={s.search} aria-labelledby="nav-search-title" onClick={(event) => { if (event.target === event.currentTarget) search.current?.close(); }}>
         <div className={s.searchHead}>
           <h2 id="nav-search-title">Ir para uma página</h2>
-          <button type="button" className={s.iconButton} onClick={() => search.current?.close()} aria-label="Fechar pesquisa"><NavIcon name="fechar" /></button>
+          <button type="button" className={`${s.iconButton} ${motion.motionButton}`} onClick={() => search.current?.close()} aria-label="Fechar pesquisa"><NavIcon name="fechar" /></button>
         </div>
         <form onSubmit={(event) => { event.preventDefault(); if (results[0]) { search.current?.close(); router.push(results[0].href); } }}>
           <label className={s.searchField}>
@@ -130,7 +131,7 @@ export function Topbar({ user, onLogout }: { user: SessionUser; onLogout: () => 
           </label>
         </form>
         <nav className={s.results} aria-label="Resultados da pesquisa">
-          {results.map((item) => <Link key={item.href} href={item.href} data-result onClick={() => search.current?.close()}><NavIcon name={item.icon} /><span>{item.label}</span><span className={s.resultArrow} aria-hidden="true">↗</span></Link>)}
+          {results.map((item) => <Link key={item.href} href={item.href} className={motion.motionLink} data-result onClick={() => search.current?.close()}><NavIcon name={item.icon} /><span>{item.label}</span><span className={s.resultArrow} aria-hidden="true">↗</span></Link>)}
           {!results.length && <p role="status">Nenhuma página encontrada.</p>}
         </nav>
         <div className={s.searchFoot}>Enter para abrir a primeira página · Esc para fechar</div>

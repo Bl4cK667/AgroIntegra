@@ -3,6 +3,9 @@ import { IsIn, IsNotEmpty, IsOptional, IsString, MaxLength, MinLength } from 'cl
 export const NAV_STYLES = ['topbar', 'sidebar'] as const;
 export type NavStyle = (typeof NAV_STYLES)[number];
 
+export const THEME_IDS = ['midnight-black', 'forest-dark', 'pure-light', 'sand-earth', 'ocean-blue', 'graphite'] as const;
+export type ThemeId = (typeof THEME_IDS)[number];
+
 export class UpdateAccountDto {
   @IsOptional()
   @IsString({ message: 'Informe um nome válido.' })
@@ -23,6 +26,10 @@ export class UpdateAccountDto {
   @IsOptional()
   @IsIn(NAV_STYLES, { message: 'Escolha um estilo de navegação válido.' })
   navStyle?: NavStyle;
+
+  @IsOptional()
+  @IsIn(THEME_IDS, { message: 'Escolha um tema válido.' })
+  theme?: ThemeId;
 }
 
 export class UpdateAvatarDto {

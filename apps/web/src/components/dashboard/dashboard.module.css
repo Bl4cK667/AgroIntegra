@@ -82,11 +82,11 @@
 .toolBtnPrimary {
   background: var(--chart-1);
   border-color: transparent;
-  color: #0e1611;
+  color: var(--on-accent);
 }
 
 :root:not([data-theme='dark']) .toolBtnPrimary {
-  color: #ffffff;
+  color: var(--on-accent);
 }
 
 .toolBtnPrimary:hover {
@@ -177,7 +177,7 @@
   width: 4px;
   border-radius: var(--radius-pill);
   background: var(--chart-1);
-  box-shadow: 0 0 0 3px rgba(130, 223, 116, 0.25);
+  box-shadow: 0 0 0 3px var(--focus-ring);
   z-index: 20;
   pointer-events: none;
 }
@@ -377,7 +377,7 @@
   inset: 0;
   border-radius: var(--radius-lg);
   border: 2px dashed var(--chart-1);
-  background: rgba(130, 223, 116, 0.08);
+  background: var(--info-bg);
   pointer-events: none;
   z-index: 15;
 }
@@ -387,7 +387,7 @@
   position: fixed;
   inset: 0;
   z-index: 60;
-  background: rgba(10, 14, 12, 0.52);
+  background: var(--overlay);
   backdrop-filter: blur(4px);
   display: flex;
   justify-content: flex-end;
@@ -494,7 +494,7 @@
   border-radius: var(--radius-pill);
   border: 1px solid transparent;
   background: var(--chart-1);
-  color: #0e1611;
+  color: var(--on-accent);
   font-size: 0.82rem;
   font-weight: 700;
   cursor: pointer;
@@ -503,7 +503,7 @@
 }
 
 :root:not([data-theme='dark']) .catalogAdd {
-  color: #ffffff;
+  color: var(--on-accent);
 }
 
 .catalogAdd:hover:not(:disabled) {

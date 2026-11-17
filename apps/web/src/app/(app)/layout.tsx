@@ -9,7 +9,7 @@ import { ACCOUNT_UPDATED_EVENT } from '@/lib/account';
 import { clearSession, fetchMe, getToken, SessionUser } from '@/lib/api';
 import { syncNavStyle, useNavStyle } from '@/lib/navStyle';
 import { SessionContext } from '@/lib/session';
-import { useTheme } from '@/lib/theme';
+import { syncTheme, useTheme } from '@/lib/theme';
 import styles from './shell.module.css';
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
@@ -27,6 +27,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     fetchMe()
       .then((me) => {
         syncNavStyle(me.navStyle); // aplica a preferência do perfil antes de desenhar o menu
+        syncTheme(me.theme); // o tema da conta vale em qualquer dispositivo
         setUser(me);
       })
       .catch(() => {

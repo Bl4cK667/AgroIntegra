@@ -27,6 +27,8 @@ model User {
   avatarUpdatedAt DateTime?
   // Preferência de navegação escolhida em Configurações: "topbar" (padrão) ou "sidebar".
   navStyle        String           @default("topbar")
+  // Tema visual escolhido em Configurações → Aparência (null = nunca escolheu; o app usa "pure-light").
+  theme           String?
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
   auditLogs       AuditLog[]

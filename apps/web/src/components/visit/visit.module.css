@@ -75,7 +75,7 @@
   height: 160px;
   border: 1px solid var(--linha-forte);
   border-radius: var(--radius-md);
-  background: #ffffff;
+  background: var(--signature-paper);
 }
 
 .signature canvas {
@@ -100,7 +100,7 @@
   position: absolute;
   left: 24px;
   bottom: 12px;
-  color: #5b675f;
+  color: var(--signature-muted);
   font-size: 0.85rem;
   pointer-events: none;
 }
@@ -121,7 +121,7 @@
   width: 100%;
   border: 1px solid var(--linha);
   border-radius: var(--radius-md);
-  background: #ffffff;
+  background: var(--signature-paper);
 }
 
 @media (max-width: 640px) {

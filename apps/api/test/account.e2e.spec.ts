@@ -119,6 +119,41 @@ describe('Conta e perfil (e2e)', () => {
     expect(otherMe.body.navStyle).toBe('topbar');
   });
 
+  it('salva o tema na conta: sem escolha começa nulo e a escolha vale em novo login e outro dispositivo', async () => {
+    const token = await tokenFor(app, 'tecnico@agrointegra.demo');
+    const auth = { Authorization: `Bearer ${token}` };
+
+    const me = await request(app.getHttpServer()).get('/auth/me').set(auth).expect(200);
+    expect(me.body.theme).toBeNull();
+
+    const updated = await request(app.getHttpServer()).patch('/account').set(auth).send({ theme: 'ocean-blue' }).expect(200);
+    expect(updated.body.theme).toBe('ocean-blue');
+
+    await request(app.getHttpServer()).patch('/account').set(auth).send({ theme: 'neon-pink' }).expect(400);
+    await request(app.getHttpServer()).patch('/account').set(auth).send({ theme: 'light' }).expect(400);
+
+    // Outro dispositivo = novo login: a preferência vem da conta.
+    const login = await request(app.getHttpServer())
+      .post('/auth/login')
+      .send({ email: 'tecnico@agrointegra.demo', password: DEMO_PASSWORD })
+      .expect(200);
+    expect(login.body.user.theme).toBe('ocean-blue');
+    const again = await request(app.getHttpServer())
+      .get('/auth/me')
+      .set('Authorization', `Bearer ${login.body.accessToken}`)
+      .expect(200);
+    expect(again.body.theme).toBe('ocean-blue');
+
+    // Trocar o tema não mexe na navegação, e vice-versa.
+    expect(again.body.navStyle).toBe('topbar');
+    const nav = await request(app.getHttpServer()).patch('/account').set(auth).send({ navStyle: 'sidebar' }).expect(200);
+    expect(nav.body.theme).toBe('ocean-blue');
+
+    const other = await tokenFor(app, 'coordenacao@agrointegra.demo');
+    const otherMe = await request(app.getHttpServer()).get('/auth/me').set('Authorization', `Bearer ${other}`).expect(200);
+    expect(otherMe.body.theme).toBeNull();
+  });
+
   it('envia, exibe e remove a foto de perfil validando o tipo do arquivo', async () => {
     const token = await tokenFor(app, 'coordenacao@agrointegra.demo');
 

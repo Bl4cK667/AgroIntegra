@@ -1,0 +1,261 @@
+/* Seção "Aparência" (seleção de temas) em Configurações. */
+
+.section {
+  margin-top: 20px;
+}
+
+.lead {
+  margin: -4px 0 18px;
+  color: var(--muted);
+  font-size: 0.92rem;
+  max-width: 64ch;
+}
+
+.options {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.option {
+  all: unset;
+  box-sizing: border-box;
+  display: grid;
+  gap: 12px;
+  padding: 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--card-border);
+  background: var(--card-2);
+  cursor: pointer;
+  transition:
+    border-color var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-med) var(--ease-out),
+    transform var(--dur-med) var(--ease-out);
+}
+
+.option:hover:not(:disabled) {
+  border-color: var(--card-hover);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-card);
+}
+
+.option:focus-visible {
+  outline: 2px solid var(--chart-1);
+  outline-offset: 2px;
+}
+
+.option[data-selected] {
+  border-color: var(--chart-1);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--chart-1) 16%, transparent);
+}
+
+.option:disabled {
+  cursor: progress;
+}
+
+/* ---------- miniatura viva (usa os tokens do próprio [data-palette]) ---------- */
+
+.preview {
+  display: grid;
+  grid-template-rows: 22% 1fr;
+  aspect-ratio: 16 / 10;
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--dash-bg);
+  border: 1px solid var(--card-border);
+  color: var(--ink);
+}
+
+.previewTop {
+  display: flex;
+  align-items: center;
+  gap: 6%;
+  padding: 0 7%;
+  background: var(--superficie, var(--card));
+  border-bottom: 1px solid var(--card-border);
+}
+
+.previewLogo {
+  flex: none;
+  width: 9px;
+  height: 9px;
+  border-radius: 3px;
+  background: var(--chart-1);
+}
+
+.previewNav {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 6%;
+}
+
+.previewNavItem {
+  width: 18%;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--linha-forte, var(--muted));
+  opacity: 0.45;
+}
+
+.previewNavItem[data-on] {
+  background: var(--chart-1);
+  opacity: 1;
+}
+
+.previewAvatar {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--chart-2, var(--chart-1));
+}
+
+.previewBody {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 42% 1fr;
+  gap: 7%;
+  padding: 7%;
+}
+
+.previewCard {
+  display: grid;
+  align-content: center;
+  gap: 4px;
+  padding: 6% 8%;
+  border-radius: 5px;
+  background: var(--card);
+  border: 1px solid var(--card-border);
+}
+
+.previewLine {
+  width: 68%;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--ink);
+  opacity: 0.85;
+}
+
+.previewSubline {
+  width: 44%;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--muted);
+  opacity: 0.65;
+}
+
+.previewChart {
+  grid-column: span 2;
+  display: flex;
+  align-items: flex-end;
+  gap: 6%;
+  padding: 7% 9%;
+  border-radius: 5px;
+  background: var(--card);
+  border: 1px solid var(--card-border);
+}
+
+.previewBar {
+  flex: 1;
+  border-radius: 2px 2px 0 0;
+  background: var(--chart-1);
+}
+
+.previewBar:nth-child(2) {
+  background: var(--chart-2);
+}
+
+.previewBar:nth-child(3) {
+  background: var(--chart-3, var(--chart-1));
+  opacity: 0.85;
+}
+
+.previewBar:nth-child(4) {
+  background: var(--chart-1);
+  opacity: 0.55;
+}
+
+/* ---------- metadados ---------- */
+
+.meta {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 0 2px 2px;
+}
+
+.radio {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  margin-top: 1px;
+  border-radius: 50%;
+  border: 2px solid var(--linha-forte);
+  transition: border-color var(--dur-fast), box-shadow var(--dur-fast);
+}
+
+.option[data-selected] .radio {
+  border-color: var(--chart-1);
+  box-shadow: inset 0 0 0 3px var(--card-2), inset 0 0 0 9px var(--chart-1);
+}
+
+.text {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.text strong {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 7px;
+  color: var(--ink);
+  font-size: 0.94rem;
+}
+
+.text small {
+  color: var(--muted);
+  font-size: 0.82rem;
+  line-height: 1.35;
+}
+
+.badge {
+  padding: 2px 7px;
+  border-radius: var(--radius-pill);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--chart-1);
+  background: color-mix(in srgb, var(--chart-1) 14%, transparent);
+}
+
+.status {
+  margin: 10px 0 0;
+  min-height: 1.2em;
+  font-size: 0.86rem;
+  color: var(--muted);
+}
+
+@media (max-width: 960px) {
+  .options {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  .options {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .option,
+  .radio {
+    transition: none;
+  }
+  .option:hover:not(:disabled) {
+    transform: none;
+  }
+}

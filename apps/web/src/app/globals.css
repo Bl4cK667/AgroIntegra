@@ -1,42 +1,9 @@
+@import "./themes.css";
+
 :root {
-  --mata: #1f3a2c;
-  --mata-2: #2c5440;
-  --mata-3: #3f6b55;
-  --ouro: #b08a2e;
-  --ouro-claro: #d9bd73;
-  --terra: #7a4b2a;
-  --fundo: #f2f3ef;
-  --superficie: #ffffff;
-  --tinta: #18211c;
-  --sutil: #5b675f;
-  --linha: #d8dcd4;
-  --linha-forte: #b9c0b6;
-  --perigo: #9b2f20;
-  --perigo-fundo: #f7e6e2;
-
-  /* Tokens da Dashboard e Design System */
-  --dash-bg: #eaede6;
-  --card: #ffffff;
-  --card-2: #f6f7f3;
-  --card-border: rgba(24, 33, 28, 0.08);
-  --card-hover: rgba(44, 84, 64, 0.22);
-  --ink: #18211c;
-  --muted: #5b675f;
-
-  --chart-1: #2c5440;
-  --chart-2: #b08a2e;
-  --chart-3: #64b86c;
-  --chart-4: #7a4b2a;
-  --chart-grid: rgba(24, 33, 28, 0.08);
-  --chart-fill-top: rgba(44, 84, 64, 0.28);
-  --chart-fill-bottom: rgba(44, 84, 64, 0.01);
-
   --radius-lg: 20px;
   --radius-md: 12px;
   --radius-pill: 9999px;
-
-  --shadow-card: 0 1px 2px rgba(24, 33, 28, 0.04), 0 6px 20px rgba(24, 33, 28, 0.04);
-  --shadow-lift: 0 14px 34px rgba(24, 33, 28, 0.14), 0 4px 12px rgba(24, 33, 28, 0.08);
 
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -46,36 +13,6 @@
   --row-h: 84px;
 
   --fonte: var(--font-archivo), 'Segoe UI', system-ui, sans-serif;
-}
-
-:root[data-theme='dark'] {
-  --fundo: #0d110f;
-  --superficie: #151a17;
-  --tinta: #eef2ee;
-  --sutil: #8f9e95;
-  --linha: rgba(238, 242, 238, 0.09);
-  --linha-forte: rgba(238, 242, 238, 0.18);
-  --perigo: #f27466;
-  --perigo-fundo: rgba(155, 47, 32, 0.22);
-
-  --dash-bg: #121714;
-  --card: #191f1b;
-  --card-2: #212823;
-  --card-border: rgba(255, 255, 255, 0.07);
-  --card-hover: rgba(130, 223, 116, 0.34);
-  --ink: #eef2ee;
-  --muted: #8f9e95;
-
-  --chart-1: #82df74;
-  --chart-2: #d9bd73;
-  --chart-3: #4ea86d;
-  --chart-4: #c68657;
-  --chart-grid: rgba(255, 255, 255, 0.06);
-  --chart-fill-top: rgba(130, 223, 116, 0.28);
-  --chart-fill-bottom: rgba(130, 223, 116, 0.0);
-
-  --shadow-card: 0 2px 6px rgba(0, 0, 0, 0.28), 0 12px 28px rgba(0, 0, 0, 0.22);
-  --shadow-lift: 0 20px 44px rgba(0, 0, 0, 0.55), 0 6px 16px rgba(0, 0, 0, 0.35);
 }
 
 * {
@@ -200,13 +137,13 @@ textarea {
 
 .btn-primary {
   background: var(--chart-1);
-  color: #ffffff;
-  box-shadow: 0 2px 8px rgba(44, 84, 64, 0.22);
+  color: var(--on-accent);
+  box-shadow: 0 2px 8px var(--focus-ring);
 }
 
 :root[data-theme='dark'] .btn-primary {
-  color: #0e1611;
-  box-shadow: 0 2px 12px rgba(130, 223, 116, 0.2);
+  color: var(--on-accent);
+  box-shadow: 0 2px 12px var(--focus-ring);
 }
 
 .btn-primary:hover:not(:disabled) {
@@ -288,11 +225,11 @@ textarea {
 .input:focus {
   outline: none;
   border-color: var(--chart-1);
-  box-shadow: 0 0 0 3px rgba(44, 84, 64, 0.16);
+  box-shadow: 0 0 0 3px var(--focus-ring);
 }
 
 :root[data-theme='dark'] .input:focus {
-  box-shadow: 0 0 0 3px rgba(130, 223, 116, 0.22);
+  box-shadow: 0 0 0 3px var(--focus-ring);
 }
 
 .input[aria-invalid='true'] {
@@ -308,7 +245,7 @@ textarea {
   margin: 0;
   padding: 12px 14px;
   border-radius: var(--radius-md);
-  border: 1px solid rgba(155, 47, 32, 0.25);
+  border: 1px solid color-mix(in srgb, var(--perigo) 35%, transparent);
   border-left: 3px solid var(--perigo);
   background: var(--perigo-fundo);
   color: var(--perigo);
@@ -407,10 +344,10 @@ textarea {
   margin: 0 0 18px;
   padding: 12px 14px;
   border-radius: var(--radius-md);
-  border: 1px solid rgba(44, 84, 64, 0.2);
+  border: 1px solid color-mix(in srgb, var(--success) 30%, transparent);
   border-left: 3px solid var(--chart-1);
-  background: #e6efe8;
-  color: var(--mata);
+  background: var(--success-bg);
+  color: var(--success);
   font-size: 0.9rem;
 }
 
@@ -529,11 +466,11 @@ textarea {
 }
 
 :root[data-theme='dark'] .table tbody tr.clickable:hover td {
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--card-2);
 }
 
 :root[data-theme='dark'] .notice {
-  background: rgba(130, 223, 116, 0.12);
+  background: var(--success-bg);
   border-left-color: var(--chart-1);
   color: var(--ink);
 }
@@ -655,45 +592,45 @@ textarea {
 }
 
 .badge-success {
-  background: rgba(44, 84, 64, 0.12);
-  color: var(--mata);
-  border-color: rgba(44, 84, 64, 0.2);
+  background: var(--success-bg);
+  color: var(--success);
+  border-color: color-mix(in srgb, var(--success) 30%, transparent);
 }
 
 :root[data-theme='dark'] .badge-success {
-  background: rgba(130, 223, 116, 0.14);
-  color: #9be88f;
-  border-color: rgba(130, 223, 116, 0.28);
+  background: var(--success-bg);
+  color: var(--success);
+  border-color: color-mix(in srgb, var(--success) 30%, transparent);
 }
 
 .badge-warning {
-  background: rgba(176, 138, 46, 0.14);
-  color: #7d5d12;
-  border-color: rgba(176, 138, 46, 0.25);
+  background: var(--warning-bg);
+  color: var(--warning);
+  border-color: color-mix(in srgb, var(--warning) 30%, transparent);
 }
 
 :root[data-theme='dark'] .badge-warning {
-  background: rgba(217, 189, 115, 0.15);
-  color: var(--ouro-claro);
-  border-color: rgba(217, 189, 115, 0.28);
+  background: var(--warning-bg);
+  color: var(--warning);
+  border-color: color-mix(in srgb, var(--warning) 30%, transparent);
 }
 
 .badge-danger {
   background: var(--perigo-fundo);
   color: var(--perigo);
-  border-color: rgba(155, 47, 32, 0.25);
+  border-color: color-mix(in srgb, var(--perigo) 35%, transparent);
 }
 
 .badge-info {
-  background: rgba(63, 107, 85, 0.12);
+  background: var(--info-bg);
   color: var(--mata-2);
-  border-color: rgba(63, 107, 85, 0.22);
+  border-color: var(--focus-ring);
 }
 
 :root[data-theme='dark'] .badge-info {
-  background: rgba(78, 168, 109, 0.16);
-  color: #8ad6a3;
-  border-color: rgba(78, 168, 109, 0.3);
+  background: var(--info-bg);
+  color: var(--chart-1);
+  border-color: var(--focus-ring);
 }
 
 .badge-neutral {

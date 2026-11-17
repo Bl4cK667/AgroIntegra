@@ -48,9 +48,9 @@
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  background: rgba(255, 255, 255, 0.06);
-  color: #fff;
+  border: 1px solid var(--nav-line);
+  background: var(--nav-hover);
+  color: var(--nav-ink-strong);
 }
 
 .badge {
@@ -63,17 +63,17 @@
   display: grid;
   place-items: center;
   border-radius: 99px;
-  background: #e5533d;
-  color: #fff;
+  background: var(--notification-bg);
+  color: var(--notification-ink);
   font-size: 0.68rem;
   font-weight: 800;
   line-height: 1;
-  box-shadow: 0 0 0 2px var(--mata, #1f3a2c);
+  box-shadow: 0 0 0 2px var(--nav-bg);
   animation: badgePop 460ms var(--ease-spring, cubic-bezier(0.34, 1.56, 0.64, 1));
 }
 
 :root[data-theme='dark'] .badge {
-  box-shadow: 0 0 0 2px #0e1310;
+  box-shadow: 0 0 0 2px var(--nav-bg);
 }
 
 .bellTopbar {
@@ -91,6 +91,7 @@
 }
 
 .bellTopbar .badge {
+  box-shadow: 0 0 0 2px var(--superficie);
   top: 2px;
   right: 2px;
 }
@@ -106,7 +107,7 @@
   position: fixed;
   inset: 0;
   z-index: 80;
-  background: rgba(8, 14, 10, 0.32);
+  background: var(--overlay);
   backdrop-filter: blur(2px);
   animation: fadeIn 220ms var(--ease-out, ease);
 }
@@ -266,7 +267,7 @@
   color: var(--tone);
 }
 
-.item[data-type='REQUEST_URGENT'] .icon { --tone: #d0533e; }
+.item[data-type='REQUEST_URGENT'] .icon { --tone: var(--perigo); }
 .item[data-type='REQUEST_SCHEDULED'] .icon { --tone: var(--chart-2); }
 .item[data-type='VISIT_CREATED'] .icon { --tone: var(--chart-3); }
 .item[data-type='PRODUCER_CREATED'] .icon { --tone: var(--chart-4); }

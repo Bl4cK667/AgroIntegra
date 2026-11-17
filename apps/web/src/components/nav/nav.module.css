@@ -1,13 +1,6 @@
 /* Navegação do AgroIntegra: barra lateral no desktop, barra superior + abas inferiores no celular. */
 
 .sidebar {
-  --nav-ink: #c6d4cb;
-  --nav-ink-strong: #ffffff;
-  --nav-hover: rgba(255, 255, 255, 0.08);
-  --nav-line: rgba(255, 255, 255, 0.1);
-  --nav-accent: #82df74;
-  --nav-accent-ink: #0d1d13;
-
   position: sticky;
   top: 0;
   height: 100vh;
@@ -15,10 +8,7 @@
   flex-direction: column;
   gap: 8px;
   padding: 18px 14px 16px;
-  background:
-    radial-gradient(115% 55% at 0% 0%, rgba(130, 223, 116, 0.12), transparent 62%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.03) 0%, transparent 28%, rgba(0, 0, 0, 0.14) 100%),
-    var(--mata);
+  background: var(--nav-bg);
   color: var(--nav-ink);
   border-right: 1px solid var(--nav-line);
   box-shadow: 4px 0 24px rgba(15, 32, 21, 0.08);
@@ -26,13 +16,6 @@
   transition: background-color var(--dur-med, 300ms) var(--ease-out, ease);
 }
 
-:root[data-theme='dark'] .sidebar {
-  background:
-    radial-gradient(115% 55% at 0% 0%, rgba(130, 223, 116, 0.07), transparent 62%),
-    #0d130f;
-  border-right-color: var(--card-border);
-  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.32);
-}
 
 .sidebar :focus-visible {
   outline: 2px solid var(--nav-accent);
@@ -100,7 +83,7 @@
 
 .collapse:hover {
   background: var(--nav-hover);
-  border-color: rgba(255, 255, 255, 0.1);
+  border-color: var(--nav-line);
   color: var(--nav-ink-strong);
 }
 
@@ -122,10 +105,10 @@
   left: 0;
   right: 0;
   border-radius: 11px;
-  background: linear-gradient(135deg, #8ee880 0%, #72d664 100%);
+  background: var(--nav-active-bg);
   box-shadow:
-    0 6px 16px rgba(130, 223, 116, 0.24),
-    inset 0 1px 0 rgba(255, 255, 255, 0.45);
+    var(--nav-active-shadow),
+    inset 0 1px 0 color-mix(in srgb, var(--nav-accent) 65%, white);
   transition:
     transform 400ms cubic-bezier(0.34, 1.36, 0.5, 1),
     height 280ms var(--ease-out, ease);
@@ -240,7 +223,7 @@
 }
 
 .userText small {
-  color: var(--ouro-claro, #d9bd73);
+  color: var(--nav-ink);
   font-size: 0.78rem;
 }
 
@@ -263,9 +246,9 @@
 }
 
 .logout:hover {
-  background: rgba(214, 96, 77, 0.16);
-  border-color: rgba(255, 180, 166, 0.22);
-  color: #ffb4a6;
+  background: var(--perigo-fundo);
+  border-color: var(--perigo);
+  color: var(--perigo);
 }
 
 /* ---------- recolhido ---------- */
@@ -315,9 +298,9 @@
   transform: translateY(0);
   padding: 6px 11px;
   border-radius: 9px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: #0c120e;
-  color: #fff;
+  border: 1px solid var(--nav-line);
+  background: var(--ink);
+  color: var(--card);
   font-size: 0.78rem;
   font-weight: 600;
   white-space: nowrap;
@@ -342,17 +325,18 @@
   transition: transform 320ms var(--ease-spring, cubic-bezier(0.34, 1.56, 0.64, 1));
 }
 
+/* Aliases motion* compartilham só movimento com a Topbar, sem estilos de layout. */
 /* pressionar */
-.link:active .icon,
+:is(.link, .motionLink):active .icon,
 .tab:active .icon,
-.logout:active .icon,
-.roundBtn:active .icon,
+:is(.logout, .motionLogout):active .icon,
+:is(.roundBtn, .motionButton):active .icon,
 .sheetItem:active .icon {
   transform: scale(0.84);
 }
 
 /* selecionar: o ícone "salta" quando a página fica ativa */
-.link[data-active] .icon,
+:is(.link, .motionLink)[data-active] .icon,
 .tab[data-active] .icon {
   animation: iconPop 520ms var(--ease-spring, ease);
 }
@@ -364,51 +348,51 @@
   transform-origin: bottom;
 }
 
-.link:hover .i_painel .p1,
+:is(.link:hover, .motionLink:is(:hover, :focus-visible)) .i_painel .p1,
 .tab:hover .i_painel .p1 { animation: bar 560ms var(--ease-out, ease); }
-.link:hover .i_painel .p2,
+:is(.link:hover, .motionLink:is(:hover, :focus-visible)) .i_painel .p2,
 .tab:hover .i_painel .p2 { animation: bar 560ms 70ms var(--ease-out, ease); }
-.link:hover .i_painel .p3,
+:is(.link:hover, .motionLink:is(:hover, :focus-visible)) .i_painel .p3,
 .tab:hover .i_painel .p3 { animation: bar 560ms 140ms var(--ease-out, ease); }
 
 /* Produtores: as pessoas se aproximam */
-.link:hover .i_produtores .p1,
+:is(.link:hover, .motionLink:is(:hover, :focus-visible)) .i_produtores .p1,
 .tab:hover .i_produtores .p1 { transform: translateY(-1.5px); }
-.link:hover .i_produtores .p2,
+:is(.link:hover, .motionLink:is(:hover, :focus-visible)) .i_produtores .p2,
 .tab:hover .i_produtores .p2 { transform: translateX(1.5px); }
 
 /* Propriedades: telhado levanta, porta abre */
-.link:hover .i_propriedades .p1,
+:is(.link:hover, .motionLink:is(:hover, :focus-visible)) .i_propriedades .p1,
 .sheetItem:hover .i_propriedades .p1 { transform: translateY(-2px); }
 .i_propriedades .p2 { transform-origin: left; }
-.link:hover .i_propriedades .p2,
+:is(.link:hover, .motionLink:is(:hover, :focus-visible)) .i_propriedades .p2,
 .sheetItem:hover .i_propriedades .p2 { transform: scaleX(0.55); }
 
 /* Solicitações: a seta cai na caixa */
-.link:hover .i_solicitacoes .p1,
+:is(.link:hover, .motionLink:is(:hover, :focus-visible)) .i_solicitacoes .p1,
 .tab:hover .i_solicitacoes .p1 { animation: drop 620ms var(--ease-out, ease); }
 
 /* Visitas: o pino quica sobre o chão */
 .i_visitas .p2 { transform-origin: center; }
-.link:hover .i_visitas .p1,
+:is(.link:hover, .motionLink:is(:hover, :focus-visible)) .i_visitas .p1,
 .tab:hover .i_visitas .p1 { animation: hop 620ms var(--ease-out, ease); }
-.link:hover .i_visitas .p2,
+:is(.link:hover, .motionLink:is(:hover, :focus-visible)) .i_visitas .p2,
 .tab:hover .i_visitas .p2 { animation: squash 620ms var(--ease-out, ease); }
 
 /* Programas: as folhas balançam */
 .i_programas .p1 { transform-origin: right bottom; }
 .i_programas .p2 { transform-origin: left bottom; }
-.link:hover .i_programas .p1,
+:is(.link:hover, .motionLink:is(:hover, :focus-visible)) .i_programas .p1,
 .sheetItem:hover .i_programas .p1 { transform: rotate(-14deg); }
-.link:hover .i_programas .p2,
+:is(.link:hover, .motionLink:is(:hover, :focus-visible)) .i_programas .p2,
 .sheetItem:hover .i_programas .p2 { transform: rotate(12deg); }
 
 /* Relatórios: as linhas se escrevem */
 .i_relatorios .p1,
 .i_relatorios .p2 { stroke-dasharray: 1; stroke-dashoffset: 0; }
-.link:hover .i_relatorios .p1,
+:is(.link:hover, .motionLink:is(:hover, :focus-visible)) .i_relatorios .p1,
 .sheetItem:hover .i_relatorios .p1 { animation: write 520ms var(--ease-out, ease); }
-.link:hover .i_relatorios .p2,
+:is(.link:hover, .motionLink:is(:hover, :focus-visible)) .i_relatorios .p2,
 .sheetItem:hover .i_relatorios .p2 { animation: write 520ms 120ms var(--ease-out, ease) backwards; }
 
 /* Mais: os pontos fazem uma onda */
@@ -417,14 +401,14 @@
 .tab:hover .i_mais .p3 { animation: hop 520ms 160ms var(--ease-out, ease); }
 
 /* Sair, tema e recolher */
-.logout:hover .i_sair .p1,
+:is(.logout:hover, .motionLogout:is(:hover, :focus-visible)) .i_sair .p1,
 .sheetLogout:hover .i_sair .p1 { transform: translateX(-2.5px); }
 .i_sol .p1,
 .i_lua .p1 { transform-origin: center; }
-.link:hover .i_sol .p1,
-.roundBtn:hover .i_sol .p1 { transform: rotate(60deg); }
-.link:hover .i_lua .p1,
-.roundBtn:hover .i_lua .p1 { transform: rotate(-20deg) scale(1.06); }
+:is(.link:hover, .motionLink:is(:hover, :focus-visible)) .i_sol .p1,
+:is(.roundBtn:hover, .motionButton:is(:hover, :focus-visible)) .i_sol .p1 { transform: rotate(60deg); }
+:is(.link:hover, .motionLink:is(:hover, :focus-visible)) .i_lua .p1,
+:is(.roundBtn:hover, .motionButton:is(:hover, :focus-visible)) .i_lua .p1 { transform: rotate(-20deg) scale(1.06); }
 .collapse:hover .i_recolher .p1 { transform: translateX(-2px); }
 
 /* ---------- celular ---------- */
@@ -440,7 +424,6 @@
   }
 
   .mobileTop {
-    --nav-ink-strong: #fff;
     position: sticky;
     top: 0;
     z-index: 40;
@@ -449,16 +432,13 @@
     gap: 10px;
     padding: 10px 16px;
     padding-top: max(10px, env(safe-area-inset-top));
-    background: color-mix(in srgb, var(--mata) 92%, transparent);
+    background: var(--nav-bg);
     backdrop-filter: saturate(1.4) blur(14px);
     -webkit-backdrop-filter: saturate(1.4) blur(14px);
-    color: #fff;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    color: var(--nav-ink-strong);
+    border-bottom: 1px solid var(--nav-line);
   }
 
-  :root[data-theme='dark'] .mobileTop {
-    background: color-mix(in srgb, #0e1310 88%, transparent);
-  }
 
   .mobileTop .brand {
     margin-right: auto;
@@ -470,9 +450,9 @@
     width: 44px;
     height: 44px;
     border-radius: 50%;
-    border: 1px solid rgba(255, 255, 255, 0.14);
-    background: rgba(255, 255, 255, 0.06);
-    color: #fff;
+    border: 1px solid var(--nav-line);
+    background: var(--nav-hover);
+    color: var(--nav-ink-strong);
     cursor: pointer;
   }
 
@@ -487,17 +467,14 @@
     gap: 2px;
     padding: 6px;
     border-radius: 22px;
-    background: color-mix(in srgb, var(--mata) 94%, transparent);
+    background: var(--nav-bg);
     backdrop-filter: saturate(1.4) blur(16px);
     -webkit-backdrop-filter: saturate(1.4) blur(16px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--nav-line);
     box-shadow: 0 14px 34px rgba(10, 20, 14, 0.32);
     animation: tabbarIn 520ms var(--ease-spring, ease) both;
   }
 
-  :root[data-theme='dark'] .tabbar {
-    background: color-mix(in srgb, #121815 92%, transparent);
-  }
 
   .tab {
     display: grid;
@@ -509,7 +486,7 @@
     border: 0;
     border-radius: 16px;
     background: transparent;
-    color: #b8c7bd;
+    color: var(--nav-ink);
     font: inherit;
     font-size: 0.68rem;
     font-weight: 600;
@@ -528,15 +505,15 @@
   }
 
   .tab[data-active] {
-    background: #82df74;
-    color: #0f2015;
+    background: var(--nav-accent);
+    color: var(--nav-accent-ink);
   }
 
   .backdrop {
     position: fixed;
     inset: 0;
     z-index: 50;
-    background: rgba(8, 14, 10, 0.45);
+    background: var(--overlay);
     backdrop-filter: blur(3px);
     animation: fade 220ms var(--ease-out, ease);
   }
@@ -690,6 +667,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  :is(.motionLink, .motionButton, .motionLogout) .icon,
+  :is(.motionLink, .motionButton, .motionLogout) .icon *,
   .sidebar *,
   .sidebar *::after,
   .mobileTop *,
@@ -741,7 +720,7 @@
 .profile:hover,
 .profile[data-active] {
   background: var(--nav-hover);
-  border-color: rgba(255, 255, 255, 0.08);
+  border-color: var(--nav-line);
 }
 
 .profile .avatar {
@@ -783,7 +762,7 @@
 
 .avatarRing {
   flex: none;
-  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.14);
+  box-shadow: 0 0 0 2px var(--nav-line);
   transition: transform var(--dur-med, 300ms) var(--ease-spring, ease), box-shadow var(--dur-med, 300ms);
 }
 

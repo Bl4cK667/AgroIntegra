@@ -12,6 +12,7 @@ export interface AccountProfile {
   avatarUpdatedAt: string | null;
   hasAvatar: boolean;
   navStyle: NavStyle;
+  theme: string | null;
   createdAt: string;
 }
 
@@ -24,6 +25,7 @@ export function updateAccount(input: {
   phone?: string;
   jobTitle?: string;
   navStyle?: NavStyle;
+  theme?: string;
 }): Promise<AccountProfile> {
   return request<AccountProfile>('/account', {
     method: 'PATCH',

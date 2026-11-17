@@ -3,6 +3,7 @@
 import { ChangeEvent, CSSProperties, FormEvent, useEffect, useRef, useState } from 'react';
 import { Avatar } from '@/components/account/Avatar';
 import { NavStylePicker } from '@/components/account/NavStylePicker';
+import { ThemePicker } from '@/components/account/ThemePicker';
 import { Toast } from '@/components/feedback/Toast';
 import {
   AccountProfile,
@@ -481,8 +482,10 @@ export default function ConfiguracoesPage() {
           </div>
         </div>
       )}
-      {/* Seção 5: Personalização da interface (escolha da navegação) */}
-      {account && <NavStylePicker index={5} />}
+      {/* Seção 5: Aparência (escolha do tema visual) */}
+      {account && <ThemePicker index={5} />}
+      {/* Seção 6: Personalização da interface (escolha da navegação) */}
+      {account && <NavStylePicker index={6} />}
       <Toast message={toast} onClose={() => setToast(null)} />
     </>
   );

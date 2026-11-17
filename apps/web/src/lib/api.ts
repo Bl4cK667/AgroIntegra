@@ -11,6 +11,8 @@ export interface SessionUser {
   role: Role;
   /** estilo de navegação salvo no perfil (padrão: topbar) */
   navStyle?: NavStyle;
+  /** tema salvo na conta (Configurações → Aparência); null = nunca escolheu */
+  theme?: string | null;
 }
 
 export const ROLE_LABEL: Record<Role, string> = {

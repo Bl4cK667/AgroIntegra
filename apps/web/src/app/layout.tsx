@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Archivo } from 'next/font/google';
+import { THEME_BOOT_SCRIPT } from '@/lib/themes';
 import './globals.css';
 
 const archivo = Archivo({
@@ -16,7 +17,12 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="pt-BR" className={archivo.variable}>
+    // O script aplica o tema deste dispositivo antes da primeira pintura; por isso o <html>
+    // pode diferir do HTML do servidor (data-palette/data-theme) e suprimimos o aviso.
+    <html lang="pt-BR" className={archivo.variable} data-palette="pure-light" data-theme="light" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_BOOT_SCRIPT }} />
+      </head>
       <body>{children}</body>
     </html>
   );

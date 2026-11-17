@@ -14,6 +14,7 @@ const ACCOUNT_SELECT = {
   jobTitle: true,
   avatarUpdatedAt: true,
   navStyle: true,
+  theme: true,
   createdAt: true,
 } as const;
 
@@ -26,6 +27,7 @@ type SelectedAccount = {
   jobTitle: string | null;
   avatarUpdatedAt: Date | null;
   navStyle: string;
+  theme: string | null;
   createdAt: Date;
 };
 
@@ -53,7 +55,7 @@ export class AccountService {
   }
 
   async update(userId: string, dto: UpdateAccountDto) {
-    const data: { name?: string; phone?: string | null; jobTitle?: string | null; navStyle?: string } = {};
+    const data: { name?: string; phone?: string | null; jobTitle?: string | null; navStyle?: string; theme?: string } = {};
 
     if (dto.name !== undefined) {
       const trimmed = dto.name.trim();
@@ -72,6 +74,7 @@ export class AccountService {
     }
 
     if (dto.navStyle !== undefined) data.navStyle = dto.navStyle;
+    if (dto.theme !== undefined) data.theme = dto.theme;
 
     const updated = await this.prisma.user.update({
       where: { id: userId },
