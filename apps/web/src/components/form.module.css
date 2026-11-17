@@ -25,12 +25,23 @@
 }
 
 .group legend {
-  padding: 0 8px;
-  margin-left: -8px;
+  float: left;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 0 12px;
+  margin: 0 0 2px;
+  border-bottom: 1px solid var(--card-border);
   font-weight: 650;
   font-stretch: 88%;
   font-size: 1rem;
   color: var(--ink);
+}
+
+.group legend svg {
+  flex: none;
+  color: var(--chart-1);
 }
 
 .group:disabled {
