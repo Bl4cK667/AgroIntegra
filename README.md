@@ -10,6 +10,7 @@ Requisitos: Node.js 22 ou mais novo. Docker é opcional.
 npm install
 cp apps/api/.env.example apps/api/.env
 npm run setup        # sobe o banco, aplica as migrações e cria os usuários da demo
+npm run demo:reset   # carrega os dados fictícios da demonstração (apaga os atendimentos atuais)
 npm run dev:api      # API em http://localhost:3001
 npm run dev:web      # painel em http://localhost:3000 (outro terminal)
 ```
@@ -18,6 +19,13 @@ Usuários da demo (fictícios), senha `demo1234`:
 
 - `coordenacao@agrointegra.demo`: perfil Coordenação
 - `tecnico@agrointegra.demo`: perfil Técnico
+
+## Demonstração
+
+- Roteiro de 15 minutos: `docs/roteiro_demo.md`.
+- Gravação de backup do ensaio: `docs/demo/ensaio-demo.mp4`.
+- `npm run demo:reset` recria os dados fictícios com datas relativas a hoje: 140 produtores em 7 comunidades inventadas, visitas desde janeiro, solicitações em todas as colunas e 4 programas. Rode no dia da apresentação e depois de cada ensaio.
+- Usuários extras (técnicos): `tecnico2@agrointegra.demo` e `tecnico3@agrointegra.demo`, mesma senha.
 
 ## Banco de dados
 

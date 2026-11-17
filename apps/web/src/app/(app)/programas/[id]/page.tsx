@@ -156,7 +156,7 @@ export default function ProgramaPage() {
                         <Link href={`/produtores/${d.producer.id}`}>{d.producer.name}</Link>
                       </td>
                       <td className="right num">
-                        {formatInt(d.quantity)} {p.unit}
+                        {formatInt(d.quantity)} {d.quantity === 1 ? p.unitSingular : p.unit}
                       </td>
                       <td className="right num">{formatMoney(d.valueCents)}</td>
                     </tr>

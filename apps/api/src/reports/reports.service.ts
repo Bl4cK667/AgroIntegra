@@ -65,7 +65,7 @@ export class ReportsService {
       this.prisma.delivery.findMany({
         where: { producerId, deliveredOn: { gte: b.fromDay, lte: b.toDay } },
         orderBy: { deliveredOn: 'asc' },
-        include: { program: { select: { name: true, unit: true } } },
+        include: { program: { select: { name: true, unit: true, unitSingular: true } } },
       }),
       this.prisma.enrollment.findMany({
         where: { producerId },
@@ -123,7 +123,7 @@ export class ReportsService {
         program: d.program.name,
         deliveredOn: toDay(d.deliveredOn)!,
         quantity: d.quantity,
-        unit: d.program.unit,
+        unit: d.quantity === 1 && d.program.unitSingular ? d.program.unitSingular : d.program.unit,
         valueCents: d.valueCents,
         note: d.note,
       })),

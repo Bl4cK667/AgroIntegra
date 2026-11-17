@@ -24,6 +24,7 @@ function programView(p: Program, c: Counts) {
     startsOn: toDay(p.startsOn),
     endsOn: toDay(p.endsOn),
     unit: p.unit,
+    unitSingular: p.unitSingular || p.unit,
     slots: p.slots,
     enrolled: c.enrolled,
     approved: c.approved,

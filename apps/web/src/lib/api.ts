@@ -278,6 +278,7 @@ export interface ProgramSummary {
   startsOn: string;
   endsOn: string;
   unit: string;
+  unitSingular: string;
   slots: number;
   enrolled: number;
   approved: number;

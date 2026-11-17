@@ -179,7 +179,9 @@ model Program {
   slots        Int
   // Meta física: quantas unidades do item serão entregues (ex.: 120 kits).
   goalQuantity Int
+  // Unidade no plural (ex.: "kits") e no singular (ex.: "kit"), para escrever "1 kit".
   unit         String
+  unitSingular String       @default("")
   // Orçamento em centavos, para não perder precisão.
   budgetCents  Int
   startsOn     DateTime     @db.Date
