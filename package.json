@@ -9,12 +9,14 @@
     "db:up": "node scripts/db.mjs up",
     "db:down": "node scripts/db.mjs down",
     "setup": "npm run db:up && npm run -w apps/api db:migrate && npm run -w apps/api db:seed",
-    "dev:api": "npm run -w apps/api start:dev",
+    "dev": "concurrently --kill-others --names api,web --prefix-colors green,yellow \"npm:dev:api\" \"npm:dev:web\"",
+    "dev:api":"npm run -w apps/api start:dev",
     "dev:web": "npm run -w apps/web dev",
     "test": "npm run -w apps/api test",
     "demo:reset": "npm run -w apps/api demo:reset"
   },
   "devDependencies": {
+    "concurrently": "^9.2.5",
     "embedded-postgres": "^18.6.0-beta.19",
     "pg": "^8.23.1"
   },

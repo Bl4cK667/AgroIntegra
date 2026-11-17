@@ -6,7 +6,7 @@ import { maskCpf, onlyDigits } from '../common/cpf';
 import { normalizeSearch, searchWords } from '../common/search';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreatePropertyDto } from '../properties/property.dto';
-import { propertySearchText, propertyView } from '../properties/property.view';
+import { locationData, propertySearchText, propertyView } from '../properties/property.view';
 import { visitRow, visitRowInclude } from '../visits/visit.view';
 import { CreateProducerDto, UpdateProducerDto } from './producer.dto';
 
@@ -143,8 +143,9 @@ export class ProducersService {
         name: dto.name,
         areaHa: new Prisma.Decimal(dto.areaHa),
         locality: dto.locality,
-        searchText: propertySearchText(dto.name, dto.locality),
+        searchText: propertySearchText(dto.name, dto.locality, dto.city),
         mainActivity: dto.mainActivity || null,
+        ...locationData(dto),
         createdById: user.id,
       },
     });

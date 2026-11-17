@@ -3,9 +3,21 @@
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { FormEvent, useCallback, useEffect, useState } from 'react';
+import { LocationDraft, locationDraft, LocationFields, locationInput, LocationSummary } from '@/components/property/LocationFields';
 import { PriorityTag } from '@/components/request/PriorityTag';
 import { VisitTable } from '@/components/visit/VisitTable';
-import { addProperty, ApiError, getProducer, listRequests, ProducerDetail, registerConsent, ServiceRequest, STATUS_LABEL } from '@/lib/api';
+import {
+  addProperty,
+  ApiError,
+  getProducer,
+  listRequests,
+  ProducerDetail,
+  Property,
+  registerConsent,
+  ServiceRequest,
+  STATUS_LABEL,
+  updateProperty,
+} from '@/lib/api';
 import { formatArea, formatDate, formatDay, parseArea } from '@/lib/format';
 import styles from './produtor.module.css';
 
@@ -16,6 +28,7 @@ export default function ProdutorPage() {
   const [error, setError] = useState<string | null>(null);
   const [consentSaving, setConsentSaving] = useState(false);
   const [adding, setAdding] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   // Volta do formulário de visita com ?visita=<id>: mostra o aviso uma vez.
   const [savedVisit, setSavedVisit] = useState(false);
 
@@ -125,7 +138,7 @@ export default function ProdutorPage() {
           <div className={styles.sectionHead}>
             <h2>Propriedades</h2>
             {!adding && (
-              <button type="button" className="btn btn-secondary" onClick={() => setAdding(true)}>
+              <button type="button" className="btn btn-secondary" onClick={() => (setAdding(true), setEditingId(null))}>
                 Adicionar propriedade
               </button>
             )}
@@ -154,19 +167,45 @@ export default function ProdutorPage() {
                   <tr>
                     <th>Propriedade</th>
                     <th>Localidade</th>
+                    <th>Localização</th>
                     <th>Atividade principal</th>
                     <th className="right">Área</th>
+                    <th className="right">Ação</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {producer.properties.map((p) => (
-                    <tr key={p.id}>
-                      <td>{p.name}</td>
-                      <td>{p.locality}</td>
-                      <td>{p.mainActivity || <span className="muted">Não informada</span>}</td>
-                      <td className="right area">{formatArea(p.areaHa)}</td>
-                    </tr>
-                  ))}
+                  {producer.properties.map((p) =>
+                    editingId === p.id ? (
+                      <tr key={p.id}>
+                        <td colSpan={6}>
+                          <PropertyForm
+                            producerId={id}
+                            property={p}
+                            onDone={() => {
+                              setEditingId(null);
+                              load();
+                            }}
+                            onCancel={() => setEditingId(null)}
+                          />
+                        </td>
+                      </tr>
+                    ) : (
+                      <tr key={p.id}>
+                        <td>{p.name}</td>
+                        <td>{p.locality}</td>
+                        <td>
+                          <LocationSummary property={p} />
+                        </td>
+                        <td>{p.mainActivity || <span className="muted">Não informada</span>}</td>
+                        <td className="right area">{formatArea(p.areaHa)}</td>
+                        <td className="right">
+                          <button type="button" className="btn-link" onClick={() => (setEditingId(p.id), setAdding(false))}>
+                            Editar
+                          </button>
+                        </td>
+                      </tr>
+                    ),
+                  )}
                 </tbody>
               </table>
             )}
@@ -245,11 +284,23 @@ export default function ProdutorPage() {
   );
 }
 
-function PropertyForm({ producerId, onDone, onCancel }: { producerId: string; onDone: () => void; onCancel: () => void }) {
-  const [name, setName] = useState('');
-  const [area, setArea] = useState('');
-  const [locality, setLocality] = useState('');
-  const [activity, setActivity] = useState('');
+// Cadastro de propriedade ou, com `property`, edição de uma já salva.
+function PropertyForm({
+  producerId,
+  property,
+  onDone,
+  onCancel,
+}: {
+  producerId: string;
+  property?: Property;
+  onDone: () => void;
+  onCancel: () => void;
+}) {
+  const [name, setName] = useState(property?.name ?? '');
+  const [area, setArea] = useState(property ? String(property.areaHa).replace('.', ',') : '');
+  const [locality, setLocality] = useState(property?.locality ?? '');
+  const [activity, setActivity] = useState(property?.mainActivity ?? '');
+  const [location, setLocation] = useState<LocationDraft>(() => locationDraft(property));
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
@@ -260,10 +311,19 @@ function PropertyForm({ producerId, onDone, onCancel }: { producerId: string; on
       setError('Informe a área em hectares, maior que zero. Exemplo: 12,5');
       return;
     }
+    const place = locationInput(location);
+    if (typeof place === 'string') {
+      setError(place);
+      return;
+    }
     setError(null);
     setSaving(true);
     try {
-      await addProperty(producerId, { name, areaHa, locality, mainActivity: activity || undefined });
+      if (property) {
+        await updateProperty(property.id, { name, areaHa, locality, mainActivity: activity, ...place });
+      } else {
+        await addProperty(producerId, { name, areaHa, locality, mainActivity: activity || undefined, ...place });
+      }
       onDone();
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Não foi possível salvar a propriedade.');
@@ -299,6 +359,7 @@ function PropertyForm({ producerId, onDone, onCancel }: { producerId: string; on
           />
         </label>
       </div>
+      <LocationFields value={location} onChange={setLocation} />
       {error && (
         <p role="alert" className="alert">
           {error}

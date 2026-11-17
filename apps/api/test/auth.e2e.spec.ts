@@ -27,6 +27,11 @@ describe('Login por perfil e auditoria', () => {
   const login = (email: string, password = DEMO_PASSWORD) =>
     request(app.getHttpServer()).post('/auth/login').send({ email, password });
 
+  it('admin local entra com a senha admin e perfil COORDINATION', async () => {
+    const res = await login('admin@agrointegra.demo', 'admin').expect(200);
+    expect(res.body.user).toMatchObject({ email: 'admin@agrointegra.demo', role: 'COORDINATION' });
+  });
+
   it('coordenação entra e recebe o perfil COORDINATION', async () => {
     const res = await login('coordenacao@agrointegra.demo').expect(200);
     expect(res.body.accessToken).toEqual(expect.any(String));

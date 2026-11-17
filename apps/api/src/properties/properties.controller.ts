@@ -5,7 +5,7 @@ import { AuthUser, CurrentUser } from '../auth/current-user.decorator';
 import { searchWords } from '../common/search';
 import { PrismaService } from '../prisma/prisma.service';
 import { UpdatePropertyDto } from './property.dto';
-import { propertySearchText, propertyView } from './property.view';
+import { locationData, propertySearchText, propertyView } from './property.view';
 
 @Controller('properties')
 export class PropertiesController {
@@ -43,14 +43,16 @@ export class PropertiesController {
     if (!exists) throw new NotFoundException('Propriedade não encontrada.');
     const name = dto.name ?? exists.name;
     const locality = dto.locality ?? exists.locality;
+    const city = dto.city === undefined ? exists.city : dto.city;
     const prop = await this.prisma.property.update({
       where: { id },
       data: {
         name: dto.name,
         areaHa: dto.areaHa === undefined ? undefined : new Prisma.Decimal(dto.areaHa),
         locality: dto.locality,
-        searchText: propertySearchText(name, locality),
+        searchText: propertySearchText(name, locality, city),
         mainActivity: dto.mainActivity === undefined ? undefined : dto.mainActivity || null,
+        ...locationData(dto),
       },
     });
     await this.audit.record({

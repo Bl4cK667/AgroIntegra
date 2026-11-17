@@ -254,5 +254,85 @@ describe('Produtores e propriedades', () => {
       const log = await prisma.auditLog.findFirstOrThrow({ where: { action: 'PROPERTY_UPDATED', entityId: propId } });
       expect(log.details).toMatchObject({ changed: ['areaHa'] });
     });
+
+    describe('localização', () => {
+      const location = {
+        address: 'Estrada Vicinal do Açude, km 4',
+        city: 'Vale do Mandacaru',
+        state: 'pe',
+        coordinates: { latitude: -8.123456, longitude: -36.654321 },
+      };
+
+      it('cadastra endereço, município, UF e coordenadas; aparece na página do produtor', async () => {
+        const created = await api()
+          .post(`/producers/${producerId}/properties`)
+          .set(auth(tech))
+          .send({ name: 'Fazenda Lajedo Alto', areaHa: 30, locality: 'Serra Branca', ...location })
+          .expect(201);
+        expect(created.body).toMatchObject({ ...location, state: 'PE' });
+
+        const res = await api().get(`/producers/${producerId}`).set(auth(tech)).expect(200);
+        const prop = res.body.properties.find((p: { id: string }) => p.id === created.body.id);
+        expect(prop).toMatchObject({ ...location, state: 'PE' });
+      });
+
+      it('sem localização, os campos ficam vazios', async () => {
+        const res = await api().get(`/producers/${producerId}`).set(auth(tech)).expect(200);
+        const prop = res.body.properties.find((p: { name: string }) => p.name === 'Sítio Boa Esperança');
+        expect(prop).toMatchObject({ address: null, city: null, state: null, coordinates: null });
+      });
+
+      it('busca de propriedades encontra pelo município, sem acento', async () => {
+        const res = await api().get('/properties').query({ search: 'mandacaru lajedo' }).set(auth(tech)).expect(200);
+        expect(res.body.items).toHaveLength(1);
+        expect(res.body.items[0]).toMatchObject({ name: 'Fazenda Lajedo Alto', city: 'Vale do Mandacaru', state: 'PE' });
+      });
+
+      it('recusa UF inexistente e coordenadas fora da faixa', async () => {
+        const base = { name: 'X', areaHa: 1, locality: 'Y' };
+        const invalid = [
+          { state: 'XX' },
+          { coordinates: { latitude: 91, longitude: 0 } },
+          { coordinates: { latitude: 0, longitude: -181 } },
+          { coordinates: { latitude: -8.1 } },
+        ];
+        for (const extra of invalid) {
+          await api()
+            .post(`/producers/${producerId}/properties`)
+            .set(auth(tech))
+            .send({ ...base, ...extra })
+            .expect(400);
+        }
+      });
+
+      it('edita a localização, apaga com valor vazio e registra na auditoria', async () => {
+        const { body } = await api().get('/properties').query({ search: 'lajedo' }).set(auth(tech));
+        const propId = body.items[0].id;
+
+        const moved = await api()
+          .patch(`/properties/${propId}`)
+          .set(auth(coord))
+          .send({ coordinates: { latitude: -8.2, longitude: -36.7 }, address: '' })
+          .expect(200);
+        expect(moved.body).toMatchObject({
+          coordinates: { latitude: -8.2, longitude: -36.7 },
+          address: null,
+          city: 'Vale do Mandacaru',
+          state: 'PE',
+        });
+
+        const cleared = await api().patch(`/properties/${propId}`).set(auth(coord)).send({ coordinates: null }).expect(200);
+        expect(cleared.body.coordinates).toBeNull();
+
+        const logs = await prisma.auditLog.findMany({
+          where: { action: 'PROPERTY_UPDATED', entityId: propId },
+          orderBy: { createdAt: 'asc' },
+        });
+        expect(logs.map((l) => l.details)).toEqual([
+          { changed: ['address', 'coordinates'] },
+          { changed: ['coordinates'] },
+        ]);
+      });
+    });
   });
 });

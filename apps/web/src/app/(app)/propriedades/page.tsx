@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { ApiError, listProperties, PropertyRow } from '@/lib/api';
-import { formatArea } from '@/lib/format';
+import { formatArea, formatPlace } from '@/lib/format';
 import { useDebounced } from '@/lib/useDebounced';
 
 export default function PropriedadesPage() {
@@ -35,7 +35,7 @@ export default function PropriedadesPage() {
         <input
           className="input"
           type="search"
-          placeholder="Buscar por propriedade, localidade ou produtor"
+          placeholder="Buscar por propriedade, localidade, município ou produtor"
           aria-label="Buscar por propriedade, localidade ou produtor"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
@@ -56,7 +56,7 @@ export default function PropriedadesPage() {
               {term ? (
                 <>
                   <strong>Nenhuma propriedade encontrada</strong>
-                  Tente outro nome, localidade ou produtor.
+                  Tente outro nome, localidade, município ou produtor.
                 </>
               ) : (
                 <>
@@ -72,6 +72,7 @@ export default function PropriedadesPage() {
                   <th>Propriedade</th>
                   <th>Produtor</th>
                   <th className="hide-sm">Localidade</th>
+                  <th className="hide-sm">Município</th>
                   <th className="hide-sm">Atividade principal</th>
                   <th className="right">Área</th>
                 </tr>
@@ -84,6 +85,7 @@ export default function PropriedadesPage() {
                       <Link href={`/produtores/${p.producer.id}`}>{p.producer.name}</Link>
                     </td>
                     <td className="hide-sm">{p.locality}</td>
+                    <td className="hide-sm">{formatPlace(p.city, p.state) || <span className="muted">Não informado</span>}</td>
                     <td className="hide-sm">{p.mainActivity || <span className="muted">Não informada</span>}</td>
                     <td className="right area">{formatArea(p.areaHa)}</td>
                   </tr>

@@ -1,0 +1,45 @@
+/* Bloco de localização dentro do formulário da propriedade. */
+.location {
+  display: grid;
+  gap: 14px;
+  margin: 0;
+  padding: 14px 14px 16px;
+  border: 1px solid var(--linha);
+  border-left: 3px solid var(--ouro);
+  border-radius: 4px;
+  min-width: 0;
+}
+
+.location legend {
+  padding: 0 6px;
+  margin-left: -6px;
+  font-weight: 600;
+}
+
+.location legend span {
+  font-weight: 400;
+  font-size: 0.85rem;
+  margin-left: 4px;
+}
+
+/* Município largo, UF estreita. */
+.placeRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 96px;
+  gap: 16px;
+  align-items: start;
+}
+
+.coordActions {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+/* Localização na tabela: uma informação por linha. */
+.summary {
+  display: grid;
+  gap: 2px;
+  font-size: 0.92rem;
+}

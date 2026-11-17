@@ -78,6 +78,12 @@ model Property {
   areaHa       Decimal          @db.Decimal(10, 2)
   locality     String
   mainActivity String?
+  // Localização digitada (sem mapa na demo). Coordenadas em graus decimais (WGS 84).
+  address      String?
+  city         String?
+  state        String?          @db.Char(2)
+  latitude     Float?
+  longitude    Float?
   createdById  String
   createdBy    User             @relation(fields: [createdById], references: [id])
   createdAt    DateTime         @default(now())

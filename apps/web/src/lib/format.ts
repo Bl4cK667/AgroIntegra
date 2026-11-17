@@ -36,6 +36,20 @@ export function todayIso() {
 const coordFmt = new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 5, maximumFractionDigits: 5 });
 export const formatCoord = (n: number) => coordFmt.format(n);
 
+// Aceita "-8,12345" ou "-8.12345" (graus decimais).
+export function parseCoord(value: string): number | null {
+  const v = value.trim().replace(',', '.');
+  if (!/^-?\d{1,3}(\.\d+)?$/.test(v)) return null;
+  return Number(v);
+}
+
+// Abre o ponto no OpenStreetMap, em outra aba. A demo não tem mapa próprio (fica para o piloto).
+export const mapUrl = (lat: number, lon: number) =>
+  `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lon}#map=15/${lat}/${lon}`;
+
+// "Município – UF", com o que estiver preenchido.
+export const formatPlace = (city: string | null, state: string | null) => [city, state].filter(Boolean).join(' – ');
+
 const moneyFmt = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
 export const formatMoney = (cents: number) => moneyFmt.format(cents / 100);
 

@@ -11,14 +11,14 @@ npm install
 cp apps/api/.env.example apps/api/.env
 npm run setup        # sobe o banco, aplica as migrações e cria os usuários da demo
 npm run demo:reset   # carrega os dados fictícios da demonstração (apaga os atendimentos atuais)
-npm run dev:api      # API em http://localhost:3001
-npm run dev:web      # painel em http://localhost:3000 (outro terminal)
+npm run dev          # API (http://localhost:3001) e painel (http://localhost:3000) juntos; Ctrl+C encerra os dois
 ```
 
 Usuários da demo (fictícios), senha `demo1234`:
 
 - `coordenacao@agrointegra.demo`: perfil Coordenação
 - `tecnico@agrointegra.demo`: perfil Técnico
+- `admin@agrointegra.demo`, senha `admin`: perfil Coordenação, só para uso local
 
 ## Demonstração
 

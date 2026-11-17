@@ -84,7 +84,24 @@ export interface Property {
   areaHa: number;
   locality: string;
   mainActivity: string | null;
+  address: string | null;
+  city: string | null;
+  state: string | null; // sigla da UF
+  coordinates: Coordinates | null;
   createdAt: string;
+}
+
+export interface Coordinates {
+  latitude: number;
+  longitude: number;
+}
+
+// Localização digitada. Na edição, null (ou texto vazio) apaga o valor salvo.
+export interface PropertyLocationInput {
+  address?: string | null;
+  city?: string | null;
+  state?: string | null;
+  coordinates?: Coordinates | null;
 }
 
 export interface ProducerSummary {
@@ -126,8 +143,13 @@ export const registerConsent = (id: string) =>
 
 export const addProperty = (
   producerId: string,
-  data: { name: string; areaHa: number; locality: string; mainActivity?: string },
+  data: { name: string; areaHa: number; locality: string; mainActivity?: string } & PropertyLocationInput,
 ) => request<Property>(`/producers/${producerId}/properties`, { method: 'POST', body: JSON.stringify(data) });
+
+export const updateProperty = (
+  id: string,
+  data: { name?: string; areaHa?: number; locality?: string; mainActivity?: string } & PropertyLocationInput,
+) => request<Property>(`/properties/${id}`, { method: 'PATCH', body: JSON.stringify(data) });
 
 export const listProperties = (search?: string) =>
   request<{ items: PropertyRow[]; total: number }>(`/properties${qs(search)}`);
