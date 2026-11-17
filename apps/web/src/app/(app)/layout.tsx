@@ -1,28 +1,19 @@
 'use client';
 
-import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { BrandSymbol } from '@/components/Brand';
-import { clearSession, fetchMe, getToken, ROLE_LABEL, SessionUser } from '@/lib/api';
+import { AppNav, useNavCollapsed } from '@/components/nav/AppNav';
+import { clearSession, fetchMe, getToken, SessionUser } from '@/lib/api';
 import { SessionContext } from '@/lib/session';
+import { useTheme } from '@/lib/theme';
 import styles from './shell.module.css';
-
-// O menu mostra só o que já existe. Os demais módulos entram conforme ficam prontos.
-const MENU = [
-  { href: '/painel', label: 'Painel' },
-  { href: '/produtores', label: 'Produtores' },
-  { href: '/propriedades', label: 'Propriedades' },
-  { href: '/solicitacoes', label: 'Solicitações' },
-  { href: '/visitas', label: 'Visitas' },
-  { href: '/programas', label: 'Programas' },
-  { href: '/relatorios', label: 'Relatórios' },
-];
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
-  const pathname = usePathname();
   const [user, setUser] = useState<SessionUser | null>(null);
+  const [collapsed, setCollapsed] = useNavCollapsed();
+  useTheme(); // aplica o tema salvo em qualquer página do app, não só no painel
 
   useEffect(() => {
     if (!getToken()) {
@@ -43,40 +34,19 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   }
 
   if (!user) {
-    return <div className={styles.loading}>Carregando…</div>;
+    return (
+      <div className={styles.loading} role="status" aria-label="Carregando">
+        <span className={styles.loadingMark}>
+          <BrandSymbol size={44} />
+        </span>
+      </div>
+    );
   }
 
   return (
     <SessionContext.Provider value={user}>
-      <div className={styles.shell}>
-        <aside className={styles.sidebar}>
-          <Link href="/painel" className={styles.brand}>
-            <BrandSymbol size={34} />
-            <span>AgroIntegra</span>
-          </Link>
-          <nav className={styles.nav} aria-label="Principal">
-            {MENU.map((item) => {
-              const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={active ? styles.navActive : styles.navLink}
-                  aria-current={active ? 'page' : undefined}
-                >
-                  {item.label}
-                </Link>
-              );
-            })}
-          </nav>
-          <div className={styles.userBox}>
-            <span className={styles.userName}>{user.name}</span>
-            <span className={styles.role}>{ROLE_LABEL[user.role]}</span>
-            <button onClick={logout} className={styles.logout}>
-              Sair
-            </button>
-          </div>
-        </aside>
+      <div className={styles.shell} data-collapsed={collapsed || undefined}>
+        <AppNav user={user} onLogout={logout} collapsed={collapsed} onCollapsedChange={setCollapsed} />
         <main className={styles.content}>{children}</main>
       </div>
     </SessionContext.Provider>

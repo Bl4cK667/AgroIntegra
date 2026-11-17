@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { FieldHeading, FieldIcon, FieldLoading, FieldStats, SectionTitle, fieldStyles as ui } from '@/components/property/FieldUI';
 import { useParams } from 'next/navigation';
 import { FormEvent, useCallback, useEffect, useState } from 'react';
 import { LocationDraft, locationDraft, LocationFields, locationInput, LocationSummary } from '@/components/property/LocationFields';
@@ -71,27 +72,19 @@ export default function ProdutorPage() {
       </>
     );
   }
-  if (!producer) return <p className="muted">Carregando…</p>;
+  if (!producer) return <FieldLoading />;
 
   return (
     <>
       <Link href="/produtores" className="back">
         Produtores
       </Link>
-      <header className="page-head">
-        <div>
-          <h1>{producer.name}</h1>
-          <p>{producer.community}</p>
-        </div>
-        <div className="form-actions" style={{ paddingTop: 0 }}>
-          <Link href={`/relatorios?produtor=${id}`} className="btn btn-secondary">
-            Relatório em PDF
-          </Link>
-          <Link href={`/produtores/${id}/editar`} className="btn btn-secondary">
-            Editar dados
-          </Link>
-        </div>
-      </header>
+      <FieldHeading icon="people" eyebrow="Ficha do produtor" title={producer.name} description={producer.community} actions={<><Link href={`/relatorios?produtor=${id}`} className="btn btn-secondary"><FieldIcon name="report" /> Relatório em PDF</Link><Link href={`/produtores/${id}/editar`} className="btn btn-secondary">Editar dados</Link></>} />
+      <FieldStats items={[
+        { label: 'Propriedades', value: producer.properties.length, icon: 'land', note: 'Vinculadas a este cadastro' },
+        { label: 'Visitas registradas', value: producer.visits.length, icon: 'visit', note: 'Histórico do produtor' },
+        { label: 'Demandas abertas', value: requests.length, icon: 'note', note: 'Acompanhamento em andamento' },
+      ]} />
 
       {error && <p className="alert">{error}</p>}
       {savedVisit && (
@@ -101,7 +94,8 @@ export default function ProdutorPage() {
       )}
 
       <div className={styles.layout}>
-        <dl className={styles.facts}>
+        <dl className={`card enter ${styles.facts}`} style={{ '--i': 3 } as React.CSSProperties}>
+          <div className="card-head"><span className="card-icon"><FieldIcon name="people" /></span><h2 className="card-title">Dados do produtor</h2></div>
           <div>
             <dt>CPF</dt>
             <dd className="num">{producer.cpf}</dd>
@@ -114,10 +108,10 @@ export default function ProdutorPage() {
             <dt>Consentimento LGPD</dt>
             <dd>
               {producer.consentAt ? (
-                <>Registrado em <span className="num">{formatDate(producer.consentAt)}</span></>
+                <span className="badge badge-success">Registrado em <span className="num">{formatDate(producer.consentAt)}</span></span>
               ) : (
                 <>
-                  <span className="pending">Pendente</span>
+                  <span className="badge badge-warning">Pendente</span>
                   <br />
                   <button type="button" className="btn-link" onClick={onConsent} disabled={consentSaving}>
                     {consentSaving ? 'Registrando…' : 'Registrar consentimento'}
@@ -134,9 +128,10 @@ export default function ProdutorPage() {
           </div>
         </dl>
 
-        <section>
+        <section className={styles.sections}>
+          <div className="card enter" style={{ '--i': 4 } as React.CSSProperties}>
           <div className={styles.sectionHead}>
-            <h2>Propriedades</h2>
+            <SectionTitle icon="land">Propriedades</SectionTitle>
             {!adding && (
               <button type="button" className="btn btn-secondary" onClick={() => (setAdding(true), setEditingId(null))}>
                 Adicionar propriedade
@@ -157,12 +152,12 @@ export default function ProdutorPage() {
 
           <div className="table-wrap">
             {producer.properties.length === 0 ? (
-              <div className="empty">
+              <div className="empty"><span className={`card-icon ${ui.emptyIcon}`}><FieldIcon name="land" /></span>
                 <strong>Nenhuma propriedade cadastrada</strong>
                 Adicione a propriedade com a área em hectares.
               </div>
             ) : (
-              <table className="table">
+              <table className={`table ${ui.responsiveTable}`}>
                 <thead>
                   <tr>
                     <th>Propriedade</th>
@@ -191,14 +186,14 @@ export default function ProdutorPage() {
                       </tr>
                     ) : (
                       <tr key={p.id}>
-                        <td>{p.name}</td>
-                        <td>{p.locality}</td>
-                        <td>
+                        <td data-label="Propriedade">{p.name}</td>
+                        <td data-label="Localidade">{p.locality}</td>
+                        <td data-label="Localização">
                           <LocationSummary property={p} />
                         </td>
-                        <td>{p.mainActivity || <span className="muted">Não informada</span>}</td>
-                        <td className="right area">{formatArea(p.areaHa)}</td>
-                        <td className="right">
+                        <td data-label="Atividade principal">{p.mainActivity || <span className="muted">Não informada</span>}</td>
+                        <td className="right area" data-label="Área">{formatArea(p.areaHa)}</td>
+                        <td className="right" data-label="Ação">
                           <button type="button" className="btn-link" onClick={() => (setEditingId(p.id), setAdding(false))}>
                             Editar
                           </button>
@@ -211,22 +206,22 @@ export default function ProdutorPage() {
             )}
           </div>
 
-          <div className={`${styles.sectionHead} ${styles.sectionGap}`}>
-            <h2>
-              Solicitações abertas <span className="muted num">{requests.length}</span>
-            </h2>
+          </div>
+          <div className="card enter" style={{ '--i': 5 } as React.CSSProperties}>
+          <div className={styles.sectionHead}>
+            <SectionTitle icon="note">Solicitações abertas <span className="badge badge-neutral">{requests.length}</span></SectionTitle>
             <Link href={`/solicitacoes/nova?produtor=${id}`} className="btn btn-secondary">
               Nova solicitação
             </Link>
           </div>
           <div className="table-wrap">
             {requests.length === 0 ? (
-              <div className="empty">
+              <div className="empty"><span className={`card-icon ${ui.emptyIcon}`}><FieldIcon name="land" /></span>
                 <strong>Nenhuma solicitação aberta</strong>
                 Pedidos do produtor aparecem aqui até serem concluídos.
               </div>
             ) : (
-              <table className="table">
+              <table className={`table ${ui.responsiveTable}`}>
                 <thead>
                   <tr>
                     <th>Assunto</th>
@@ -238,17 +233,17 @@ export default function ProdutorPage() {
                 <tbody>
                   {requests.map((r) => (
                     <tr key={r.id}>
-                      <td>{r.subject}</td>
-                      <td>
+                      <td data-label="Assunto">{r.subject}</td>
+                      <td data-label="Prioridade">
                         <PriorityTag priority={r.priority} />
                       </td>
-                      <td className="nowrap">
+                      <td className="nowrap" data-label="Situação">
                         {STATUS_LABEL[r.status]}
                         {r.status === 'SCHEDULED' && r.scheduledFor && (
                           <span className="muted num"> · {formatDay(r.scheduledFor)}</span>
                         )}
                       </td>
-                      <td className="right">
+                      <td className="right" data-label="Ação">
                         <Link href={`/visitas/nova?produtor=${id}&solicitacao=${r.id}`} className="nowrap">
                           Registrar visita
                         </Link>
@@ -260,23 +255,24 @@ export default function ProdutorPage() {
             )}
           </div>
 
-          <div className={`${styles.sectionHead} ${styles.sectionGap}`}>
-            <h2>
-              Visitas <span className="muted num">{producer.visits.length}</span>
-            </h2>
+          </div>
+          <div className="card enter" style={{ '--i': 6 } as React.CSSProperties}>
+          <div className={styles.sectionHead}>
+            <SectionTitle icon="visit">Visitas <span className="badge badge-neutral">{producer.visits.length}</span></SectionTitle>
             <Link href={`/visitas/nova?produtor=${id}`} className="btn btn-primary">
               Registrar visita
             </Link>
           </div>
           <div className="table-wrap">
             {producer.visits.length === 0 ? (
-              <div className="empty">
+              <div className="empty"><span className={`card-icon ${ui.emptyIcon}`}><FieldIcon name="land" /></span>
                 <strong>Nenhuma visita registrada</strong>
                 As visitas técnicas a este produtor aparecem aqui.
               </div>
             ) : (
               <VisitTable visits={producer.visits} showProducer={false} />
             )}
+          </div>
           </div>
         </section>
       </div>
@@ -332,7 +328,8 @@ function PropertyForm({
   }
 
   return (
-    <form className={styles.propertyForm} onSubmit={onSubmit} noValidate>
+    <form className={`enter ${styles.propertyForm}`} onSubmit={onSubmit} noValidate>
+      <SectionTitle icon="land">{property ? 'Editar propriedade' : 'Nova propriedade'}</SectionTitle>
       <div className="form-row">
         <label className="field">
           <span>Nome da propriedade</span>

@@ -4,10 +4,16 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Meter } from '@/components/Meter';
-import { ApiError, ENROLLMENT_LABEL, getProgram, ProgramDetail } from '@/lib/api';
+import { FieldEmpty, FieldHeading, FieldLoading, FieldStats, SectionTitle } from '@/components/property/FieldUI';
+import { ApiError, ENROLLMENT_LABEL, EnrollmentStatus, getProgram, ProgramDetail } from '@/lib/api';
 import { formatDay, formatInt, formatMoney } from '@/lib/format';
-import styles from '@/components/figures.module.css';
 import own from './programa.module.css';
+
+const ENROLLMENT_BADGE: Record<EnrollmentStatus, string> = {
+  APPROVED: 'badge badge-success',
+  ENROLLED: 'badge badge-info',
+  REJECTED: 'badge badge-neutral',
+};
 
 export default function ProgramaPage() {
   const { id } = useParams<{ id: string }>();
@@ -26,85 +32,65 @@ export default function ProgramaPage() {
         <Link href="/programas" className="back">
           Programas
         </Link>
-        <p className="alert">{error}</p>
+        <p className="alert" role="alert">{error}</p>
       </>
     );
   }
-  if (!p) return <p className="muted">Carregando…</p>;
+  if (!p) return <FieldLoading />;
 
   return (
     <>
       <Link href="/programas" className="back">
         Programas
       </Link>
-      <header className="page-head">
-        <div>
-          <h1>{p.name}</h1>
-          <p>
-            {p.description} Vigência de <span className="num">{formatDay(p.startsOn)}</span> a{' '}
-            <span className="num">{formatDay(p.endsOn)}</span>.
-          </p>
-        </div>
-      </header>
+      <FieldHeading
+        icon="sprout"
+        eyebrow={`Vigência ${formatDay(p.startsOn)} a ${formatDay(p.endsOn)}`}
+        title={p.name}
+        description={p.description}
+      />
 
-      <section className={styles.figures} aria-label="Indicadores do programa">
-        <div className={styles.figure}>
-          <span className={styles.label}>Vagas</span>
-          <strong className="num">{formatInt(p.slots)}</strong>
-          <span className={styles.note}>
-            <b className="num">{formatInt(p.openSlots)}</b> ainda livres
-          </span>
-        </div>
-        <div className={styles.figure}>
-          <span className={styles.label}>Inscritos</span>
-          <strong className="num">{formatInt(p.enrolled)}</strong>
-          <span className={styles.note}>
-            {p.pending} em análise, {p.rejected} não aprovados
-          </span>
-        </div>
-        <div className={styles.figure}>
-          <span className={styles.label}>Beneficiários aprovados</span>
-          <strong className="num">{formatInt(p.approved)}</strong>
-          <span className={styles.note}>inscrições aprovadas</span>
-        </div>
-        <div className={styles.figure}>
-          <span className={styles.label}>Entregas</span>
-          <strong className="num">{formatInt(p.deliveryCount)}</strong>
-          <span className={styles.note}>registros de entrega</span>
-        </div>
-      </section>
+      <FieldStats
+        items={[
+          { label: 'Vagas', value: formatInt(p.slots), icon: 'flag', note: `${formatInt(p.openSlots)} ainda livres` },
+          { label: 'Inscritos', value: formatInt(p.enrolled), icon: 'note', note: `${p.pending} em análise, ${p.rejected} não aprovados` },
+          { label: 'Beneficiários', value: formatInt(p.approved), icon: 'people', note: 'inscrições aprovadas' },
+          { label: 'Entregas', value: formatInt(p.deliveryCount), icon: 'check', note: 'registros de entrega' },
+        ]}
+      />
 
       <section className={own.execution} aria-label="Execução">
-        <div>
-          <h2>Execução física</h2>
-          <p className="muted">
+        <div className="card enter" style={{ '--i': 5 } as React.CSSProperties}>
+          <SectionTitle icon="land">Execução física</SectionTitle>
+          <p className={own.big}>
+            <strong className="num">{formatInt(p.deliveredQuantity)}</strong>
             <span className="num">
-              {formatInt(p.deliveredQuantity)} de {formatInt(p.goalQuantity)}
-            </span>{' '}
-            {p.unit} entregues
+              de {formatInt(p.goalQuantity)} {p.unit} entregues
+            </span>
           </p>
           <Meter percent={p.physicalPercent} />
         </div>
-        <div>
-          <h2>Execução financeira</h2>
-          <p className="muted">
-            <span className="num">
-              {formatMoney(p.spentCents)} de {formatMoney(p.budgetCents)}
-            </span>
+        <div className="card enter" style={{ '--i': 6 } as React.CSSProperties}>
+          <SectionTitle icon="report">Execução financeira</SectionTitle>
+          <p className={own.big}>
+            <strong className="num">{formatMoney(p.spentCents)}</strong>
+            <span className="num">de {formatMoney(p.budgetCents)} do orçamento</span>
           </p>
           <Meter percent={p.financialPercent} />
         </div>
       </section>
 
       <div className={own.tables}>
-        <section>
-          <h2 className={own.h2}>
-            Inscrições <span className="muted num">{p.enrollments.length}</span>
-          </h2>
-          <div className="table-wrap">
-            {p.enrollments.length === 0 ? (
-              <div className="empty">Nenhuma inscrição.</div>
-            ) : (
+        <section className="card enter" style={{ '--i': 7 } as React.CSSProperties}>
+          <SectionTitle icon="people" actions={<span className="badge badge-neutral num">{p.enrollments.length}</span>}>
+            Inscrições
+          </SectionTitle>
+          {p.enrollments.length === 0 ? (
+            <FieldEmpty icon="people" title="Nenhuma inscrição">
+              As inscrições aparecem aqui assim que forem registradas.
+            </FieldEmpty>
+          ) : (
+            <div className={`table-wrap ${own.flush}`}>
               <table className="table">
                 <thead>
                   <tr>
@@ -121,50 +107,54 @@ export default function ProgramaPage() {
                         <Link href={`/produtores/${e.producer.id}`}>{e.producer.name}</Link>
                       </td>
                       <td className="hide-sm">{e.producer.community}</td>
-                      <td className={e.status === 'APPROVED' ? '' : 'muted'}>{ENROLLMENT_LABEL[e.status]}</td>
+                      <td>
+                        <span className={ENROLLMENT_BADGE[e.status]}>{ENROLLMENT_LABEL[e.status]}</span>
+                      </td>
                       <td className="num hide-sm">{formatDay(e.enrolledOn)}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
-            )}
-          </div>
+            </div>
+          )}
         </section>
 
-        <section>
-          <h2 className={own.h2}>
-            Entregas <span className="muted num">{p.deliveries.length}</span>
-          </h2>
-          <div className="table-wrap">
-            {p.deliveries.length === 0 ? (
-              <div className="empty">Nenhuma entrega registrada.</div>
-            ) : (
+        <section className="card enter" style={{ '--i': 8 } as React.CSSProperties}>
+          <SectionTitle icon="check" actions={<span className="badge badge-neutral num">{p.deliveries.length}</span>}>
+            Entregas
+          </SectionTitle>
+          {p.deliveries.length === 0 ? (
+            <FieldEmpty icon="check" title="Nenhuma entrega registrada">
+              Cada entrega registrada soma na execução física e financeira.
+            </FieldEmpty>
+          ) : (
+            <div className={`table-wrap ${own.flush}`}>
               <table className="table">
                 <thead>
                   <tr>
                     <th>Data</th>
                     <th>Produtor</th>
                     <th className="right">Quantidade</th>
-                    <th className="right">Valor</th>
+                    <th className="right hide-sm">Valor</th>
                   </tr>
                 </thead>
                 <tbody>
                   {p.deliveries.map((d) => (
                     <tr key={d.id}>
-                      <td className="num">{formatDay(d.deliveredOn)}</td>
+                      <td className="num nowrap">{formatDay(d.deliveredOn)}</td>
                       <td>
                         <Link href={`/produtores/${d.producer.id}`}>{d.producer.name}</Link>
                       </td>
-                      <td className="right num">
+                      <td className="right num nowrap">
                         {formatInt(d.quantity)} {d.quantity === 1 ? p.unitSingular : p.unit}
                       </td>
-                      <td className="right num">{formatMoney(d.valueCents)}</td>
+                      <td className="right num hide-sm">{formatMoney(d.valueCents)}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
-            )}
-          </div>
+            </div>
+          )}
         </section>
       </div>
     </>

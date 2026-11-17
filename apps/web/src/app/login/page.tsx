@@ -46,18 +46,19 @@ export default function LoginPage() {
             <path key={`b${i}`} d={d} className={i % 5 === 4 ? styles.index : styles.line} />
           ))}
         </svg>
-        <div className={styles.landText}>
+        <div className={`${styles.landText} enter`}>
           <p className={styles.org}>Secretaria Municipal de Agricultura</p>
           <p className={styles.tagline}>Assistência técnica e extensão rural, do cadastro do produtor ao relatório da visita.</p>
         </div>
       </section>
 
       <section className={styles.formSide}>
-        <div className={styles.formBox}>
+        <div className={`${styles.formBox} enter`} style={{ '--i': 1 } as React.CSSProperties}>
           <div className={styles.brand}>
-            <BrandLogo width={250} />
+            <BrandLogo width={236} />
           </div>
 
+          <span className="eyebrow">Acesso ao sistema</span>
           <h1 className={styles.title}>Entrar</h1>
 
           <form onSubmit={onSubmit} className={styles.form} noValidate>

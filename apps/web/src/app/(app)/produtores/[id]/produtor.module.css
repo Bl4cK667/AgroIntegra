@@ -1,7 +1,7 @@
 .layout {
   display: grid;
-  grid-template-columns: 260px minmax(0, 1fr);
-  gap: 32px;
+  grid-template-columns: 280px minmax(0, 1fr);
+  gap: 24px;
   align-items: start;
 }
 
@@ -10,6 +10,11 @@
   margin: 0;
   display: grid;
 }
+
+.sections { display: grid; gap: 24px; min-width: 0; }
+.sections > div { min-width: 0; }
+.facts dd { overflow-wrap: anywhere; }
+.facts > :global(.card-head) { padding-bottom: 16px; }
 
 .facts > div {
   padding: 12px 0;
@@ -37,7 +42,10 @@
   align-items: center;
   gap: 12px;
   margin-bottom: 12px;
+  flex-wrap: wrap;
 }
+
+.sectionHead > :global(.card-head) { margin-bottom: 0; }
 
 .sectionGap {
   margin-top: 32px;
@@ -46,12 +54,17 @@
 .propertyForm {
   display: grid;
   gap: 14px;
-  padding: 16px;
+  padding: 20px;
   margin-bottom: 14px;
-  background: var(--superficie);
-  border: 1px solid var(--linha);
-  border-top: 3px solid var(--mata);
-  border-radius: 4px;
+  background: var(--card-2);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-md);
+}
+
+@media (max-width: 640px) {
+  .facts { padding: 18px; }
+  .propertyForm { padding: 14px; }
+  .sectionHead > button, .sectionHead > a { width: 100%; }
 }
 
 @media (max-width: 860px) {

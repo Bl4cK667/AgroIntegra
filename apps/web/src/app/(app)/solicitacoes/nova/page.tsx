@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { FormEvent, Suspense, useEffect, useState } from 'react';
 import styles from '@/components/form.module.css';
 import { ProducerSearch } from '@/components/ProducerSearch';
+import { FieldHeading } from '@/components/property/FieldUI';
 import { ApiError, createRequest, getProducer, PRIORITY_LABEL, PRIORITY_ORDER, ProducerDetail, RequestPriority } from '@/lib/api';
 import { formatArea } from '@/lib/format';
 
@@ -69,14 +70,9 @@ function NovaSolicitacao() {
       <Link href={back} className="back">
         {fromProducer ? (producer?.name ?? 'Produtor') : 'Solicitações'}
       </Link>
-      <header className="page-head">
-        <div>
-          <h1>Nova solicitação</h1>
-          <p>Entra no quadro na coluna Nova.</p>
-        </div>
-      </header>
+      <FieldHeading icon="inbox" eyebrow="Fluxo de atendimento" title="Nova solicitação" description="Registre o pedido do produtor. Ele entra no quadro na coluna Nova." />
 
-      <form className={styles.form} onSubmit={onSubmit} noValidate>
+      <form className={`${styles.form} enter`} style={{ '--i': 1 } as React.CSSProperties} onSubmit={onSubmit} noValidate>
         <fieldset className={styles.group}>
           <legend>Produtor</legend>
           {producer ? (

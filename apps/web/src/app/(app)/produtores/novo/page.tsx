@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { FieldHeading, FieldIcon, fieldStyles as ui } from '@/components/property/FieldUI';
 import { useRouter } from 'next/navigation';
 import { FormEvent, useState } from 'react';
 import { ApiError, createProducer } from '@/lib/api';
@@ -34,11 +35,10 @@ export default function NovoProdutorPage() {
       <Link href="/produtores" className="back">
         Produtores
       </Link>
-      <header className="page-head">
-        <h1>Novo produtor</h1>
-      </header>
+      <FieldHeading icon="people" eyebrow="Cadastro de produtores" title="Novo produtor" description="Comece pela identificação. Propriedades e visitas podem ser adicionadas após o cadastro." />
 
-      <form className="form" onSubmit={onSubmit} noValidate>
+      <form className={ui.form} onSubmit={onSubmit} noValidate>
+          <fieldset className={`card enter ${ui.formSection}`}><legend><FieldIcon name="people" /> Identificação e contato</legend>
         <label className="field">
           <span>Nome completo</span>
           <input className="input" value={name} onChange={(e) => setName(e.target.value)} required maxLength={120} />
@@ -68,6 +68,8 @@ export default function NovoProdutorPage() {
           <input className="input" value={community} onChange={(e) => setCommunity(e.target.value)} required maxLength={80} />
         </label>
 
+          </fieldset>
+          <fieldset className={`card enter ${ui.formSection}`} style={{ '--i': 1 } as React.CSSProperties}><legend><FieldIcon name="check" /> Consentimento e privacidade</legend>
         <label className="check">
           <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} />
           <span>
@@ -76,6 +78,7 @@ export default function NovoProdutorPage() {
           </span>
         </label>
 
+          </fieldset>
         {error && (
           <p role="alert" className="alert">
             {error}

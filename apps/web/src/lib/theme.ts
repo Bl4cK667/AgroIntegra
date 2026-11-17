@@ -1,41 +1,48 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useSyncExternalStore } from 'react';
 
 export type Theme = 'light' | 'dark';
 const KEY = 'agrointegra.theme';
 
-function stored(): Theme | null {
+// Um único estado de tema para o app inteiro: o menu e o painel mostram sempre o mesmo valor.
+const listeners = new Set<() => void>();
+let current: Theme | null = null;
+
+function initial(): Theme {
   try {
     const v = localStorage.getItem(KEY);
-    return v === 'light' || v === 'dark' ? v : null;
+    if (v === 'light' || v === 'dark') return v;
   } catch {
-    return null;
+    // armazenamento indisponível
   }
+  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
 }
 
-// Tema do app: escolha salva no navegador; sem escolha, segue o sistema operacional.
+function apply(theme: Theme) {
+  current = theme;
+  document.documentElement.dataset.theme = theme;
+  listeners.forEach((l) => l());
+}
+
+function subscribe(listener: () => void) {
+  listeners.add(listener);
+  if (current === null) apply(initial());
+  return () => {
+    listeners.delete(listener);
+  };
+}
+
+export function setTheme(theme: Theme) {
+  try {
+    localStorage.setItem(KEY, theme);
+  } catch {
+    // sem persistência: vale até recarregar
+  }
+  apply(theme);
+}
+
 export function useTheme() {
-  const [theme, setTheme] = useState<Theme>('light');
-
-  useEffect(() => {
-    const initial = stored() ?? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-    setTheme(initial);
-    document.documentElement.dataset.theme = initial;
-  }, []);
-
-  const toggle = useCallback(() => {
-    setTheme((cur) => {
-      const next: Theme = cur === 'dark' ? 'light' : 'dark';
-      document.documentElement.dataset.theme = next;
-      try {
-        localStorage.setItem(KEY, next);
-      } catch {
-        // sem persistência: vale até recarregar
-      }
-      return next;
-    });
-  }, []);
-
-  return { theme, toggle };
+  const theme = useSyncExternalStore(subscribe, () => current ?? 'light', () => 'light' as Theme);
+  return { theme, toggle: () => setTheme(theme === 'dark' ? 'light' : 'dark') };
 }

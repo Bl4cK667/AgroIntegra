@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { FieldHeading, FieldIcon, FieldLoading, fieldStyles as ui } from '@/components/property/FieldUI';
 import { useParams, useRouter } from 'next/navigation';
 import { FormEvent, useEffect, useState } from 'react';
 import { ApiError, getProducer, ProducerDetail, updateProducer } from '@/lib/api';
@@ -44,14 +45,13 @@ export default function EditarProdutorPage() {
       <Link href={`/produtores/${id}`} className="back">
         {producer?.name ?? 'Produtor'}
       </Link>
-      <header className="page-head">
-        <h1>Editar dados do produtor</h1>
-      </header>
+      <FieldHeading icon="people" eyebrow="Cadastro de produtores" title="Editar dados do produtor" description="Mantenha os dados de contato e a comunidade atualizados." />
 
-      {!producer && !error && <p className="muted">Carregando…</p>}
+      {!producer && !error && <FieldLoading />}
 
       {producer && (
-        <form className="form" onSubmit={onSubmit} noValidate>
+        <form className={ui.form} onSubmit={onSubmit} noValidate>
+          <fieldset className={`card enter ${ui.formSection}`}><legend><FieldIcon name="people" /> Identificação e contato</legend>
           <label className="field">
             <span>Nome completo</span>
             <input className="input" value={name} onChange={(e) => setName(e.target.value)} maxLength={120} />
@@ -71,6 +71,7 @@ export default function EditarProdutorPage() {
             <span>Comunidade</span>
             <input className="input" value={community} onChange={(e) => setCommunity(e.target.value)} maxLength={80} />
           </label>
+          </fieldset>
           {error && (
             <p role="alert" className="alert">
               {error}

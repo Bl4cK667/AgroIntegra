@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
+import { FieldHeading, FieldIcon, FieldLoading, FieldStats } from '@/components/property/FieldUI';
 import { PriorityTag } from '@/components/request/PriorityTag';
 import {
   ApiError,
@@ -28,6 +29,7 @@ export default function SolicitacoesPage() {
   const [open, setOpen] = useState<string | null>(null);
   const [dragging, setDragging] = useState<string | null>(null);
   const [over, setOver] = useState<RequestStatus | null>(null);
+  const [filter, setFilter] = useState<RequestPriority | 'ALL'>('ALL');
 
   const load = useCallback(() => {
     listRequests()
@@ -59,7 +61,7 @@ export default function SolicitacoesPage() {
     apply(r.id, () => setRequestPriority(r.id, priority), { priority });
 
   const columns = STATUS_ORDER.map((status) => {
-    let list = (items ?? []).filter((r) => r.status === status);
+    let list = (items ?? []).filter((r) => r.status === status && (filter === 'ALL' || r.priority === filter));
     if (status === 'DONE') {
       list = list.sort((a, b) => (b.completedAt ?? '').localeCompare(a.completedAt ?? ''));
     } else {
@@ -70,27 +72,56 @@ export default function SolicitacoesPage() {
     return { status, total: list.length, list: status === 'DONE' ? list.slice(0, DONE_LIMIT) : list };
   });
 
+  const openItems = (items ?? []).filter((r) => r.status !== 'DONE');
+
   return (
     <>
-      <header className="page-head">
-        <div>
-          <h1>Solicitações</h1>
-          <p>Pedidos de atendimento dos produtores, da chegada à visita.</p>
-        </div>
-        <Link href="/solicitacoes/nova" className="btn btn-primary">
-          Nova solicitação
-        </Link>
-      </header>
+      <FieldHeading
+        icon="inbox"
+        eyebrow="Fluxo de atendimento"
+        title="Solicitações"
+        description="Pedidos de atendimento dos produtores, da chegada à visita. Arraste os cartões entre as colunas."
+        actions={
+          <Link href="/solicitacoes/nova" className="btn btn-primary">
+            <FieldIcon name="plus" /> Nova solicitação
+          </Link>
+        }
+      />
 
-      {error && <p className="alert">{error}</p>}
-      {!items && !error && <p className="muted">Carregando…</p>}
+      {items && (
+        <FieldStats
+          items={[
+            { label: 'Em aberto', value: openItems.length, icon: 'inbox', note: 'Novas, em análise e agendadas' },
+            { label: 'Alta prioridade', value: openItems.filter((r) => r.priority === 'HIGH').length, icon: 'flag', note: 'Pedem atenção primeiro' },
+            { label: 'Agendadas', value: openItems.filter((r) => r.status === 'SCHEDULED').length, icon: 'calendar', note: 'Com visita marcada' },
+          ]}
+        />
+      )}
+
+      {error && <p className="alert" role="alert">{error}</p>}
+      {!items && !error && <FieldLoading />}
+
+      {items && (
+        <div className={`${styles.filters} enter`} style={{ '--i': 4 } as React.CSSProperties}>
+          <div className="segmented" role="group" aria-label="Filtrar por prioridade">
+            {(['ALL', ...PRIORITY_ORDER] as const).map((p) => (
+              <button key={p} type="button" aria-pressed={filter === p} onClick={() => setFilter(p)}>
+                {p === 'ALL' ? 'Todas' : PRIORITY_LABEL[p]}
+              </button>
+            ))}
+          </div>
+          <span className="count">Clique num cartão para ver detalhes e agir.</span>
+        </div>
+      )}
 
       {items && (
         <div className={styles.board}>
-          {columns.map((col) => (
+          {columns.map((col, ci) => (
             <section
               key={col.status}
-              className={`${styles.column} ${over === col.status ? styles.dropTarget : ''}`}
+              className={`${styles.column} ${over === col.status ? styles.dropTarget : ''} enter`}
+              style={{ '--i': ci + 5 } as React.CSSProperties}
+              data-status={col.status}
               aria-label={STATUS_LABEL[col.status]}
               onDragOver={(e) => {
                 if (!dragging) return;
@@ -107,18 +138,22 @@ export default function SolicitacoesPage() {
               }}
             >
               <header className={styles.columnHead}>
+                <span className={styles.dot} aria-hidden="true" />
                 <h2>{STATUS_LABEL[col.status]}</h2>
-                <span className="num">{col.total}</span>
+                <span className={`${styles.total} num`}>{col.total}</span>
               </header>
 
               {col.list.length === 0 ? (
-                <p className={styles.columnEmpty}>Nenhuma</p>
+                <p className={styles.columnEmpty}>{filter === 'ALL' ? 'Nada por aqui.' : 'Nenhuma com essa prioridade.'}</p>
               ) : (
                 <ul className={styles.cards}>
-                  {col.list.map((r) => (
+                  {col.list.map((r, i) => (
                     <li
                       key={r.id}
                       className={`${styles.card} ${dragging === r.id ? styles.dragging : ''}`}
+                      data-priority={r.priority}
+                      data-open={open === r.id || undefined}
+                      style={{ '--i': Math.min(i, 8) } as React.CSSProperties}
                       draggable
                       onDragStart={(e) => {
                         e.dataTransfer.effectAllowed = 'move';

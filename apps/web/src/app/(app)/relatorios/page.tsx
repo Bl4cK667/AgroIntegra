@@ -3,9 +3,9 @@
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useState } from 'react';
-import fig from '@/components/figures.module.css';
 import form from '@/components/form.module.css';
 import { ProducerSearch } from '@/components/ProducerSearch';
+import { FieldEmpty, FieldHeading, FieldLoading, FieldIcon, FieldStats, SectionTitle } from '@/components/property/FieldUI';
 import {
   ApiError,
   ENROLLMENT_LABEL,
@@ -20,7 +20,7 @@ import styles from './relatorios.module.css';
 
 export default function RelatoriosPage() {
   return (
-    <Suspense fallback={<p className="muted">Carregando…</p>}>
+    <Suspense fallback={<FieldLoading />}>
       <Relatorios />
     </Suspense>
   );
@@ -37,6 +37,13 @@ function Relatorios() {
   const [downloading, setDownloading] = useState(false);
 
   const validPeriod = !!from && !!to && from <= to;
+  const today = todayIso();
+  const presets = [
+    { key: 'year', label: 'Este ano', from: `${today.slice(0, 4)}-01-01` },
+    { key: 'month', label: 'Este mês', from: `${today.slice(0, 7)}-01` },
+    { key: '90', label: 'Últimos 90 dias', from: daysAgo(90) },
+  ];
+  const preset = presets.find((p) => p.from === from && to === today)?.key;
 
   // A prévia acompanha produtor e período.
   useEffect(() => {
@@ -79,58 +86,82 @@ function Relatorios() {
           {report?.producer.name ?? 'Produtor'}
         </Link>
       )}
-      <header className="page-head">
-        <div>
-          <h1>Relatórios</h1>
-          <p>Relatório de atendimento por produtor e período, em PDF. Cada PDF gerado fica registrado na auditoria.</p>
-        </div>
-      </header>
+      <FieldHeading
+        icon="report"
+        eyebrow="Prestação de contas"
+        title="Relatórios"
+        description="Relatório de atendimento por produtor e período, em PDF. Cada PDF gerado fica registrado na auditoria."
+      />
 
-      <div className={styles.controls}>
-        <div className={styles.who}>
-          {report && producerId ? (
-            <div className={form.chosen}>
-              <div>
-                <strong>{report.producer.name}</strong>
-                <span className="muted">
-                  {report.producer.community} · <span className="num">{report.producer.cpf}</span>
-                </span>
-              </div>
-              <button type="button" className="btn-link" onClick={() => (setProducerId(null), setReport(null))}>
-                Trocar produtor
-              </button>
-            </div>
-          ) : (
-            <ProducerSearch onPick={setProducerId} />
-          )}
-        </div>
-        <label className="field">
-          <span>De</span>
-          <input className="input num" type="date" value={from} max={to} onChange={(e) => setFrom(e.target.value)} />
-        </label>
-        <label className="field">
-          <span>Até</span>
-          <input className="input num" type="date" value={to} min={from} onChange={(e) => setTo(e.target.value)} />
-        </label>
-        <button
-          type="button"
-          className="btn btn-primary"
-          onClick={download}
-          disabled={!report || !validPeriod || downloading || loading}
+      <section className={`card enter ${styles.builder}`} style={{ '--i': 1 } as React.CSSProperties} aria-label="Montar relatório">
+        <SectionTitle
+          icon="note"
+          actions={
+            <button type="button" className="btn btn-primary" onClick={download} disabled={!report || !validPeriod || downloading || loading}>
+              {downloading ? <span className={styles.spinner} aria-hidden="true" /> : <FieldIcon name="download" />}
+              {downloading ? 'Gerando PDF…' : 'Baixar PDF'}
+            </button>
+          }
         >
-          {downloading ? 'Gerando PDF…' : 'Baixar PDF'}
-        </button>
-      </div>
+          Montar relatório
+        </SectionTitle>
 
-      {!validPeriod && <p className="alert">O fim do período não pode ser antes do início.</p>}
-      {error && <p className="alert">{error}</p>}
+        <div className={styles.controls}>
+          <div className={styles.step}>
+            <span className={styles.stepNum} data-done={!!(report && producerId) || undefined}>1</span>
+            <div className={styles.who}>
+              {report && producerId ? (
+                <div className={form.chosen}>
+                  <div>
+                    <strong>{report.producer.name}</strong>
+                    <span className="muted">
+                      {report.producer.community} · <span className="num">{report.producer.cpf}</span>
+                    </span>
+                  </div>
+                  <button type="button" className="btn-link" onClick={() => (setProducerId(null), setReport(null))}>
+                    Trocar produtor
+                  </button>
+                </div>
+              ) : (
+                <ProducerSearch onPick={setProducerId} />
+              )}
+            </div>
+          </div>
+
+          <div className={styles.step}>
+            <span className={styles.stepNum} data-done={validPeriod || undefined}>2</span>
+            <div className={styles.period}>
+              <span className={styles.stepLabel}>Período</span>
+              <div className="segmented" role="group" aria-label="Atalhos de período">
+                {presets.map((p) => (
+                  <button key={p.key} type="button" aria-pressed={preset === p.key} onClick={() => (setFrom(p.from), setTo(today))}>
+                    {p.label}
+                  </button>
+                ))}
+              </div>
+              <div className={styles.dates}>
+                <label className="field">
+                  <span>De</span>
+                  <input className="input num" type="date" value={from} max={to} onChange={(e) => setFrom(e.target.value)} />
+                </label>
+                <label className="field">
+                  <span>Até</span>
+                  <input className="input num" type="date" value={to} min={from} onChange={(e) => setTo(e.target.value)} />
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {!validPeriod && <p className="alert" role="alert">O fim do período não pode ser antes do início.</p>}
+      {error && <p className="alert" role="alert">{error}</p>}
 
       {!producerId && (
-        <div className="table-wrap">
-          <div className="empty">
-            <strong>Escolha um produtor</strong>
+        <div className="enter" style={{ '--i': 2 } as React.CSSProperties}>
+          <FieldEmpty icon="report" title="Escolha um produtor">
             A prévia do relatório aparece aqui, com os mesmos números do PDF.
-          </div>
+          </FieldEmpty>
         </div>
       )}
 
@@ -139,40 +170,45 @@ function Relatorios() {
   );
 }
 
+function daysAgo(n: number) {
+  const d = new Date();
+  d.setDate(d.getDate() - n);
+  const pad = (x: number) => String(x).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+
 function Preview({ r, loading }: { r: ProducerReport; loading: boolean }) {
   return (
-    <div className={loading ? styles.loading : undefined}>
-      <h2 className={styles.title}>
-        Prévia · <span className="num">{formatDay(r.period.from)}</span> a <span className="num">{formatDay(r.period.to)}</span>
-      </h2>
+    <div className={`${styles.preview} ${loading ? styles.loading : ''}`} aria-busy={loading}>
+      <div className={`${styles.paperHead} enter`} style={{ '--i': 2 } as React.CSSProperties}>
+        <div>
+          <span className="eyebrow">Prévia do PDF</span>
+          <h2>{r.producer.name}</h2>
+          <p className="muted">
+            {r.producer.community} · <span className="num">{formatDay(r.period.from)}</span> a{' '}
+            <span className="num">{formatDay(r.period.to)}</span>
+          </p>
+        </div>
+        <span className="badge badge-success">Mesmos números do PDF</span>
+      </div>
 
-      <section className={fig.figures} aria-label="Resumo do período">
-        <div className={fig.figure}>
-          <span className={fig.label}>Visitas</span>
-          <strong className="num">{formatInt(r.totals.visits)}</strong>
-        </div>
-        <div className={fig.figure}>
-          <span className={fig.label}>Solicitações abertas</span>
-          <strong className="num">{formatInt(r.totals.requestsOpened)}</strong>
-        </div>
-        <div className={fig.figure}>
-          <span className={fig.label}>Solicitações concluídas</span>
-          <strong className="num">{formatInt(r.totals.requestsCompleted)}</strong>
-        </div>
-        <div className={fig.figure}>
-          <span className={fig.label}>Entregas de programas</span>
-          <strong className="num">{formatInt(r.totals.deliveries)}</strong>
-          <span className={`${fig.note} num`}>{formatMoney(r.totals.deliveredValueCents)}</span>
-        </div>
-      </section>
+      <FieldStats
+        items={[
+          { label: 'Visitas', value: formatInt(r.totals.visits), icon: 'visit', note: 'atendimentos técnicos' },
+          { label: 'Solicitações abertas', value: formatInt(r.totals.requestsOpened), icon: 'inbox', note: `${formatInt(r.totals.requestsCompleted)} concluídas` },
+          { label: 'Entregas de programas', value: formatInt(r.totals.deliveries), icon: 'sprout', note: formatMoney(r.totals.deliveredValueCents) },
+        ]}
+      />
 
       <div className={styles.sections}>
-        <section>
-          <h3>Visitas técnicas ({r.totals.visits})</h3>
+        <section className="card enter" style={{ '--i': 5 } as React.CSSProperties}>
+          <SectionTitle icon="visit" actions={<span className="badge badge-neutral num">{r.totals.visits}</span>}>
+            Visitas técnicas
+          </SectionTitle>
           {r.visits.length === 0 ? (
             <p className="muted">Nenhuma visita no período.</p>
           ) : (
-            <ol className={styles.visits}>
+            <ol className={styles.timeline}>
               {r.visits.map((v) => (
                 <li key={v.id}>
                   <div className={styles.visitHead}>
@@ -190,10 +226,15 @@ function Preview({ r, loading }: { r: ProducerReport; loading: boolean }) {
                   <p>
                     <b>Plano de ação.</b> {v.actionPlan}
                   </p>
-                  <p className={styles.small}>
-                    Retorno: {v.returnOn ? formatDay(v.returnOn) : 'sem retorno previsto'} · Fotos: {v.photoCount} · Assinatura:{' '}
-                    {v.hasSignature ? 'coletada' : 'não coletada'}
-                  </p>
+                  <div className={styles.tags}>
+                    <span className="badge badge-neutral">
+                      <FieldIcon name="calendar" /> {v.returnOn ? `Retorno ${formatDay(v.returnOn)}` : 'Sem retorno previsto'}
+                    </span>
+                    <span className="badge badge-neutral num">{v.photoCount} {v.photoCount === 1 ? 'foto' : 'fotos'}</span>
+                    <span className={v.hasSignature ? 'badge badge-success' : 'badge badge-warning'}>
+                      Assinatura {v.hasSignature ? 'coletada' : 'não coletada'}
+                    </span>
+                  </div>
                 </li>
               ))}
             </ol>
@@ -201,56 +242,59 @@ function Preview({ r, loading }: { r: ProducerReport; loading: boolean }) {
         </section>
 
         <aside className={styles.side}>
-          <section>
-            <h3>Propriedades</h3>
+          <section className="card enter" style={{ '--i': 6 } as React.CSSProperties}>
+            <SectionTitle icon="land">Propriedades</SectionTitle>
             {r.properties.length === 0 ? (
               <p className="muted">Nenhuma cadastrada.</p>
             ) : (
-              <ul>
+              <ul className={styles.list}>
                 {r.properties.map((p) => (
                   <li key={p.name}>
-                    {p.name} <span className="area">{formatArea(p.areaHa)}</span>
+                    <span>{p.name}</span> <span className="area num">{formatArea(p.areaHa)}</span>
                   </li>
                 ))}
               </ul>
             )}
           </section>
-          <section>
-            <h3>Solicitações abertas no período ({r.totals.requestsOpened})</h3>
+          <section className="card enter" style={{ '--i': 7 } as React.CSSProperties}>
+            <SectionTitle icon="inbox" actions={<span className="badge badge-neutral num">{r.totals.requestsOpened}</span>}>
+              Solicitações no período
+            </SectionTitle>
             {r.requests.length === 0 ? (
               <p className="muted">Nenhuma.</p>
             ) : (
-              <ul>
+              <ul className={styles.list}>
                 {r.requests.map((q, i) => (
-                  <li key={i}>
-                    {q.subject}
-                    <span className={`muted ${styles.small}`}>
-                      {' '}
-                      · {formatDate(q.openedAt)} · {PRIORITY_LABEL[q.priority]} · {STATUS_LABEL[q.status]}
+                  <li key={i} className={styles.stack}>
+                    <span>{q.subject}</span>
+                    <span className={styles.small}>
+                      {formatDate(q.openedAt)} · {PRIORITY_LABEL[q.priority]} · {STATUS_LABEL[q.status]}
                     </span>
                   </li>
                 ))}
               </ul>
             )}
           </section>
-          <section>
-            <h3>Programas</h3>
+          <section className="card enter" style={{ '--i': 8 } as React.CSSProperties}>
+            <SectionTitle icon="sprout">Programas</SectionTitle>
             {r.programs.length === 0 ? (
               <p className="muted">Sem inscrição em programas.</p>
             ) : (
-              <ul>
+              <ul className={styles.list}>
                 {r.programs.map((p) => (
                   <li key={p.name}>
-                    {p.name} <span className="muted">· {ENROLLMENT_LABEL[p.status]}</span>
+                    <span>{p.name}</span>
+                    <span className={p.status === 'APPROVED' ? 'badge badge-success' : 'badge badge-neutral'}>{ENROLLMENT_LABEL[p.status]}</span>
                   </li>
                 ))}
               </ul>
             )}
             {r.deliveries.length > 0 && (
-              <ul>
+              <ul className={`${styles.list} ${styles.deliveries}`}>
                 {r.deliveries.map((d, i) => (
                   <li key={i} className="num">
-                    {formatDay(d.deliveredOn)} · {formatInt(d.quantity)} {d.unit} · {formatMoney(d.valueCents)}
+                    <span>{formatDay(d.deliveredOn)} · {formatInt(d.quantity)} {d.unit}</span>
+                    <strong>{formatMoney(d.valueCents)}</strong>
                   </li>
                 ))}
               </ul>

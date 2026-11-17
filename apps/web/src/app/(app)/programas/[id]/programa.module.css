@@ -1,43 +1,58 @@
 .execution {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0;
-  margin-bottom: 26px;
-  background: var(--superficie);
-  border: 1px solid var(--linha);
-  border-radius: 6px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  margin: 18px 0;
 }
 
 .execution > div {
   display: grid;
-  gap: 6px;
-  padding: 16px 20px 18px;
+  gap: 14px;
+  align-content: start;
 }
 
-.execution > div + div {
-  border-left: 1px solid var(--linha);
-}
-
-.execution h2 {
-  font-size: 1rem;
-}
-
-.execution p {
+.big {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px 10px;
   margin: 0;
+}
+
+.big strong {
+  font-size: 1.9rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+}
+
+.big span {
+  color: var(--muted);
+  font-size: 0.9rem;
 }
 
 .tables {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
   align-items: start;
 }
 
-.h2 {
-  margin-bottom: 10px;
+.tables > section {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
 }
 
-@media (max-width: 1000px) {
+/* tabela encaixada no card, sem moldura dupla */
+.flush {
+  border: 0;
+  box-shadow: none;
+  background: transparent;
+  margin: 0 -8px;
+}
+
+@media (max-width: 1100px) {
   .tables {
     grid-template-columns: 1fr;
   }
@@ -46,10 +61,6 @@
 @media (max-width: 640px) {
   .execution {
     grid-template-columns: 1fr;
-  }
-
-  .execution > div + div {
-    border-left: 0;
-    border-top: 1px solid var(--linha);
+    gap: 14px;
   }
 }

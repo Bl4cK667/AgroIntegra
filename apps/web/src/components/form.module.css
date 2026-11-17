@@ -1,28 +1,36 @@
 .form {
   display: grid;
-  gap: 22px;
-  max-width: 720px;
+  gap: 20px;
+  max-width: 740px;
 }
 
-/* Cada bloco do formulário: título pequeno e linha forte à esquerda. */
+/* Cada bloco do formulário: card moderno no padrão AgroIntegra / AbacatePay. */
 .group {
   display: grid;
   gap: 16px;
   margin: 0;
-  padding: 18px 20px 20px;
-  border: 1px solid var(--linha);
-  border-left: 3px solid var(--mata);
-  border-radius: 4px;
-  background: var(--superficie);
+  padding: 20px 24px 22px;
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-lg);
+  background: var(--card);
+  box-shadow: var(--shadow-card);
   min-width: 0;
+  transition:
+    border-color var(--dur-fast) var(--ease-out),
+    background-color var(--dur-med) var(--ease-out);
+}
+
+.group:hover {
+  border-color: var(--card-hover);
 }
 
 .group legend {
-  padding: 0 6px;
-  margin-left: -6px;
+  padding: 0 8px;
+  margin-left: -8px;
   font-weight: 650;
   font-stretch: 88%;
-  font-size: 1.02rem;
+  font-size: 1rem;
+  color: var(--ink);
 }
 
 .group:disabled {
@@ -40,10 +48,10 @@
   align-items: center;
   gap: 12px;
   flex-wrap: wrap;
-  padding: 10px 12px;
-  border: 1px solid var(--linha);
-  border-radius: 4px;
-  background: #f8f9f6;
+  padding: 12px 14px;
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-md);
+  background: var(--card-2);
 }
 
 .chosen > div {
@@ -53,13 +61,15 @@
 .results {
   list-style: none;
   margin: 0;
-  padding: 0;
-  border: 1px solid var(--linha);
-  border-radius: 4px;
+  padding: 4px;
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-md);
+  background: var(--card);
+  box-shadow: var(--shadow-card);
 }
 
 .results li + li {
-  border-top: 1px solid var(--linha);
+  border-top: 1px solid var(--card-border);
 }
 
 .results li.muted {
@@ -69,51 +79,69 @@
 .results button {
   display: grid;
   width: 100%;
-  padding: 9px 12px;
+  padding: 10px 12px;
   border: 0;
+  border-radius: 8px;
   background: none;
   text-align: left;
   cursor: pointer;
+  transition: background-color var(--dur-fast) var(--ease-out);
 }
 
 .results button:hover,
 .results button:focus-visible {
-  background: #f5f7f3;
+  background: var(--card-2);
 }
 
 @media (max-width: 640px) {
   .group {
-    padding: 14px;
+    padding: 16px;
+  }
+
+  .results button {
+    min-height: 44px;
   }
 }
 
-/* Escolha curta (prioridade): botões lado a lado, o marcado em verde. */
+/* Escolha curta (prioridade): pílulas lado a lado, o marcado em destaque. */
 .segmented {
   display: inline-flex;
   justify-self: start;
-  border: 1px solid var(--linha-forte);
-  border-radius: 4px;
-  overflow: hidden;
+  padding: 3px;
+  gap: 2px;
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-pill);
+  background: var(--card-2);
 }
 
 .seg,
 .segOn {
   position: relative;
   padding: 7px 18px;
+  border-radius: var(--radius-pill);
   font-weight: 600;
+  font-size: 0.88rem;
   cursor: pointer;
-  background: var(--superficie);
+  background: transparent;
+  color: var(--muted);
+  transition:
+    background-color var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-fast) var(--ease-out);
 }
 
-.seg + .seg,
-.seg + .segOn,
-.segOn + .seg {
-  border-left: 1px solid var(--linha-forte);
+.seg:hover {
+  color: var(--ink);
 }
 
 .segOn {
-  background: var(--mata);
-  color: #fff;
+  background: var(--chart-1);
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+}
+
+:root[data-theme='dark'] .segOn {
+  color: #0e1611;
 }
 
 .seg input,
@@ -126,5 +154,5 @@
 .seg:has(input:focus-visible),
 .segOn:has(input:focus-visible) {
   outline: 2px solid var(--ouro);
-  outline-offset: -2px;
+  outline-offset: 2px;
 }

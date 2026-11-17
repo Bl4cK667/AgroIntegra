@@ -1,0 +1,53 @@
+.heading { display: flex; gap: 16px; align-items: center; min-width: 0; }
+.heading h1 { overflow-wrap: anywhere; }
+.heading p a { color: var(--chart-1, #3f6b55); }
+.headingIcon { width: 48px; height: 48px; flex: none; border-radius: var(--radius-md, 12px); }
+.headingIcon svg { width: 23px; height: 23px; }
+.sectionActions { margin-left: auto; display: flex; flex-wrap: wrap; gap: 8px; }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 24px; }
+.stat { display: flex; gap: 14px; align-items: flex-start; min-width: 0; }
+.stat > div { min-width: 0; }
+.stat strong { display: block; font-size: 1.65rem; font-weight: 600; line-height: 1.2; margin: 6px 0; letter-spacing: -.04em; overflow-wrap: anywhere; }
+.statLabel { color: var(--muted, #5b675f); font-size: .8rem; }
+.stat small { color: var(--muted, #5b675f); display: block; font-size: .73rem; }
+.search { position: relative; flex: 1; max-width: 510px; min-width: 180px; }
+.search > svg { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--muted, #5b675f); }
+.search input { padding-left: 42px; max-width: none; }
+.listCard { padding: 20px; }
+.listCard > :global(.toolbar) { margin-bottom: 20px; }
+.person { display: flex; gap: 10px; align-items: center; }
+.avatar { display: grid; place-items: center; width: 34px; height: 34px; flex: none; border-radius: 11px; background: var(--card-2, #f2f3ef); color: var(--chart-1, #3f6b55); font-weight: 600; font-size: .75rem; }
+.person small { display: block; color: var(--muted, #5b675f); font-size: .73rem; margin-top: 2px; }
+.emptyIcon { margin: 0 auto 16px; width: 46px; height: 46px; }
+.loading { display: grid; gap: 16px; }
+.skeleton { min-height: 44px; border-radius: var(--radius-md, 12px); }
+.form { max-width: 880px; display: grid; gap: 22px; }
+.formSection { display: grid; gap: 18px; border: 1px solid var(--card-border, #d8dcd4); min-width: 0; margin: 0; }
+.formSection legend { padding: 0 8px; font-size: .9rem; font-weight: 600; color: var(--ink, #18211c); }
+.formSection legend svg { vertical-align: middle; margin-right: 8px; color: var(--chart-1, #3f6b55); }
+.formHint { margin: 0; font-size: .83rem; color: var(--muted, #5b675f); }
+.mobileOnly { display: none; }
+@media (max-width: 640px) {
+  .heading { gap: 10px; align-items: flex-start; }
+  .headingIcon { width: 38px; height: 38px; }
+  .heading h1 { font-size: 1.5rem; }
+  .stats { gap: 10px; grid-template-columns: repeat(2, minmax(0, 1fr)); margin-bottom: 18px; }
+  .stat { padding: 14px; gap: 8px; flex-direction: column; }
+  .stat:last-child:nth-child(odd) { grid-column: 1 / -1; flex-direction: row; align-items: flex-start; gap: 12px; }
+  .stat strong { font-size: 1.35rem; }
+  .listCard { padding: 14px; }
+  .search { max-width: none; width: 100%; flex-basis: 100%; }
+  .sectionActions { width: 100%; margin-left: 0; }
+  .mobileOnly { display: block; }
+  .responsiveTable, .responsiveTable tbody { display: block; width: 100%; }
+  .responsiveTable thead { display: none; }
+  .responsiveTable tbody { padding: 4px; }
+  .responsiveTable tr { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 14px; border: 1px solid var(--card-border, #d8dcd4); border-radius: var(--radius-md, 12px); background: var(--card, #fff); padding: 16px; }
+  .responsiveTable tr + tr { margin-top: 12px; }
+  .responsiveTable td, .responsiveTable td:global(.hide-sm), .responsiveTable td:global(.clip), .responsiveTable td:global(.nowrap) { display: block; padding: 0; width: auto; max-width: none; border: 0; white-space: normal; overflow-wrap: anywhere; text-align: left; font-size: .83rem; }
+  .responsiveTable td::before { content: attr(data-label); display: block; margin-bottom: 4px; font-size: .69rem; font-weight: 400; color: var(--muted, #5b675f); }
+  .responsiveTable td:first-child { grid-column: 1 / -1; padding-bottom: 9px; border-bottom: 1px solid var(--card-border, #d8dcd4); font-size: .95rem; }
+  .responsiveTable td[colspan] { grid-column: 1 / -1; }
+  .responsiveTable td[colspan]::before { display: none; }
+  .responsiveTable a, .responsiveTable button { min-height: 44px; display: inline-flex; align-items: center; }
+}

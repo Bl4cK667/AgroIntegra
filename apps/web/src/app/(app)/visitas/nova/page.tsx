@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { FieldHeading, FieldIcon, FieldLoading } from '@/components/property/FieldUI';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { FormEvent, Suspense, useEffect, useRef, useState } from 'react';
 import { Location, LocationField } from '@/components/visit/LocationField';
@@ -13,7 +14,7 @@ import { ProducerSearch } from '@/components/ProducerSearch';
 
 export default function NovaVisitaPage() {
   return (
-    <Suspense fallback={<p className="muted">Carregando…</p>}>
+    <Suspense fallback={<FieldLoading />}>
       <NovaVisita />
     </Suspense>
   );
@@ -94,16 +95,12 @@ function NovaVisita() {
       <Link href={back} className="back">
         {backLabel}
       </Link>
-      <header className="page-head">
-        <div>
-          <h1>Registrar visita</h1>
-          <p>Depois de salva, a visita não é alterada: vale como registro do atendimento.</p>
-        </div>
-      </header>
+      <FieldHeading icon="visit" eyebrow="Novo atendimento" title="Registrar visita" description="Da avaliação ao registro em campo, reúna as informações do atendimento. Após salva, a visita fica como registro definitivo." />
 
       <form className={styles.form} onSubmit={onSubmit} noValidate>
-        <fieldset className={styles.group}>
-          <legend>Atendimento</legend>
+        <fieldset className={`${styles.group} enter`} style={{ '--i': 0 } as React.CSSProperties}>
+          <legend><FieldIcon name="people" /> 01 · Atendimento</legend>
+          <p className="muted" style={{ margin: 0 }}>Escolha quem foi atendido e vincule a propriedade e a solicitação, quando houver.</p>
           {producer ? (
             <div className={styles.chosen}>
               <div>
@@ -166,8 +163,8 @@ function NovaVisita() {
           )}
         </fieldset>
 
-        <fieldset className={styles.group} disabled={!producer}>
-          <legend>Avaliação técnica</legend>
+        <fieldset className={`${styles.group} enter`} style={{ '--i': 1 } as React.CSSProperties} disabled={!producer}>
+          <legend><FieldIcon name="note" /> 02 · Avaliação técnica</legend>
           <label className="field">
             <span>Diagnóstico</span>
             <textarea
@@ -216,8 +213,9 @@ function NovaVisita() {
           </div>
         </fieldset>
 
-        <fieldset className={styles.group} disabled={!producer}>
-          <legend>Registro em campo</legend>
+        <fieldset className={`${styles.group} enter`} style={{ '--i': 2 } as React.CSSProperties} disabled={!producer}>
+          <legend><FieldIcon name="pin" /> 03 · Registro em campo</legend>
+          <p className="muted" style={{ margin: 0 }}>Complete o atendimento com fotos, localização e assinatura. Estes registros são opcionais.</p>
           <PhotoPicker value={photos} onChange={setPhotos} />
           <LocationField value={location} onChange={setLocation} />
           <SignaturePad ref={signature} />

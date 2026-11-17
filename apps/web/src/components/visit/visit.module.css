@@ -15,7 +15,7 @@
 .thumb {
   margin: 0;
   display: grid;
-  gap: 4px;
+  gap: 8px;
 }
 
 .thumb img {
@@ -23,7 +23,7 @@
   aspect-ratio: 4 / 3;
   object-fit: cover;
   border: 1px solid var(--linha);
-  border-radius: 4px;
+  border-radius: var(--radius-md);
   background: var(--linha);
 }
 
@@ -31,7 +31,8 @@
   justify-self: start;
   background: none;
   border: 0;
-  padding: 0;
+  padding: 6px 0;
+  min-height: 36px;
   color: var(--sutil);
   font-size: 0.85rem;
   text-decoration: underline;
@@ -46,16 +47,26 @@
 .addPhoto {
   aspect-ratio: 4 / 3;
   border: 1px dashed var(--linha-forte);
-  border-radius: 4px;
-  background: var(--superficie);
-  color: var(--mata-2);
+  border-radius: var(--radius-md);
+  background: var(--card-2);
+  color: var(--chart-1);
   font-weight: 600;
   cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  transition: background var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out);
 }
 
 .addPhoto:hover:not(:disabled) {
   border-color: var(--mata-3);
-  background: #f8f9f6;
+  background: var(--card-hover);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .addPhoto { transition: none; }
 }
 
 /* Assinatura: área branca com a linha de base, como no papel. */
@@ -63,8 +74,8 @@
   position: relative;
   height: 160px;
   border: 1px solid var(--linha-forte);
-  border-radius: 4px;
-  background: var(--superficie);
+  border-radius: var(--radius-md);
+  background: #ffffff;
 }
 
 .signature canvas {
@@ -89,7 +100,7 @@
   position: absolute;
   left: 24px;
   bottom: 12px;
-  color: var(--sutil);
+  color: #5b675f;
   font-size: 0.85rem;
   pointer-events: none;
 }
@@ -99,22 +110,25 @@
   gap: 14px;
   align-items: baseline;
   flex-wrap: wrap;
-  padding: 9px 12px;
-  border: 1px solid var(--linha);
-  border-radius: 4px;
-  background: var(--superficie);
+  padding: 14px 16px;
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-md);
+  background: var(--card-2);
 }
 
 /* Imagem protegida (foto ou assinatura salva). */
 .stored {
   width: 100%;
   border: 1px solid var(--linha);
-  border-radius: 4px;
-  background: var(--superficie);
+  border-radius: var(--radius-md);
+  background: #ffffff;
 }
 
 @media (max-width: 640px) {
   .photos {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+  .thumbRemove { min-height: 44px; }
+  .addPhoto { min-height: 100px; }
+  .location { align-items: flex-start; flex-direction: column; gap: 8px; }
 }

@@ -1,6 +1,8 @@
 'use client';
 
 import Link from 'next/link';
+import { FieldHeading, FieldIcon, FieldLoading, FieldStats, fieldStyles as ui } from '@/components/property/FieldUI';
+
 import { useEffect, useState } from 'react';
 import { ApiError, listProperties, PropertyRow } from '@/lib/api';
 import { formatArea, formatPlace } from '@/lib/format';
@@ -24,14 +26,16 @@ export default function PropriedadesPage() {
 
   return (
     <>
-      <header className="page-head">
-        <div>
-          <h1>Propriedades</h1>
-          <p>Para cadastrar uma propriedade, abra a página do produtor.</p>
-        </div>
-      </header>
+      <FieldHeading icon="land" eyebrow="Território e produção" title="Propriedades" description="Uma visão do território: áreas, atividades e os produtores de cada propriedade." actions={<Link href="/produtores" className="btn btn-secondary"><FieldIcon name="plus" /> Cadastrar pelo produtor</Link>} />
+      {data && !term && <FieldStats items={[
+        { label: 'Propriedades cadastradas', value: data.total.toLocaleString('pt-BR'), icon: 'land', note: 'Base de propriedades rurais' },
+        { label: 'Área nesta consulta', value: formatArea(data.items.reduce((sum, p) => sum + p.areaHa, 0)), icon: 'pin', note: 'Soma das propriedades listadas' },
+        { label: 'Produtores na lista', value: new Set(data.items.map(p => p.producer.id)).size, icon: 'people', note: 'Vinculados às propriedades' },
+      ]} /> }
 
+      <section className={`card enter ${ui.listCard}`} style={{ '--i': 4 } as React.CSSProperties}>
       <div className="toolbar">
+        <div className={ui.search}><FieldIcon name="search" />
         <input
           className="input"
           type="search"
@@ -40,6 +44,7 @@ export default function PropriedadesPage() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
+        </div>
         {data && (
           <span className="count num">
             {data.total} {data.total === 1 ? 'propriedade' : 'propriedades'}
@@ -47,12 +52,13 @@ export default function PropriedadesPage() {
         )}
       </div>
 
-      {error && <p className="alert">{error}</p>}
+      {error && <p className="alert" role="alert">{error}</p>}
+      {!data && !error && <FieldLoading />}
 
       {data && (
         <div className="table-wrap">
           {data.items.length === 0 ? (
-            <div className="empty">
+            <div className="empty"><span className={`card-icon ${ui.emptyIcon}`}><FieldIcon name="land" /></span>
               {term ? (
                 <>
                   <strong>Nenhuma propriedade encontrada</strong>
@@ -66,7 +72,7 @@ export default function PropriedadesPage() {
               )}
             </div>
           ) : (
-            <table className="table">
+            <table className={`table ${ui.responsiveTable}`}>
               <thead>
                 <tr>
                   <th>Propriedade</th>
@@ -80,14 +86,14 @@ export default function PropriedadesPage() {
               <tbody>
                 {data.items.map((p) => (
                   <tr key={p.id}>
-                    <td>{p.name}</td>
-                    <td>
+                    <td data-label="Propriedade">{p.name}</td>
+                    <td data-label="Produtor">
                       <Link href={`/produtores/${p.producer.id}`}>{p.producer.name}</Link>
                     </td>
-                    <td className="hide-sm">{p.locality}</td>
-                    <td className="hide-sm">{formatPlace(p.city, p.state) || <span className="muted">Não informado</span>}</td>
-                    <td className="hide-sm">{p.mainActivity || <span className="muted">Não informada</span>}</td>
-                    <td className="right area">{formatArea(p.areaHa)}</td>
+                    <td className="hide-sm" data-label="Localidade">{p.locality}</td>
+                    <td className="hide-sm" data-label="Município">{formatPlace(p.city, p.state) || <span className="muted">Não informado</span>}</td>
+                    <td className="hide-sm" data-label="Atividade principal">{p.mainActivity || <span className="muted">Não informada</span>}</td>
+                    <td className="right area" data-label="Área">{formatArea(p.areaHa)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -95,6 +101,7 @@ export default function PropriedadesPage() {
           )}
         </div>
       )}
+      </section>
     </>
   );
 }

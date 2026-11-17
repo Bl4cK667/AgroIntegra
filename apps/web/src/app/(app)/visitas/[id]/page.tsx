@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { FieldHeading, FieldLoading, FieldStats, SectionTitle } from '@/components/property/FieldUI';
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { ProtectedImage } from '@/components/visit/ProtectedImage';
@@ -29,44 +30,39 @@ export default function VisitaPage() {
       </>
     );
   }
-  if (!visit) return <p className="muted">Carregando…</p>;
+  if (!visit) return <FieldLoading />;
 
   return (
     <>
       <Link href={`/produtores/${visit.producer.id}`} className="back">
         {visit.producer.name}
       </Link>
-      <header className="page-head">
-        <div>
-          <h1>
-            Visita de <span className="num">{formatDay(visit.visitedOn)}</span>
-          </h1>
-          <p>
-            <Link href={`/produtores/${visit.producer.id}`}>{visit.producer.name}</Link>
-            {visit.property && <> · {visit.property.name}</>}
-          </p>
-        </div>
-      </header>
+      <FieldHeading icon="visit" eyebrow="Registro de atendimento" title={<>Visita de <span className="num">{formatDay(visit.visitedOn)}</span></>} description={<><Link href={`/produtores/${visit.producer.id}`}>{visit.producer.name}</Link>{visit.property && <> · {visit.property.name}</>}</>} actions={<Link href={`/visitas/nova?produtor=${visit.producer.id}`} className="btn btn-primary">Registrar nova visita</Link>} />
+      <FieldStats items={[
+        { label: 'Técnico responsável', value: visit.technician.name, icon: 'people' },
+        { label: 'Prazo de retorno', value: visit.returnOn ? formatDay(visit.returnOn) : 'Sem previsão', icon: 'calendar' },
+        { label: 'Registros fotográficos', value: visit.photos.length, icon: 'note', note: visit.hasSignature ? 'Com assinatura do produtor' : 'Sem assinatura coletada' },
+      ]} />
 
       <div className={styles.layout}>
         <div className={styles.main}>
-          <section>
-            <h2>Diagnóstico</h2>
+          <section className="card enter">
+            <SectionTitle icon="search">Diagnóstico</SectionTitle>
             <p className={styles.text}>{visit.diagnosis}</p>
           </section>
-          <section>
-            <h2>Plano de ação</h2>
+          <section className="card enter">
+            <SectionTitle icon="check">Plano de ação</SectionTitle>
             <p className={styles.text}>{visit.actionPlan}</p>
           </section>
           {visit.impact && (
-            <section>
-              <h2>Impacto esperado</h2>
+            <section className="card enter">
+              <SectionTitle icon="sprout">Impacto esperado</SectionTitle>
               <p className={styles.text}>{visit.impact}</p>
             </section>
           )}
           {visit.photos.length > 0 && (
-            <section>
-              <h2>Fotos</h2>
+            <section className="card enter">
+              <SectionTitle icon="note">Fotos</SectionTitle>
               <div className={styles.photos}>
                 {visit.photos.map((p) => (
                   <ProtectedImage key={p.id} path={`/visits/${visit.id}/photos/${p.id}`} alt={`Foto ${p.position} da visita`} />
@@ -76,7 +72,8 @@ export default function VisitaPage() {
           )}
         </div>
 
-        <dl className={styles.facts}>
+        <dl className={`card enter ${styles.facts}`}>
+          <div className="card-head"><h2 className="card-title">Sobre o atendimento</h2></div>
           {visit.request && (
             <div>
               <dt>Solicitação atendida</dt>

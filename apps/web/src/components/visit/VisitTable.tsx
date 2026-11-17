@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { fieldStyles as ui } from '@/components/property/FieldUI';
 import { useRouter } from 'next/navigation';
 import { VisitRow } from '@/lib/api';
 import { formatDay } from '@/lib/format';
@@ -9,7 +10,7 @@ import { formatDay } from '@/lib/format';
 export function VisitTable({ visits, showProducer = true }: { visits: VisitRow[]; showProducer?: boolean }) {
   const router = useRouter();
   return (
-    <table className="table">
+    <table className={`table ${ui.responsiveTable}`}>
       <thead>
         <tr>
           <th>Data</th>
@@ -23,16 +24,16 @@ export function VisitTable({ visits, showProducer = true }: { visits: VisitRow[]
       <tbody>
         {visits.map((v) => (
           <tr key={v.id} className="clickable" onClick={() => router.push(`/visitas/${v.id}`)}>
-            <td className="num">
+            <td className="num" data-label="Data">
               <Link href={`/visitas/${v.id}`} onClick={(e) => e.stopPropagation()}>
                 {formatDay(v.visitedOn)}
               </Link>
             </td>
-            {showProducer && <td className="nowrap">{v.producer.name}</td>}
-            <td className="hide-sm nowrap">{v.property?.name ?? <span className="muted">Não informada</span>}</td>
-            <td className="clip">{v.diagnosis}</td>
-            <td className="hide-sm nowrap">{v.technician.name}</td>
-            <td className="hide-sm num">{v.returnOn ? formatDay(v.returnOn) : <span className="muted">Sem retorno</span>}</td>
+            {showProducer && <td className="nowrap" data-label="Produtor">{v.producer.name}</td>}
+            <td className="hide-sm nowrap" data-label="Propriedade">{v.property?.name ?? <span className="muted">Não informada</span>}</td>
+            <td className="clip" data-label="Diagnóstico">{v.diagnosis}</td>
+            <td className="hide-sm nowrap" data-label="Técnico">{v.technician.name}</td>
+            <td className="hide-sm num" data-label="Retorno">{v.returnOn ? formatDay(v.returnOn) : <span className="muted">Sem retorno</span>}</td>
           </tr>
         ))}
       </tbody>

@@ -2,6 +2,7 @@
 
 import { useRef, useState } from 'react';
 import styles from './visit.module.css';
+import { FieldIcon } from '@/components/property/FieldUI';
 
 const MAX_PHOTOS = 3;
 const MAX_SIDE = 1600;
@@ -65,6 +66,7 @@ export function PhotoPicker({ value, onChange }: { value: string[]; onChange: (p
         ))}
         {value.length < MAX_PHOTOS && (
           <button type="button" className={styles.addPhoto} onClick={() => input.current?.click()} disabled={busy}>
+            <FieldIcon name="plus" />
             {busy ? 'Preparando…' : value.length === 0 ? 'Adicionar fotos' : 'Mais uma foto'}
           </button>
         )}

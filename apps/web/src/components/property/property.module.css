@@ -3,10 +3,10 @@
   display: grid;
   gap: 14px;
   margin: 0;
-  padding: 14px 14px 16px;
-  border: 1px solid var(--linha);
-  border-left: 3px solid var(--ouro);
-  border-radius: 4px;
+  padding: 18px;
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-md);
+  background: var(--card);
   min-width: 0;
 }
 
@@ -42,4 +42,11 @@
   display: grid;
   gap: 2px;
   font-size: 0.92rem;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 640px) {
+  .location { padding: 14px; }
+  .placeRow { grid-template-columns: minmax(0, 1fr) 80px; gap: 10px; }
+  .coordActions > button { width: 100%; white-space: normal; }
 }
