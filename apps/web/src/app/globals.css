@@ -14,7 +14,68 @@
   --perigo: #9b2f20;
   --perigo-fundo: #f7e6e2;
 
+  /* Tokens da Dashboard e Design System */
+  --dash-bg: #eaede6;
+  --card: #ffffff;
+  --card-2: #f6f7f3;
+  --card-border: rgba(24, 33, 28, 0.08);
+  --card-hover: rgba(44, 84, 64, 0.22);
+  --ink: #18211c;
+  --muted: #5b675f;
+
+  --chart-1: #2c5440;
+  --chart-2: #b08a2e;
+  --chart-3: #64b86c;
+  --chart-4: #7a4b2a;
+  --chart-grid: rgba(24, 33, 28, 0.08);
+  --chart-fill-top: rgba(44, 84, 64, 0.28);
+  --chart-fill-bottom: rgba(44, 84, 64, 0.01);
+
+  --radius-lg: 20px;
+  --radius-md: 12px;
+  --radius-pill: 9999px;
+
+  --shadow-card: 0 1px 2px rgba(24, 33, 28, 0.04), 0 6px 20px rgba(24, 33, 28, 0.04);
+  --shadow-lift: 0 14px 34px rgba(24, 33, 28, 0.14), 0 4px 12px rgba(24, 33, 28, 0.08);
+
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --dur-fast: 150ms;
+  --dur-med: 300ms;
+  --dur-slow: 600ms;
+  --row-h: 84px;
+
   --fonte: var(--font-archivo), 'Segoe UI', system-ui, sans-serif;
+}
+
+:root[data-theme='dark'] {
+  --fundo: #0d110f;
+  --superficie: #151a17;
+  --tinta: #eef2ee;
+  --sutil: #8f9e95;
+  --linha: rgba(238, 242, 238, 0.09);
+  --linha-forte: rgba(238, 242, 238, 0.18);
+  --perigo: #f27466;
+  --perigo-fundo: rgba(155, 47, 32, 0.22);
+
+  --dash-bg: #121714;
+  --card: #191f1b;
+  --card-2: #212823;
+  --card-border: rgba(255, 255, 255, 0.07);
+  --card-hover: rgba(130, 223, 116, 0.34);
+  --ink: #eef2ee;
+  --muted: #8f9e95;
+
+  --chart-1: #82df74;
+  --chart-2: #d9bd73;
+  --chart-3: #4ea86d;
+  --chart-4: #c68657;
+  --chart-grid: rgba(255, 255, 255, 0.06);
+  --chart-fill-top: rgba(130, 223, 116, 0.28);
+  --chart-fill-bottom: rgba(130, 223, 116, 0.0);
+
+  --shadow-card: 0 2px 6px rgba(0, 0, 0, 0.28), 0 12px 28px rgba(0, 0, 0, 0.22);
+  --shadow-lift: 0 20px 44px rgba(0, 0, 0, 0.55), 0 6px 16px rgba(0, 0, 0, 0.35);
 }
 
 * {
@@ -394,5 +455,84 @@ textarea {
 
   h1 {
     font-size: 1.45rem;
+  }
+}
+
+/* Refinamentos para tema escuro em elementos globais existentes */
+:root[data-theme='dark'] .table th {
+  background: var(--card-2);
+}
+
+:root[data-theme='dark'] .table tbody tr.clickable:hover td {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+:root[data-theme='dark'] .notice {
+  background: rgba(130, 223, 116, 0.12);
+  border-left-color: var(--chart-1);
+  color: var(--ink);
+}
+
+/* Animações reutilizáveis */
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+@keyframes pulse-soft {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+.stagger-in {
+  animation: fade-up var(--dur-med) var(--ease-out) both;
+  animation-delay: calc(var(--i, 0) * 45ms);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .stagger-in {
+    animation: none;
+    opacity: 1;
+    transform: none;
   }
 }

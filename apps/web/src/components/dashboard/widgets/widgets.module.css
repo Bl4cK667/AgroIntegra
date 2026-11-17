@@ -1,0 +1,99 @@
+.kpi, .chartBody, .statusBody, .rankingBody, .coverageBody {
+  height: 100%; min-height: 0; min-width: 0; display: flex; flex-direction: column;
+  color: var(--ink, #18211c); font-variant-numeric: tabular-nums;
+}
+.kpi { justify-content: center; gap: 16px; }
+.kpiMain { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.kpiValue { font-size: clamp(2rem, 3.2vw, 3.2rem); letter-spacing: -.055em; line-height: 1.05; font-weight: 600; }
+.kpiNote { display: flex; align-items: flex-start; flex-wrap: wrap; gap: 7px; color: var(--muted, #5b675f); font-size: .76rem; }
+.badge, .priority { display: inline-block; padding: 3px 8px; border-radius: var(--radius-pill, 999px); font-size: .72rem; font-weight: 550; background: var(--card-2, #f2f3ef); color: var(--chart-1, #3f6b55); }
+.priority { color: var(--chart-4, #7a4b2a); background: color-mix(in srgb, var(--chart-2, #b08a2e) 13%, transparent); }
+.miniRing { flex: none; width: 48px; height: 48px; }
+.ring { width: min(100%, 180px); flex-shrink: 1; min-height: 95px; }
+.ringTrack, .ringValue { fill: none; stroke-width: 9; }
+.ringTrack { stroke: var(--card-border, #e2e7df); }
+.ringValue { stroke: var(--chart-1, #3f6b55); stroke-linecap: round; animation: ringIn var(--dur-slow, 600ms) var(--ease-out, ease-out) both; }
+.ringNumber { fill: var(--ink, #18211c); font: 600 26px var(--fonte, sans-serif); letter-spacing: -1px; }
+.ringLabel { fill: var(--muted, #5b675f); font: 10px var(--fonte, sans-serif); }
+.chartBody { gap: 8px; }
+.chartSummary { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 6px 12px; align-items: baseline; }
+.chartSummary strong { font-size: 1.65rem; font-weight: 600; letter-spacing: -.045em; }
+.chartSummary span { color: var(--muted, #5b675f); font-size: .78rem; }
+.chartReading { padding: 5px 9px; background: var(--card-2, #f2f3ef); border-radius: var(--radius-pill, 999px); }
+.chartReading b { color: var(--chart-1, #3f6b55); }
+.chart { width: 100%; flex: 1; min-height: 0; overflow: visible; }
+.gridLine { stroke: var(--chart-grid, #e4e8e0); stroke-width: 1; stroke-dasharray: 3 5; }
+.axis, .currentMonth { fill: var(--muted, #5b675f); font-size: 10px; font-family: inherit; }
+.futureMonth { opacity: .4; }
+.currentMonth { fill: var(--chart-1, #3f6b55); font-weight: 700; }
+.areaLine { fill: none; stroke: var(--chart-1, #3f6b55); stroke-width: 2.8; stroke-linecap: round; stroke-dasharray: 1; animation: drawLine 1s var(--ease-out, ease-out) both; }
+.dot { fill: var(--chart-1, #3f6b55); }
+.activeDot { fill: var(--chart-1, #3f6b55); stroke: var(--card, #fff); stroke-width: 2.5; }
+.bar { fill: var(--chart-3, #9abf99); transform-box: fill-box; transform-origin: center bottom; animation: growY var(--dur-slow, 600ms) var(--ease-out, ease-out) both; }
+.barActive { fill: var(--chart-1, #3f6b55); }
+.hitTarget { cursor: crosshair; }
+.hitTarget:focus-visible { outline: 2px solid var(--chart-2, #b08a2e); outline-offset: -2px; rx: 4px; }
+.footnote { margin: auto 0 0; padding-top: 10px; color: var(--muted, #5b675f); font-size: .72rem; line-height: 1.5; }
+.short .footnote { display: none; }
+.segmented { display: inline-flex; padding: 3px; border-radius: var(--radius-pill, 999px); border: 1px solid var(--card-border, #d8dcd4); background: var(--card-2, #f2f3ef); }
+.segmented button { border: 0; background: transparent; color: var(--muted, #5b675f); cursor: pointer; font-size: .73rem; padding: 5px 10px; min-height: 30px; border-radius: inherit; transition: background var(--dur-fast, 150ms), color var(--dur-fast, 150ms); }
+.segmented button[aria-pressed='true'] { background: var(--card, #fff); color: var(--chart-1, #3f6b55); box-shadow: 0 1px 3px #0000000d; }
+.statusBody { gap: 20px; }
+.stacked { display: flex; gap: 4px; padding-top: 19px; }
+.stacked > div { min-width: 0; position: relative; }
+.stacked span { display: block; font-size: .65rem; color: var(--muted, #5b675f); text-align: center; margin-bottom: 7px; overflow: hidden; }
+.stacked i { display: block; height: 32px; background: var(--segment); transform-origin: left; animation: growX var(--dur-slow, 600ms) var(--ease-out, ease-out) both; }
+.stacked > div:first-child i { border-radius: 7px 0 0 7px; }
+.stacked > div:last-child i { border-radius: 0 7px 7px 0; }
+.stacked > div:only-child i { border-radius: 7px; }
+.legend { display: grid; gap: 14px; }
+.legend > div { display: grid; grid-template-columns: 1fr auto 40px; gap: 10px; align-items: center; font-size: .8rem; }
+.legend span { display: flex; align-items: center; gap: 9px; }
+.legend i { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+.legend strong { font-weight: 600; }
+.legend small { text-align: right; color: var(--muted, #5b675f); }
+.rankingHead { display: flex; justify-content: space-between; gap: 12px; font-size: .7rem; color: var(--muted, #5b675f); padding-bottom: 9px; border-bottom: 1px solid var(--card-border, #d8dcd4); }
+.ranking { list-style: none; margin: 0; padding: 0 6px 0 0; overflow-y: auto; min-height: 0; flex: 1; scrollbar-width: thin; }
+.ranking li { display: flex; align-items: center; gap: 13px; padding: 13px 0; }
+.rank { color: var(--muted, #5b675f); font-size: .72rem; }
+.community { flex: 1; min-width: 0; }
+.community > div:first-child { display: flex; align-items: baseline; justify-content: space-between; gap: 14px; margin-bottom: 8px; }
+.community strong { font-size: .82rem; font-weight: 550; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.community span { display: flex; gap: 18px; flex-shrink: 0; font-size: .82rem; }
+.community small { color: var(--muted, #5b675f); font-size: .7rem; }
+.community b { min-width: 24px; text-align: right; font-weight: 600; }
+.track { height: 5px; border-radius: 5px; background: var(--card-2, #f2f3ef); overflow: hidden; }
+.track i { display: block; height: 100%; border-radius: inherit; background: var(--chart-1, #3f6b55); transform-origin: left; animation: growX var(--dur-slow, 600ms) var(--ease-out, ease-out) var(--delay, 0ms) both; }
+.ranking li:nth-child(2) .track i { background: var(--chart-2, #b08a2e); }
+.ranking li:nth-child(n+3) .track i { background: var(--chart-3, #9abf99); }
+.coverageBody { align-items: center; justify-content: center; gap: 10px; text-align: center; }
+.coverageDetail strong { font-size: 1.05rem; font-weight: 600; }
+.coverageDetail strong span { color: var(--muted, #5b675f); font-size: .82rem; font-weight: 400; }
+.coverageDetail p { color: var(--muted, #5b675f); font-size: .78rem; margin: 2px 0 12px; }
+.coverageCompact { flex-direction: row; text-align: left; }
+.coverageCompact .ring { width: 115px; }
+.empty { height: 100%; min-height: 110px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 8px; padding: 12px; color: var(--muted, #5b675f); }
+.empty svg { color: var(--chart-1, #3f6b55); opacity: .7; }
+.empty strong { font-size: .86rem; color: var(--ink, #18211c); font-weight: 550; }
+.empty span { max-width: 260px; font-size: .77rem; }
+.compact .kpiValue { font-size: 2rem; }
+.compact .community span { gap: 8px; }
+@keyframes drawLine { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+@keyframes growX { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@keyframes growY { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+@keyframes ringIn { from { stroke-dasharray: 0 100; } }
+@media (max-width: 640px) {
+  .kpiValue { font-size: 2.3rem; }
+  .chartSummary strong { font-size: 1.4rem; }
+  .chart { min-height: 150px; }
+  .chartSummary { gap: 4px; }
+  .segmented button { padding: 5px 8px; }
+  .coverageBody { gap: 8px; }
+  .ring { max-width: 145px; }
+  .rankingHead { font-size: .65rem; }
+  .community span { gap: 8px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ringValue, .areaLine, .bar, .stacked i, .track i { animation: none; }
+  .segmented button { transition: none; }
+}
