@@ -43,12 +43,12 @@ Arquivos `.ts/.tsx` alterados, e por quê:
 
 Detalhes em `01-lista-de-excessos.md`.
 
-- **D1.** Os nomes e descrições dos temas (ex.: "verde-limão") ficam em `lib/themes.ts` e não batem mais com as cores novas. Sugestão: "Claro (padrão)", "Escuro", "Escuro esverdeado", "Claro areia", "Escuro azulado", "Grafite".
+- **D1 (resolvida em 18/11: nomes trocados, ids mantidos).** Os nomes e descrições dos temas (ex.: "verde-limão") ficam em `lib/themes.ts` e não batem mais com as cores novas. Sugestão: "Claro (padrão)", "Escuro", "Escuro esverdeado", "Claro areia", "Escuro azulado", "Grafite".
 - **D2.** Manter 6 temas ou reduzir para claro + escuro.
 - **D3.** Há dois botões de claro/escuro (topo e painel).
 - **D4.** Widgets arrastáveis no painel: manter ou fixar o layout.
 - **D5.** Escolha topo x menu lateral: manter as duas.
-- **D6.** O `CLAUDE.md` diz "Visual: verdes escuros, dourado e marrom terra"; o dourado e o marrom saíram da interface. Atualizar a frase se aprovar.
+- **D6 (resolvida em 18/11: frase atualizada).** O `CLAUDE.md` diz "Visual: verdes escuros, dourado e marrom terra"; o dourado e o marrom saíram da interface. Atualizar a frase se aprovar.
 - **D7.** Contagem animada dos números desligada (feito; fácil de voltar).
 - **D8.** Temas, widgets e notificações são do Abner, e cotações, clima e mapa são do João Pedro. Avise os dois antes do merge.
 - **D9.** Cores do mapa intocadas.

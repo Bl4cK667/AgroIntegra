@@ -135,7 +135,7 @@ Checklist para cada modelo novo:
 - Textos da interface em **português do Brasil**.
 - Variáveis, funções, tabelas e arquivos em inglês. **Exceção:** os nomes dos módulos `geo`, `calculos`, `clima` e `cotacoes`, definidos pelo João Pedro.
 - Unidades brasileiras: ha, m, kg/ha, sc/ha, @ (arroba), UA, UA/ha, mm, °C, R$. Números com vírgula decimal (`toLocaleString('pt-BR')`). Área com 2 casas em ha.
-- Visual: verdes escuros, dourado e marrom terra. Há temas em Configurações → Aparência.
+- Visual institucional e discreto (ver `docs/redesign-corporativo/`): fundo neutro claro, texto escuro, uma cor principal verde-escura (#1F5A3D) e cores só para status; fonte IBM Plex Sans; cantos de 2 a 4px, bordas finas, sem sombra decorativa, gradiente ou desfoque; animação só quando explica uma ação; contraste WCAG AA e foco visível. Mapa e gráficos mantêm as cores funcionais. Textos formais, sem emoji nem exclamação. Os 6 temas em Configurações → Aparência seguem esse padrão.
 - **Nenhum número fixo no painel:** tudo que aparece é calculado do banco, com teste que confere contra uma contagem independente (padrão em `test/dashboard.e2e.spec.ts`).
 
 ## LGPD e dados

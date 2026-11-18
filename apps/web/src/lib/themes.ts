@@ -7,12 +7,12 @@ export type ThemeId = 'midnight-black' | 'forest-dark' | 'pure-light' | 'sand-ea
 export type Theme = 'light' | 'dark';
 
 export const THEMES: { id: ThemeId; label: string; description: string; mode: Theme }[] = [
-  { id: 'pure-light', label: 'Pure Light', description: 'Claro, branco e verde. O visual padrão.', mode: 'light' },
-  { id: 'midnight-black', label: 'Midnight Black', description: 'Preto profundo, cards cinza-escuro e verde-limão.', mode: 'dark' },
-  { id: 'forest-dark', label: 'Forest Dark', description: 'Verde-floresta escuro em tons naturais.', mode: 'dark' },
-  { id: 'sand-earth', label: 'Sand & Earth', description: 'Areia, bege e terracota.', mode: 'light' },
-  { id: 'ocean-blue', label: 'Ocean Blue', description: 'Azul profundo com detalhes azuis.', mode: 'dark' },
-  { id: 'graphite', label: 'Graphite', description: 'Cinza grafite com detalhes neutros.', mode: 'dark' },
+  { id: 'pure-light', label: 'Claro (padrão)', description: 'Fundo claro, texto escuro e verde institucional.', mode: 'light' },
+  { id: 'midnight-black', label: 'Escuro', description: 'Fundo quase preto, para pouca luz.', mode: 'dark' },
+  { id: 'forest-dark', label: 'Escuro esverdeado', description: 'Fundo escuro com leve tom de verde.', mode: 'dark' },
+  { id: 'sand-earth', label: 'Claro areia', description: 'Fundo claro levemente amarelado, mais suave para os olhos.', mode: 'light' },
+  { id: 'ocean-blue', label: 'Escuro azulado', description: 'Fundo escuro com leve tom de azul.', mode: 'dark' },
+  { id: 'graphite', label: 'Grafite', description: 'Fundo cinza-escuro neutro.', mode: 'dark' },
 ];
 
 export const DEFAULT_THEME: ThemeId = 'pure-light';
