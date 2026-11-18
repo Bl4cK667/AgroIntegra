@@ -7,7 +7,7 @@
   place-items: center;
   width: 34px;
   height: 34px;
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   border: 0;
   background: transparent;
   color: var(--nav-ink, #c9d6cd);
@@ -22,23 +22,6 @@
   color: var(--nav-ink-strong, #fff);
 }
 
-.bell:active svg {
-  transform: scale(0.86);
-}
-
-.bell svg {
-  transform-origin: 50% 12%;
-  transition: transform 160ms var(--ease-spring, ease);
-}
-
-.bell:hover svg {
-  animation: swing 700ms var(--ease-out, ease);
-}
-
-.ringing {
-  animation: swing 900ms var(--ease-out, ease) 2;
-}
-
 .clapper {
   transform-box: fill-box;
   transform-origin: center top;
@@ -47,7 +30,7 @@
 .bellMobile {
   width: 44px;
   height: 44px;
-  border-radius: 50%;
+  border-radius: var(--radius-sm);
   border: 1px solid var(--nav-line);
   background: var(--nav-hover);
   color: var(--nav-ink-strong);
@@ -62,14 +45,13 @@
   padding: 0 5px;
   display: grid;
   place-items: center;
-  border-radius: 99px;
+  border-radius: var(--radius-sm);
   background: var(--notification-bg);
   color: var(--notification-ink);
   font-size: 0.68rem;
   font-weight: 600;
   line-height: 1;
   box-shadow: 0 0 0 2px var(--nav-bg);
-  animation: badgePop 460ms var(--ease-spring, cubic-bezier(0.34, 1.56, 0.64, 1));
 }
 
 :root[data-theme='dark'] .badge {
@@ -80,14 +62,14 @@
   /* mesmo visual dos botões de busca e tema da Topbar, em fundo claro ou escuro */
   width: 36px;
   height: 36px;
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   background: transparent;
   color: var(--muted);
 }
 
 .bellTopbar:hover {
   background: var(--card-2);
-  color: var(--chart-1);
+  color: var(--ink);
 }
 
 .bellTopbar .badge {
@@ -108,8 +90,6 @@
   inset: 0;
   z-index: 80;
   background: var(--overlay);
-  backdrop-filter: blur(2px);
-  animation: fadeIn 220ms var(--ease-out, ease);
 }
 
 .panel {
@@ -121,22 +101,22 @@
   width: min(420px, calc(100vw - 24px));
   display: flex;
   flex-direction: column;
-  border-radius: var(--radius-lg, 20px);
+  border-radius: var(--radius-lg);
   background: var(--card, #fff);
   color: var(--ink);
   border: 1px solid var(--card-border);
-  box-shadow: 0 24px 60px rgba(10, 20, 14, 0.28);
+  box-shadow: var(--shadow-lift);
   outline: none;
   overflow: hidden;
-  animation: slideIn 380ms cubic-bezier(0.22, 1, 0.36, 1);
+  animation: slideIn var(--dur-slow) var(--ease-out);
 }
 
 .backdrop[data-closing] {
-  animation: fadeOut 220ms var(--ease-out, ease) forwards;
+  opacity: 0;
 }
 
 .panel[data-closing] {
-  animation: slideOut 220ms var(--ease-out, ease) forwards;
+  animation: slideOut var(--dur-med) var(--ease-out) forwards;
 }
 
 .grabber {
@@ -222,8 +202,6 @@
 }
 
 .items li {
-  animation: itemIn 380ms var(--ease-out, ease) both;
-  animation-delay: calc(var(--i, 0) * 35ms + 60ms);
 }
 
 .item {
@@ -234,7 +212,7 @@
   width: 100%;
   padding: 12px;
   border: 0;
-  border-radius: 14px;
+  border-radius: var(--radius-sm);
   background: transparent;
   color: inherit;
   font: inherit;
@@ -262,7 +240,7 @@
   place-items: center;
   width: 38px;
   height: 38px;
-  border-radius: 12px;
+  border-radius: var(--radius-sm);
   background: color-mix(in srgb, var(--tone) 14%, var(--card));
   color: var(--tone);
 }
@@ -309,8 +287,6 @@
   margin-left: auto;
   border-radius: 50%;
   background: var(--chart-1);
-  box-shadow: 0 0 0 4px color-mix(in srgb, var(--chart-1) 18%, transparent);
-  animation: pulse 2.2s var(--ease-out, ease) infinite;
 }
 
 .more {
@@ -326,7 +302,7 @@
 
 .skeletonRow {
   height: 62px;
-  border-radius: 14px;
+  border-radius: var(--radius-sm);
 }
 
 .empty {
@@ -350,11 +326,10 @@
   width: 56px;
   height: 56px;
   margin-bottom: 6px;
-  border-radius: 18px;
+  border-radius: var(--radius-sm);
   background: var(--card-2);
   border: 1px solid var(--card-border);
   color: var(--chart-1);
-  animation: float 3s ease-in-out infinite;
 }
 
 /* ---------- celular: gaveta inferior ---------- */
@@ -367,13 +342,13 @@
     bottom: 0;
     width: 100%;
     max-height: 86vh;
-    border-radius: 26px 26px 0 0;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
     padding-bottom: env(safe-area-inset-bottom);
-    animation: sheetUp 400ms cubic-bezier(0.22, 1, 0.36, 1);
+    animation: sheetUp var(--dur-slow) var(--ease-out);
   }
 
   .panel[data-closing] {
-    animation: sheetDown 220ms var(--ease-out, ease) forwards;
+    animation: sheetDown var(--dur-med) var(--ease-out) forwards;
   }
 
   .grabber {
@@ -383,7 +358,7 @@
     width: 42px;
     height: 5px;
     margin-top: 10px;
-    border-radius: 99px;
+    border-radius: var(--radius-sm);
     background: var(--card-border);
   }
 
@@ -397,21 +372,6 @@
 }
 
 /* ---------- animações ---------- */
-
-@keyframes swing {
-  0%, 100% { transform: rotate(0); }
-  15% { transform: rotate(14deg); }
-  30% { transform: rotate(-12deg); }
-  45% { transform: rotate(8deg); }
-  60% { transform: rotate(-5deg); }
-  75% { transform: rotate(2deg); }
-}
-
-@keyframes badgePop {
-  0% { transform: scale(0); }
-  60% { transform: scale(1.25); }
-  100% { transform: scale(1); }
-}
 
 @keyframes slideIn {
   from { opacity: 0; transform: translateX(28px) scale(0.98); }
@@ -429,30 +389,6 @@
 
 @keyframes sheetDown {
   to { transform: translateY(100%); }
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes fadeOut {
-  to { opacity: 0; }
-}
-
-@keyframes itemIn {
-  from { opacity: 0; transform: translateY(6px); }
-  to { opacity: 1; transform: none; }
-}
-
-@keyframes pulse {
-  0%, 100% { box-shadow: 0 0 0 4px color-mix(in srgb, var(--chart-1) 18%, transparent); }
-  50% { box-shadow: 0 0 0 7px color-mix(in srgb, var(--chart-1) 6%, transparent); }
-}
-
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-4px); }
 }
 
 @media (prefers-reduced-motion: reduce) {

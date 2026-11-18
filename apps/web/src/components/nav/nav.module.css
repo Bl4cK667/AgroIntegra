@@ -11,7 +11,6 @@
   background: var(--nav-bg);
   color: var(--nav-ink);
   border-right: 1px solid var(--nav-line);
-  box-shadow: 4px 0 24px rgba(15, 32, 21, 0.08);
   overflow: hidden;
   transition: background-color var(--dur-med, 300ms) var(--ease-out, ease);
 }
@@ -51,11 +50,6 @@
   display: grid;
   place-items: center;
   flex: none;
-  transition: transform var(--dur-med, 300ms) var(--ease-spring, ease);
-}
-
-.brand:hover .brandMark {
-  transform: rotate(-6deg) scale(1.06);
 }
 
 .brandName {
@@ -69,7 +63,7 @@
   place-items: center;
   width: 34px;
   height: 34px;
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   border: 1px solid transparent;
   background: transparent;
   color: var(--nav-ink);
@@ -103,14 +97,10 @@
   top: 0;
   left: 0;
   right: 0;
-  border-radius: 11px;
+  border-radius: var(--radius-sm);
   background: var(--nav-active-bg);
-  box-shadow:
-    var(--nav-active-shadow),
-    inset 0 1px 0 color-mix(in srgb, var(--nav-accent) 65%, white);
-  transition:
-    transform 400ms cubic-bezier(0.34, 1.36, 0.5, 1),
-    height 280ms var(--ease-out, ease);
+  box-shadow: inset 3px 0 0 var(--nav-accent);
+  transition: transform var(--dur-fast) var(--ease-out), height var(--dur-fast) var(--ease-out);
   pointer-events: none;
 }
 
@@ -124,7 +114,7 @@
   min-height: 42px;
   padding: 0 13px;
   border: 0;
-  border-radius: 11px;
+  border-radius: var(--radius-sm);
   background: transparent;
   color: inherit;
   font: inherit;
@@ -133,17 +123,9 @@
   text-align: left;
   text-decoration: none;
   cursor: pointer;
-  opacity: 0;
-  animation: navIn 460ms var(--ease-out, ease) forwards;
-  animation-delay: calc(var(--i, 0) * 40ms + 60ms);
   transition:
     background-color var(--dur-fast, 150ms) var(--ease-out, ease),
     color var(--dur-fast, 150ms) var(--ease-out, ease);
-}
-
-.bottom .link {
-  opacity: 1;
-  animation: none;
 }
 
 .link:hover:not([data-active]) {
@@ -152,7 +134,7 @@
 }
 
 .link[data-active] {
-  color: var(--nav-accent-ink);
+  color: var(--nav-accent);
   font-weight: 600;
 }
 
@@ -160,17 +142,6 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  transition:
-    opacity var(--dur-fast, 150ms) var(--ease-out, ease),
-    transform var(--dur-med, 300ms) var(--ease-out, ease);
-}
-
-.link:hover .label {
-  transform: translateX(2px);
-}
-
-.link[data-active] .label {
-  transform: none;
 }
 
 /* ---------- rodapé: tema + usuário ---------- */
@@ -198,12 +169,11 @@
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--ouro-claro, #d9bd73), var(--ouro, #b08a2e));
-  color: #1d1606;
+  background: var(--card-2);
+  color: var(--nav-ink-strong);
+  border: 1px solid var(--nav-line);
   font-size: 0.8rem;
   font-weight: 600;
-  letter-spacing: 0.02em;
-  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.12);
 }
 
 .userText {
@@ -233,7 +203,7 @@
   place-items: center;
   width: 36px;
   height: 36px;
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   border: 1px solid transparent;
   background: transparent;
   color: var(--nav-ink);
@@ -271,7 +241,7 @@
 }
 
 .sidebar[data-collapsed] .collapse .icon {
-  transform: rotate(180deg);
+  transform: rotate(180deg); /* indica para que lado o menu abre */
 }
 
 .sidebar[data-collapsed] .link {
@@ -296,7 +266,7 @@
   left: 88px;
   transform: translateY(0);
   padding: 6px 11px;
-  border-radius: 9px;
+  border-radius: var(--radius-sm);
   border: 1px solid var(--nav-line);
   background: var(--ink);
   color: var(--card);
@@ -304,111 +274,16 @@
   font-weight: 600;
   white-space: nowrap;
   pointer-events: none;
-  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.32);
-  animation: tipIn 160ms var(--ease-out, ease);
+  box-shadow: var(--shadow-lift);
   z-index: 60;
 }
 
-/* ---------- ícones animados ---------- */
+/* ---------- ícones ---------- */
 
+/* Ícones parados: só herdam a cor do item. */
 .icon {
   flex: none;
-  overflow: visible;
-  transition: transform 180ms var(--ease-spring, ease);
 }
-
-.icon .p1,
-.icon .p2,
-.icon .p3 {
-  transform-box: fill-box;
-  transition: transform 320ms var(--ease-spring, cubic-bezier(0.34, 1.56, 0.64, 1));
-}
-
-/* Aliases motion* compartilham só movimento com a Topbar, sem estilos de layout. */
-/* pressionar */
-:is(.link, .motionLink):active .icon,
-.tab:active .icon,
-:is(.logout, .motionLogout):active .icon,
-:is(.roundBtn, .motionButton):active .icon,
-.sheetItem:active .icon {
-  transform: scale(0.84);
-}
-
-/* selecionar: o ícone "salta" quando a página fica ativa */
-:is(.link, .motionLink)[data-active] .icon,
-.tab[data-active] .icon {
-  animation: iconPop 520ms var(--ease-spring, ease);
-}
-
-/* Painel: barras sobem e descem em sequência */
-.i_painel .p1,
-.i_painel .p2,
-.i_painel .p3 {
-  transform-origin: bottom;
-}
-
-:is(.link:hover, .motionLink:is(:hover, :focus-visible)) .i_painel .p1,
-.tab:hover .i_painel .p1 { animation: bar 560ms var(--ease-out, ease); }
-:is(.link:hover, .motionLink:is(:hover, :focus-visible)) .i_painel .p2,
-.tab:hover .i_painel .p2 { animation: bar 560ms 70ms var(--ease-out, ease); }
-:is(.link:hover, .motionLink:is(:hover, :focus-visible)) .i_painel .p3,
-.tab:hover .i_painel .p3 { animation: bar 560ms 140ms var(--ease-out, ease); }
-
-/* Produtores: as pessoas se aproximam */
-:is(.link:hover, .motionLink:is(:hover, :focus-visible)) .i_produtores .p1,
-.tab:hover .i_produtores .p1 { transform: translateY(-1.5px); }
-:is(.link:hover, .motionLink:is(:hover, :focus-visible)) .i_produtores .p2,
-.tab:hover .i_produtores .p2 { transform: translateX(1.5px); }
-
-/* Propriedades: telhado levanta, porta abre */
-:is(.link:hover, .motionLink:is(:hover, :focus-visible)) .i_propriedades .p1,
-.sheetItem:hover .i_propriedades .p1 { transform: translateY(-2px); }
-.i_propriedades .p2 { transform-origin: left; }
-:is(.link:hover, .motionLink:is(:hover, :focus-visible)) .i_propriedades .p2,
-.sheetItem:hover .i_propriedades .p2 { transform: scaleX(0.55); }
-
-/* Solicitações: a seta cai na caixa */
-:is(.link:hover, .motionLink:is(:hover, :focus-visible)) .i_solicitacoes .p1,
-.tab:hover .i_solicitacoes .p1 { animation: drop 620ms var(--ease-out, ease); }
-
-/* Visitas: o pino quica sobre o chão */
-.i_visitas .p2 { transform-origin: center; }
-:is(.link:hover, .motionLink:is(:hover, :focus-visible)) .i_visitas .p1,
-.tab:hover .i_visitas .p1 { animation: hop 620ms var(--ease-out, ease); }
-:is(.link:hover, .motionLink:is(:hover, :focus-visible)) .i_visitas .p2,
-.tab:hover .i_visitas .p2 { animation: squash 620ms var(--ease-out, ease); }
-
-/* Programas: as folhas balançam */
-.i_programas .p1 { transform-origin: right bottom; }
-.i_programas .p2 { transform-origin: left bottom; }
-:is(.link:hover, .motionLink:is(:hover, :focus-visible)) .i_programas .p1,
-.sheetItem:hover .i_programas .p1 { transform: rotate(-14deg); }
-:is(.link:hover, .motionLink:is(:hover, :focus-visible)) .i_programas .p2,
-.sheetItem:hover .i_programas .p2 { transform: rotate(12deg); }
-
-/* Relatórios: as linhas se escrevem */
-.i_relatorios .p1,
-.i_relatorios .p2 { stroke-dasharray: 1; stroke-dashoffset: 0; }
-:is(.link:hover, .motionLink:is(:hover, :focus-visible)) .i_relatorios .p1,
-.sheetItem:hover .i_relatorios .p1 { animation: write 520ms var(--ease-out, ease); }
-:is(.link:hover, .motionLink:is(:hover, :focus-visible)) .i_relatorios .p2,
-.sheetItem:hover .i_relatorios .p2 { animation: write 520ms 120ms var(--ease-out, ease) backwards; }
-
-/* Mais: os pontos fazem uma onda */
-.tab:hover .i_mais .p1 { animation: hop 520ms var(--ease-out, ease); }
-.tab:hover .i_mais .p2 { animation: hop 520ms 80ms var(--ease-out, ease); }
-.tab:hover .i_mais .p3 { animation: hop 520ms 160ms var(--ease-out, ease); }
-
-/* Sair, tema e recolher */
-:is(.logout:hover, .motionLogout:is(:hover, :focus-visible)) .i_sair .p1,
-.sheetLogout:hover .i_sair .p1 { transform: translateX(-2.5px); }
-.i_sol .p1,
-.i_lua .p1 { transform-origin: center; }
-:is(.link:hover, .motionLink:is(:hover, :focus-visible)) .i_sol .p1,
-:is(.roundBtn:hover, .motionButton:is(:hover, :focus-visible)) .i_sol .p1 { transform: rotate(60deg); }
-:is(.link:hover, .motionLink:is(:hover, :focus-visible)) .i_lua .p1,
-:is(.roundBtn:hover, .motionButton:is(:hover, :focus-visible)) .i_lua .p1 { transform: rotate(-20deg) scale(1.06); }
-.collapse:hover .i_recolher .p1 { transform: translateX(-2px); }
 
 /* ---------- celular ---------- */
 
@@ -432,8 +307,6 @@
     padding: 10px 16px;
     padding-top: max(10px, env(safe-area-inset-top));
     background: var(--nav-bg);
-    backdrop-filter: saturate(1.4) blur(14px);
-    -webkit-backdrop-filter: saturate(1.4) blur(14px);
     color: var(--nav-ink-strong);
     border-bottom: 1px solid var(--nav-line);
   }
@@ -448,7 +321,7 @@
     place-items: center;
     width: 44px;
     height: 44px;
-    border-radius: 50%;
+    border-radius: var(--radius-sm);
     border: 1px solid var(--nav-line);
     background: var(--nav-hover);
     color: var(--nav-ink-strong);
@@ -465,13 +338,10 @@
     grid-template-columns: repeat(5, 1fr);
     gap: 2px;
     padding: 6px;
-    border-radius: 22px;
+    border-radius: var(--radius-lg);
     background: var(--nav-bg);
-    backdrop-filter: saturate(1.4) blur(16px);
-    -webkit-backdrop-filter: saturate(1.4) blur(16px);
     border: 1px solid var(--nav-line);
-    box-shadow: 0 14px 34px rgba(10, 20, 14, 0.32);
-    animation: tabbarIn 520ms var(--ease-spring, ease) both;
+    box-shadow: var(--shadow-lift);
   }
 
 
@@ -483,7 +353,7 @@
     min-height: 54px;
     padding: 4px 2px;
     border: 0;
-    border-radius: 16px;
+    border-radius: var(--radius-sm);
     background: transparent;
     color: var(--nav-ink);
     font: inherit;
@@ -504,8 +374,8 @@
   }
 
   .tab[data-active] {
-    background: var(--nav-accent);
-    color: var(--nav-accent-ink);
+    background: var(--nav-active-bg);
+    color: var(--nav-accent);
   }
 
   .backdrop {
@@ -513,8 +383,6 @@
     inset: 0;
     z-index: 50;
     background: var(--overlay);
-    backdrop-filter: blur(3px);
-    animation: fade 220ms var(--ease-out, ease);
   }
 
   .sheet {
@@ -526,18 +394,18 @@
     display: grid;
     gap: 16px;
     padding: 10px 18px max(20px, env(safe-area-inset-bottom));
-    border-radius: 26px 26px 0 0;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
     background: var(--card, #fff);
     color: var(--ink, inherit);
-    box-shadow: 0 -18px 40px rgba(0, 0, 0, 0.2);
-    animation: sheetUp 380ms var(--ease-spring, ease);
+    box-shadow: var(--shadow-lift);
+    animation: sheetUp var(--dur-slow) var(--ease-out);
   }
 
   .grabber {
     justify-self: center;
     width: 42px;
     height: 5px;
-    border-radius: 99px;
+    border-radius: var(--radius-sm);
     background: var(--card-border, #ccc);
   }
 
@@ -566,16 +434,13 @@
     justify-items: center;
     gap: 8px;
     padding: 16px 6px 14px;
-    border-radius: 18px;
+    border-radius: var(--radius-lg);
     border: 1px solid var(--card-border);
     background: var(--card-2);
     color: var(--ink);
     font-size: 0.82rem;
     font-weight: 600;
     text-decoration: none;
-    opacity: 0;
-    animation: navIn 360ms var(--ease-out, ease) forwards;
-    animation-delay: calc(var(--i, 0) * 50ms + 80ms);
   }
 
   .sheetItem .icon {
@@ -584,7 +449,7 @@
 
   .sheetItem[data-active] {
     border-color: var(--chart-1);
-    box-shadow: inset 0 0 0 1px var(--chart-1);
+    background: var(--nav-active-bg);
   }
 
   .sheetLogout {
@@ -593,7 +458,7 @@
     justify-content: center;
     gap: 8px;
     min-height: 48px;
-    border-radius: 14px;
+    border-radius: var(--radius-sm);
     border: 1px solid var(--card-border);
     background: transparent;
     color: var(--perigo, #9b2f20);
@@ -605,64 +470,10 @@
 
 /* ---------- animações ---------- */
 
-@keyframes navIn {
-  from { opacity: 0; transform: translateX(-8px); }
-  to { opacity: 1; transform: none; }
-}
-
-@keyframes tipIn {
-  from { opacity: 0; transform: translateX(-4px); }
-  to { opacity: 1; transform: none; }
-}
-
-@keyframes iconPop {
-  0% { transform: scale(0.7) rotate(-8deg); }
-  60% { transform: scale(1.14) rotate(3deg); }
-  100% { transform: none; }
-}
-
-@keyframes bar {
-  0%, 100% { transform: scaleY(1); }
-  40% { transform: scaleY(0.45); }
-  70% { transform: scaleY(1.12); }
-}
-
-@keyframes drop {
-  0% { transform: translateY(0); }
-  35% { transform: translateY(-4px); opacity: 0.4; }
-  70% { transform: translateY(1.5px); opacity: 1; }
-  100% { transform: translateY(0); }
-}
-
-@keyframes hop {
-  0%, 100% { transform: translateY(0); }
-  40% { transform: translateY(-3.5px); }
-  70% { transform: translateY(0.5px); }
-}
-
-@keyframes squash {
-  0%, 100% { transform: scaleX(1); }
-  40% { transform: scaleX(0.6); }
-}
-
-@keyframes write {
-  from { stroke-dashoffset: 1; }
-  to { stroke-dashoffset: 0; }
-}
-
-@keyframes tabbarIn {
-  from { opacity: 0; transform: translateY(24px) scale(0.96); }
-  to { opacity: 1; transform: none; }
-}
-
+/* Só o painel "Mais" do celular desliza ao abrir: mostra de onde ele veio. */
 @keyframes sheetUp {
   from { transform: translateY(100%); }
   to { transform: none; }
-}
-
-@keyframes fade {
-  from { opacity: 0; }
-  to { opacity: 1; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -707,7 +518,7 @@
   gap: 10px;
   margin: -6px -6px -6px -8px;
   padding: 6px 8px;
-  border-radius: 12px;
+  border-radius: var(--radius-sm);
   border: 1px solid transparent;
   color: inherit;
   text-decoration: none;
@@ -722,14 +533,7 @@
   border-color: var(--nav-line);
 }
 
-.profile .avatar {
-  transition: transform var(--dur-med, 300ms) var(--ease-spring, ease), box-shadow var(--dur-med, 300ms);
-}
 
-.profile:hover .avatar {
-  transform: scale(1.06);
-  box-shadow: 0 0 0 2px var(--nav-accent);
-}
 
 .sidebar[data-collapsed] .profile {
   flex: none;
@@ -749,7 +553,7 @@
   text-decoration: none;
   padding: 10px 12px;
   margin: 0 -6px;
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
   background: var(--card-2);
   border: 1px solid var(--card-border);
 }
@@ -761,11 +565,5 @@
 
 .avatarRing {
   flex: none;
-  box-shadow: 0 0 0 2px var(--nav-line);
-  transition: transform var(--dur-med, 300ms) var(--ease-spring, ease), box-shadow var(--dur-med, 300ms);
-}
-
-.profile:hover .avatarRing {
-  transform: scale(1.06);
-  box-shadow: 0 0 0 2px var(--nav-accent);
+  box-shadow: 0 0 0 1px var(--nav-line);
 }
