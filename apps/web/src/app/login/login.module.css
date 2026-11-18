@@ -8,14 +8,16 @@
 .land {
   position: relative;
   overflow: hidden;
-  background: radial-gradient(circle at 20% 85%, var(--card-2), var(--nav-bg));
-  color: var(--ink);
+  /* Painel institucional: verde da marca em todos os temas, com texto claro. */
+  background: #1f4d36;
+  color: #ffffff;
   display: flex;
   align-items: flex-end;
 }
 
 :root[data-theme='dark'] .land {
-  background: radial-gradient(circle at 20% 85%, var(--card-2), var(--nav-bg));
+  /* Painel institucional: verde da marca em todos os temas, com texto claro. */
+  background: #1f4d36;
 }
 
 .contours {
@@ -27,15 +29,15 @@
 
 .line {
   fill: none;
-  stroke: color-mix(in srgb, var(--chart-2) 20%, transparent);
+  stroke: rgba(255, 255, 255, 0.07);
   stroke-width: 1;
 }
 
 /* A cada 5 curvas, uma "curva mestra" mais marcada, como nas cartas topográficas. */
 .index {
   fill: none;
-  stroke: color-mix(in srgb, var(--chart-2) 48%, transparent);
-  stroke-width: 1.6;
+  stroke: rgba(255, 255, 255, 0.14);
+  stroke-width: 1.2;
 }
 
 .landText {
@@ -46,26 +48,24 @@
 
 .org {
   margin: 0 0 10px;
-  color: var(--ouro-claro);
-  font-size: 0.84rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.82);
+  font-size: var(--text-md);
+  font-weight: 500;
 }
 
 .tagline {
   margin: 0;
-  font-size: 1.45rem;
-  line-height: 1.35;
-  font-weight: 500;
-  color: var(--ink);
+  font-size: 1.3333rem;
+  line-height: 1.4;
+  font-weight: 400;
+  color: #ffffff;
 }
 
 .formSide {
   display: grid;
   place-items: center;
   padding: 40px 24px;
-  background: var(--dash-bg);
+  background: var(--fundo);
 }
 
 .formBox {
@@ -75,7 +75,6 @@
   background: var(--card);
   border: 1px solid var(--card-border);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-lift);
 }
 
 .brand {
@@ -132,8 +131,3 @@
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .contours {
-    animation: none;
-  }
-}
