@@ -15,9 +15,10 @@ import { ProgramsModule } from './programs/programs.module';
 import { ReportsModule } from './reports/reports.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { AccountModule } from './account/account.module';
+import { GeoModule } from './geo/geo.module';
 
 @Module({
-  imports: [ConfigModule.forRoot({ isGlobal: true }), TenancyModule, PrismaModule, SupabaseModule, AuditModule, AuthModule, ProducersModule, VisitsModule, RequestsModule, DashboardModule, ProgramsModule, ReportsModule, NotificationsModule, AccountModule, InvitationsModule],
+  imports: [ConfigModule.forRoot({ isGlobal: true }), TenancyModule, PrismaModule, SupabaseModule, AuditModule, AuthModule, ProducersModule, VisitsModule, RequestsModule, DashboardModule, ProgramsModule, ReportsModule, NotificationsModule, AccountModule, InvitationsModule, GeoModule],
   controllers: [HealthController],
 })
 export class AppModule {}

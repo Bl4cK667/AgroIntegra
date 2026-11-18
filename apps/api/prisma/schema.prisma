@@ -40,6 +40,10 @@ model User {
   properties      Property[]
   visits          Visit[]
   requests        ServiceRequest[]
+  // Módulo geo.
+  featuresCreated PropertyFeature[]        @relation("PropertyFeatureCreatedBy")
+  featuresUpdated PropertyFeature[]        @relation("PropertyFeatureUpdatedBy")
+  featureVersions PropertyFeatureVersion[]
 }
 
 // Registro de auditoria (LGPD): quem fez, o quê, quando.
@@ -102,6 +106,8 @@ model Producer {
   createdBy   User             @relation(fields: [createdById], references: [id])
   createdAt   DateTime         @default(now())
   updatedAt   DateTime         @updatedAt
+  // Exclusão lógica (preparação para o sync offline). Nulo = ativo.
+  deletedAt   DateTime?
   properties  Property[]
   visits      Visit[]
   requests    ServiceRequest[]
@@ -110,6 +116,7 @@ model Producer {
 
   @@index([searchName])
   @@index([organizationId])
+  @@index([organizationId, updatedAt])
   @@unique([id, organizationId])
 }
 
@@ -123,8 +130,12 @@ model Property {
   name         String
   // Nome + localidade em minúsculas e sem acentos, usado na busca.
   searchText   String           @default("")
-  // Área digitada (sem mapa na demo).
+  // Área DECLARADA, digitada (documento do CAR, matrícula). Pode divergir da calculada.
   areaHa       Decimal          @db.Decimal(10, 2)
+  // Área e perímetro CALCULADOS pelo PostGIS a partir do perímetro demarcado (módulo geo).
+  // Preenchidos só pelo banco (trigger em PropertyFeature); nulos enquanto não há demarcação.
+  calculatedAreaHa     Decimal? @db.Decimal(14, 4)
+  calculatedPerimeterM Decimal? @db.Decimal(14, 2)
   locality     String
   mainActivity String?
   // Localização digitada (sem mapa na demo). Coordenadas em graus decimais (WGS 84).
@@ -137,11 +148,14 @@ model Property {
   createdBy    User             @relation(fields: [createdById], references: [id])
   createdAt    DateTime         @default(now())
   updatedAt    DateTime         @updatedAt
+  deletedAt    DateTime?
   visits       Visit[]
   requests     ServiceRequest[]
+  features     PropertyFeature[]
 
   @@index([producerId])
   @@index([organizationId])
+  @@index([organizationId, updatedAt])
   @@unique([id, organizationId])
 }
 
@@ -172,11 +186,15 @@ model Visit {
   requestId        String?
   request          ServiceRequest? @relation(fields: [requestId, organizationId], references: [id, organizationId])
   createdAt        DateTime        @default(now())
+  // A visita não é editada, mas updatedAt/deletedAt permitem ao sync propagar exclusões.
+  updatedAt        DateTime        @default(now()) @updatedAt
+  deletedAt        DateTime?
   photos           VisitPhoto[]
 
   @@index([producerId, visitedOn])
   @@index([visitedOn])
   @@index([organizationId])
+  @@index([organizationId, updatedAt])
   @@unique([id, organizationId])
 }
 
@@ -192,9 +210,12 @@ model VisitPhoto {
   data      Bytes
   size      Int
   createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+  deletedAt DateTime?
 
   @@index([visitId])
   @@index([organizationId])
+  @@index([organizationId, updatedAt])
   @@unique([id, organizationId])
 }
 
@@ -233,12 +254,14 @@ model ServiceRequest {
   createdBy    User            @relation(fields: [createdById], references: [id])
   createdAt    DateTime        @default(now())
   updatedAt    DateTime        @updatedAt
+  deletedAt    DateTime?
   visits       Visit[]
 
   @@index([status])
   @@index([completedAt])
   @@index([producerId])
   @@index([organizationId])
+  @@index([organizationId, updatedAt])
   @@unique([id, organizationId])
 }
 
@@ -333,6 +356,8 @@ model Organization {
   programs Program[]
   enrollments Enrollment[]
   deliveries Delivery[]
+  propertyFeatures PropertyFeature[]
+  propertyFeatureVersions PropertyFeatureVersion[]
 }
 
 model OrganizationMembership {
@@ -362,4 +387,82 @@ model Invitation {
   revokedAt DateTime?
   createdAt DateTime @default(now())
   @@index([organizationId, createdAt])
+}
+
+// ============================================================================
+// Módulo geo: feições demarcadas no mapa (dono: João Pedro).
+// A geometria só é gravada por SQL (o Prisma não suporta PostGIS: ver src/geo).
+// areaHa, perimeterM, lengthM e version são preenchidos por trigger no banco;
+// cada escrita gera uma linha em PropertyFeatureVersion (também por trigger).
+// ============================================================================
+
+enum PropertyFeatureType {
+  PERIMETER     // perímetro da propriedade (MultiPolygon; um ativo por propriedade)
+  PLOT          // talhão (MultiPolygon)
+  APP           // área de preservação permanente (MultiPolygon)
+  LEGAL_RESERVE // reserva legal (MultiPolygon)
+  HEADQUARTERS  // sede (Point ou MultiPolygon)
+  IMPROVEMENT   // benfeitoria (Point ou MultiPolygon)
+  WATER         // água: açude, rio, nascente (MultiPolygon, MultiLineString ou Point)
+  ROAD          // estrada (MultiLineString)
+}
+
+enum PropertyFeatureChange {
+  CREATED
+  UPDATED
+  DELETED
+}
+
+model PropertyFeature {
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  id          String              @id @default(uuid())
+  propertyId  String
+  property    Property            @relation(fields: [propertyId, organizationId], references: [id, organizationId], onDelete: Cascade)
+  type        PropertyFeatureType
+  name        String?
+  geom        Unsupported("geometry(Geometry, 4326)")
+  areaHa      Decimal?            @db.Decimal(14, 4)
+  perimeterM  Decimal?            @db.Decimal(14, 2)
+  lengthM     Decimal?            @db.Decimal(14, 2)
+  version     Int                 @default(1)
+  createdById String
+  createdBy   User                @relation("PropertyFeatureCreatedBy", fields: [createdById], references: [id])
+  updatedById String
+  updatedBy   User                @relation("PropertyFeatureUpdatedBy", fields: [updatedById], references: [id])
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @default(now()) @updatedAt
+  deletedAt   DateTime?
+  versions    PropertyFeatureVersion[]
+
+  @@index([propertyId, type])
+  @@index([organizationId, updatedAt])
+  @@index([geom], type: Gist)
+  @@unique([id, organizationId])
+}
+
+// Histórico da demarcação: uma linha por criação, alteração ou exclusão lógica.
+model PropertyFeatureVersion {
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  id          String                @id @default(uuid())
+  featureId   String
+  feature     PropertyFeature       @relation(fields: [featureId, organizationId], references: [id, organizationId], onDelete: Cascade)
+  version     Int
+  change      PropertyFeatureChange
+  type        PropertyFeatureType
+  name        String?
+  geom        Unsupported("geometry(Geometry, 4326)")
+  areaHa      Decimal?              @db.Decimal(14, 4)
+  perimeterM  Decimal?              @db.Decimal(14, 2)
+  lengthM     Decimal?              @db.Decimal(14, 2)
+  changedById String
+  changedBy   User                  @relation(fields: [changedById], references: [id])
+  createdAt   DateTime              @default(now())
+
+  @@unique([featureId, version])
+  @@index([organizationId])
+  @@unique([id, organizationId])
 }

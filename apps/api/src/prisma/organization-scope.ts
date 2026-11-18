@@ -5,6 +5,8 @@ import { ForbiddenException } from '@nestjs/common';
 export const ORGANIZATION_MODELS = new Set([
   'Producer', 'Property', 'Visit', 'VisitPhoto', 'ServiceRequest', 'Program',
   'Enrollment', 'Delivery', 'Notification', 'AuditLog',
+  // Módulo geo. A geometria é gravada por SQL bruto, que filtra organizationId explicitamente.
+  'PropertyFeature', 'PropertyFeatureVersion',
 ]);
 
 type Args = Record<string, any>;
