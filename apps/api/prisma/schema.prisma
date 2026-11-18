@@ -358,6 +358,7 @@ model Organization {
   deliveries Delivery[]
   propertyFeatures PropertyFeature[]
   propertyFeatureVersions PropertyFeatureVersion[]
+  weatherForecasts WeatherForecast[]
 }
 
 model OrganizationMembership {
@@ -439,6 +440,44 @@ model PropertyFeature {
   @@index([propertyId, type])
   @@index([organizationId, updatedAt])
   @@index([geom], type: Gist)
+  @@unique([id, organizationId])
+}
+
+// ============================================================================
+// Módulo clima (dono: João Pedro): última previsão válida por fonte e local.
+// Serve de cache (validade curta) e de reserva quando a fonte não responde: a tela
+// mostra o último valor com aviso de desatualizado. Dado público, mas guardado por
+// organização (mesmo isolamento das outras tabelas).
+// ============================================================================
+
+enum WeatherSource {
+  INMET      // previsão oficial por município (código IBGE)
+  OPEN_METEO // previsão por coordenada (plano comercial em produção)
+}
+
+model WeatherForecast {
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  id            String        @id @default(uuid())
+  source        WeatherSource
+  // INMET: código IBGE do município. Open-Meteo: "lat,lng" arredondado a 0,01° (~1 km).
+  locationKey   String
+  // Como o local aparece na tela, ex.: "Canaã dos Carajás/PA".
+  placeName     String
+  // Dias já normalizados (ver src/clima/weather.types.ts).
+  days          Json
+  // Quando a fonte respondeu com sucesso (data/hora do dado mostrada na tela).
+  fetchedAt     DateTime
+  // Última tentativa com falha, para não insistir numa fonte fora do ar a cada consulta.
+  lastErrorAt   DateTime?
+  lastError     String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  deletedAt     DateTime?
+
+  @@unique([organizationId, source, locationKey])
+  @@index([organizationId])
   @@unique([id, organizationId])
 }
 

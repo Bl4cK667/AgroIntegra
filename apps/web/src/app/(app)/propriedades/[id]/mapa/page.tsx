@@ -8,6 +8,7 @@ import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { WeatherCard } from '@/components/clima/WeatherCard';
 import { FieldHeading, FieldLoading } from '@/components/property/FieldUI';
 import { Toast } from '@/components/feedback/Toast';
 import { ImportPanel } from '@/components/geo/ImportPanel';
@@ -337,6 +338,9 @@ export default function MapaDaPropriedadePage() {
             )}
           </aside>
         </div>
+
+        {/* Módulo clima: previsão do município (INMET) e do ponto da propriedade (Open-Meteo, quando ligado). */}
+        <WeatherCard propertyId={id} />
       </div>
     </>
   );

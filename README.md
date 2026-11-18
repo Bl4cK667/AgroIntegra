@@ -89,6 +89,22 @@ O `npm run dev` e o `npm run build` do web copiam o worker do MapLibre para `app
 - Para o SIGEF, o sistema importa a parcela baixada do próprio SIGEF ou do CAR (Shapefile/KML) e exporta o perímetro para o profissional credenciado. O envio oficial (planilha de vértices) continua fora do escopo.
 - Os arquivos são apoio técnico: não substituem o cadastro no CAR nem a certificação no SIGEF. Validar com a agrônoma da secretaria antes do piloto.
 
+## Clima (módulo clima)
+
+Previsão do tempo por propriedade e por município (`apps/api/src/clima`). Aparece no mapa da propriedade (`/propriedades/:id/mapa`).
+
+| Fonte | O que traz | Acesso e licença |
+| --- | --- | --- |
+| **INMET** (principal) | Por município (código IBGE), até 5 dias; os primeiros por manhã, tarde e noite. Mínima e máxima, umidade, vento e resumo. Sem chuva em mm. | Endpoint público `apiprevmet3.inmet.gov.br`, sem chave. Não tem documentação nem termos publicados: o formato foi conferido em 18/11/2026 e é validado no código. |
+| **Open-Meteo** (reserva e previsão no ponto) | Por coordenada da propriedade (arredondada a 0,01°, cerca de 1 km), até 16 dias, com chuva em mm e probabilidade. | O plano grátis é **só para uso não comercial** (avaliação e protótipo). Em produção (`NODE_ENV=production`) só liga com `OPEN_METEO_API_KEY` do plano comercial. Dados CC BY 4.0: o crédito aparece na tela. |
+| IBGE (localidades) | Converte cidade e UF do cadastro no código do município. | API pública. |
+
+- `GET /clima/properties/:id`: INMET pelo município do cadastro (sem cidade/UF, usa `CLIMA_DEFAULT_IBGE`) e, se o Open-Meteo estiver ligado e a propriedade tiver localização, a previsão no ponto. Cada previsão traz fonte, local, data/hora do dado e crédito.
+- `GET /clima/municipalities/:ibge`: previsão do INMET para um município.
+- **Cache e reserva:** a última previsão válida fica na tabela `WeatherForecast`, por organização. Dentro da validade (`CLIMA_CACHE_MINUTES`, padrão 180) a fonte não é consultada. Se a fonte falhar, a tela mostra o último valor com aviso de desatualizado e a API espera `CLIMA_FAILURE_BACKOFF_MINUTES` antes de tentar de novo; sem nenhum valor guardado, responde 503 com mensagem em português.
+- Toda chamada tem timeout (`CLIMA_TIMEOUT_MS`), até 2 novas tentativas com espera progressiva só para falha temporária (rede, 429, 5xx) e log estruturado em JSON (a chave do Open-Meteo não aparece no log).
+- Variáveis em `apps/api/.env.example` (bloco "Módulo clima").
+
 ## Sincronização offline (módulo sync)
 
 Base para o app do técnico trabalhar sem sinal (`apps/api/src/sync`). As duas rotas exigem login e valem para os dois perfis.

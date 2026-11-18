@@ -7,6 +7,8 @@ export const ORGANIZATION_MODELS = new Set([
   'Enrollment', 'Delivery', 'Notification', 'AuditLog',
   // Módulo geo. A geometria é gravada por SQL bruto, que filtra organizationId explicitamente.
   'PropertyFeature', 'PropertyFeatureVersion',
+  // Módulo clima.
+  'WeatherForecast',
 ]);
 
 type Args = Record<string, any>;

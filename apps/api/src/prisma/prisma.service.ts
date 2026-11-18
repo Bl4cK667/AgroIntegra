@@ -40,6 +40,7 @@ export class PrismaService implements OnModuleInit, OnModuleDestroy {
   get auditLog() { return this.scoped.auditLog; }
   get propertyFeature() { return this.scoped.propertyFeature; }
   get propertyFeatureVersion() { return this.scoped.propertyFeatureVersion; }
+  get weatherForecast() { return this.scoped.weatherForecast; }
   get $transaction() { return this.scoped.$transaction.bind(this.scoped); }
 
   // Raw SQL is limited to the existing health check and the explicitly scoped dashboard SQL.

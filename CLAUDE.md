@@ -48,6 +48,7 @@ Na dúvida sobre quem é dono de um arquivo, use `git log`.
   - `geo-map.service.ts`: mapa territorial e busca por raio.
   - `geo-export.service.ts` + `formats/`: GeoJSON, KML/KMZ e Shapefile próprio, sem dependência externa.
   - `geo.controller.ts`: rotas.
+- `apps/api/src/clima`: previsão do tempo. INMET por município (principal) e Open-Meteo por coordenada (plano grátis só não comercial: em produção exige chave), cache e último valor válido em `WeatherForecast`. Web: `components/clima/WeatherCard` no mapa da propriedade. Fontes e licenças no `README.md`.
 - `apps/api/src/sync`: sync offline (`POST /sync/push`, `GET /sync/pull`). Grava só pelos serviços exportados de `producers`, `visits` e `geo`; o conflito vai para a auditoria (`SYNC_CONFLICT`). Contrato do app no `README.md`.
 - `apps/web/src/components/geo` + `lib/geo*.ts`: editor de geometria (`GeometryEditor`), campo de perímetro dos formulários (`PerimeterField`), importação (`ImportPanel`), mapa territorial. Telas: `/mapa` e `/propriedades/[id]/mapa`.
 - `packages/map-styles`: estilos e definições de camadas do mapa (cores por tipo de feição), compartilhados entre web e mobile.
