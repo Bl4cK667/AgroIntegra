@@ -307,7 +307,9 @@ textarea {
   white-space: nowrap;
 }
 
+/* inline-block: o link pode conter um bloco (avatar + nome) e o contorno de foco precisa de uma caixa. */
 .table a {
+  display: inline-block;
   color: var(--ink);
   font-weight: 500;
   text-decoration: none;
