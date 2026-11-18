@@ -336,7 +336,7 @@ export default function CadastroPage() {
           {phase === 'success' && (
             <div className={styles.stateBox}>
               <span className="eyebrow">Conta ativada</span>
-              <h1 className={styles.title}>Cadastro concluído!</h1>
+              <h1 className={styles.title}>Cadastro concluído</h1>
               <p role="status" className="notice">
                 {successMessage}
               </p>

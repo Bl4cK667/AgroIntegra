@@ -28,7 +28,7 @@ export default function ProgramasPage() {
     <>
       <FieldHeading
         icon="sprout"
-        eyebrow="Fomento e políticas públicas"
+        eyebrow="Fomento"
         title="Programas"
         description="Programas de fomento da secretaria. Consulta: os números vêm das inscrições e entregas registradas."
       />

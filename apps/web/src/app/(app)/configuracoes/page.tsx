@@ -413,7 +413,7 @@ export default function ConfiguracoesPage() {
                     onChange={(e) => setNewPassword(e.target.value)}
                     placeholder="Mínimo de 6 caracteres"
                   />
-                  <small>Escolha uma senha fácil de lembrar e difícil de adivinhar.</small>
+                  <small>Use pelo menos 6 caracteres.</small>
                 </label>
 
                 <label className="field">

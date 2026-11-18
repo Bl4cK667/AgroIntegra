@@ -17,11 +17,6 @@ const MONTHS = [
 // Esqueleto com o mesmo desenho do layout padrão, para a página não "pular" ao carregar.
 const SKELETON = [3, 3, 3, 3, 8, 4, 8, 4].map((w, i) => ({ w, h: i < 4 ? 2 : 4 }));
 
-function greeting() {
-  const h = new Date().getHours();
-  return h < 12 ? 'Bom dia' : h < 18 ? 'Boa tarde' : 'Boa noite';
-}
-
 // Todos os números vêm da API, calculados do banco a cada carregamento.
 // A disposição dos widgets é do usuário e fica salva neste navegador.
 export default function PainelPage() {
@@ -61,10 +56,10 @@ export default function PainelPage() {
       <header className={styles.toolbar}>
         <div>
           <h1 className={styles.toolbarTitle}>
-            {greeting()}, {user?.name.split(' ')[0]}
+            Painel de indicadores
           </h1>
           <p className={styles.toolbarSub}>
-            {data ? `Números de ${MONTHS[data.month - 1]} de ${data.year}, calculados agora.` : 'Preparando seus indicadores…'}
+            {data ? `Números de ${MONTHS[data.month - 1]} de ${data.year}, calculados agora.` : 'Carregando indicadores…'}
           </p>
         </div>
 

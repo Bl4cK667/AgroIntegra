@@ -23,7 +23,7 @@ export default function VisitasPage() {
 
   return (
     <>
-      <FieldHeading icon="visit" eyebrow="Assistência técnica" title="Visitas" description="Cada visita, uma evolução. Consulte o histórico dos atendimentos em campo." actions={<Link href="/visitas/nova" className="btn btn-primary"><FieldIcon name="plus" /> Registrar visita</Link>} />
+      <FieldHeading icon="visit" eyebrow="Assistência técnica" title="Visitas" description="Histórico dos atendimentos técnicos realizados em campo." actions={<Link href="/visitas/nova" className="btn btn-primary"><FieldIcon name="plus" /> Registrar visita</Link>} />
       {data && <FieldStats items={[
         { label: 'Visitas registradas', value: data.total.toLocaleString('pt-BR'), icon: 'visit', note: 'Histórico de atendimentos' },
         { label: 'Produtores na lista', value: new Set(data.items.map(v => v.producer.id)).size, icon: 'people', note: 'Nesta consulta de visitas' },

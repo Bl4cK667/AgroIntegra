@@ -11,7 +11,7 @@ const fullMonths = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 
 const ratio = (value: number, total: number) => total > 0 ? Math.min(100, Math.max(0, value / total * 100)) : 0;
 const pct = (value: number) => `${number.format(Math.round(value))}%`;
 export function Empty({ children }: { children: React.ReactNode }) {
-  return <div className={s.empty}><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.3" aria-hidden="true"><path d="M4 19h16M7 15v-4m5 4V5m5 10V8" /></svg><strong>Ainda estamos no começo</strong><span>{children}</span></div>;
+  return <div className={s.empty}><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.3" aria-hidden="true"><path d="M4 19h16M7 15v-4m5 4V5m5 10V8" /></svg><strong>Sem dados no período</strong><span>{children}</span></div>;
 }
 
 export function Ring({ value, label, small = false }: { value: number; label: string; small?: boolean }) {
@@ -70,7 +70,7 @@ export function VisitsChart({ data, size }: WidgetProps) {
       {months.map((month, i) => <text key={month} x={44 + i * 44} y="204" textAnchor="middle" className={i >= elapsedMonths ? `${s.axis} ${s.futureMonth}` : i === elapsedMonths - 1 ? s.currentMonth : s.axis}>{month}</text>)}
       {points.map((point, i) => <g key={i}><rect x={point.x - 21} y="20" width="42" height="166" fill="transparent" className={s.hitTarget} tabIndex={0} role="button" aria-label={`${fullMonths[i]}: ${number.format(values[i])} visitas`} onFocus={() => setActive(i)} onBlur={() => setActive(null)} onPointerEnter={() => setActive(i)} onPointerDown={() => setActive(i)} onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); setActive(i); } }}><title>{fullMonths[i]}: {number.format(values[i])} visitas</title></rect></g>)}
     </svg>
-    <p className={s.footnote}>Passe sobre o gráfico ou selecione um mês para explorar.</p>
+    <p className={s.footnote}>Selecione um mês no gráfico para ver o total.</p>
   </div>;
 }
 

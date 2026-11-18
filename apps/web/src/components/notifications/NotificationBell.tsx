@@ -216,7 +216,7 @@ function Panel({ onClose, onUnread, onGo }: { onClose: () => void; onUnread: (n:
               <span className={s.emptyIcon} aria-hidden="true">
                 <TypeIcon type="EMPTY" />
               </span>
-              <strong>{filter === 'unread' ? 'Tudo em dia' : 'Nenhuma notificação ainda'}</strong>
+              <strong>{filter === 'unread' ? 'Nenhuma notificação não lida' : 'Nenhuma notificação'}</strong>
               <span>
                 {filter === 'unread'
                   ? 'Você já leu todas as notificações.'

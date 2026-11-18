@@ -122,7 +122,7 @@ export default function SolicitacoesPage() {
               </button>
             ))}
           </div>
-          <span className="count">Clique num cartão para ver detalhes e agir.</span>
+          <span className="count">Selecione um cartão para ver os detalhes.</span>
         </div>
       )}
 

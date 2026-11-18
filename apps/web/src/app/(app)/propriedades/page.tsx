@@ -26,7 +26,7 @@ export default function PropriedadesPage() {
 
   return (
     <>
-      <FieldHeading icon="land" eyebrow="Território e produção" title="Propriedades" description="Uma visão do território: áreas, atividades e os produtores de cada propriedade." actions={<Link href="/produtores" className="btn btn-secondary"><FieldIcon name="plus" /> Cadastrar pelo produtor</Link>} />
+      <FieldHeading icon="land" eyebrow="Cadastro" title="Propriedades" description="Propriedades rurais cadastradas, com área, atividade principal e produtor responsável." actions={<Link href="/produtores" className="btn btn-secondary"><FieldIcon name="plus" /> Cadastrar pelo produtor</Link>} />
       {data && !term && <FieldStats items={[
         { label: 'Propriedades cadastradas', value: data.total.toLocaleString('pt-BR'), icon: 'land', note: 'Base de propriedades rurais' },
         { label: 'Área nesta consulta', value: formatArea(data.items.reduce((sum, p) => sum + p.areaHa, 0)), icon: 'pin', note: 'Soma das propriedades listadas' },

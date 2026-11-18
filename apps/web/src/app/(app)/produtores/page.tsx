@@ -28,7 +28,7 @@ export default function ProdutoresPage() {
 
   return (
     <>
-      <FieldHeading icon="people" eyebrow="Relacionamento no campo" title="Produtores" description="Conheça quem produz. Acompanhe cadastros, propriedades e atendimentos." actions={<Link href="/produtores/novo" className="btn btn-primary"><FieldIcon name="plus" /> Novo produtor</Link>} />
+      <FieldHeading icon="people" eyebrow="Cadastro" title="Produtores" description="Produtores rurais cadastrados, com suas propriedades e atendimentos." actions={<Link href="/produtores/novo" className="btn btn-primary"><FieldIcon name="plus" /> Novo produtor</Link>} />
       {data && !term && <FieldStats items={[
         { label: 'Produtores cadastrados', value: data.total.toLocaleString('pt-BR'), icon: 'people', note: 'Base de assistência técnica' },
         { label: 'Comunidades na lista', value: new Set(data.items.map(p => p.community)).size, icon: 'pin', note: 'Representadas nesta consulta' },
