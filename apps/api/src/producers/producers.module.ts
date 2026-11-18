@@ -6,5 +6,6 @@ import { ProducersService } from './producers.service';
 @Module({
   controllers: [ProducersController, PropertiesController],
   providers: [ProducersService],
+  exports: [ProducersService], // usado pelo módulo sync (offline)
 })
 export class ProducersModule {}

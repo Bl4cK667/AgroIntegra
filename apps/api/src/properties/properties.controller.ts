@@ -1,17 +1,17 @@
-import { Body, Controller, Get, NotFoundException, Param, ParseUUIDPipe, Patch, Query } from '@nestjs/common';
+import { Controller, Get, Param, ParseUUIDPipe, Patch, Query, Body } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
-import { AuditService } from '../audit/audit.service';
 import { AuthUser, CurrentUser } from '../auth/current-user.decorator';
 import { searchWords } from '../common/search';
 import { PrismaService } from '../prisma/prisma.service';
+import { ProducersService } from '../producers/producers.service';
 import { UpdatePropertyDto } from './property.dto';
-import { locationData, propertySearchText, propertyView } from './property.view';
+import { propertyView } from './property.view';
 
 @Controller('properties')
 export class PropertiesController {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly audit: AuditService,
+    private readonly producers: ProducersService,
   ) {}
 
   @Get()
@@ -37,31 +37,9 @@ export class PropertiesController {
     };
   }
 
+  // A regra da edição fica no ProducersService (o sync offline usa a mesma).
   @Patch(':id')
-  async update(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdatePropertyDto, @CurrentUser() user: AuthUser) {
-    const exists = await this.prisma.property.findUnique({ where: { id } });
-    if (!exists) throw new NotFoundException('Propriedade não encontrada.');
-    const name = dto.name ?? exists.name;
-    const locality = dto.locality ?? exists.locality;
-    const city = dto.city === undefined ? exists.city : dto.city;
-    const prop = await this.prisma.property.update({
-      where: { id },
-      data: {
-        name: dto.name,
-        areaHa: dto.areaHa === undefined ? undefined : new Prisma.Decimal(dto.areaHa),
-        locality: dto.locality,
-        searchText: propertySearchText(name, locality, city),
-        mainActivity: dto.mainActivity === undefined ? undefined : dto.mainActivity || null,
-        ...locationData(dto),
-      },
-    });
-    await this.audit.record({
-      userId: user.id,
-      action: 'PROPERTY_UPDATED',
-      entity: 'Property',
-      entityId: id,
-      details: { changed: Object.keys(dto).filter((k) => dto[k as keyof UpdatePropertyDto] !== undefined) },
-    });
-    return propertyView(prop);
+  update(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdatePropertyDto, @CurrentUser() user: AuthUser) {
+    return this.producers.updateProperty(id, dto, user);
   }
 }

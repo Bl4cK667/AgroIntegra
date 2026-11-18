@@ -25,7 +25,8 @@ export class VisitsService {
     private readonly notifications: NotificationsService,
   ) {}
 
-  async create(dto: CreateVisitDto, user: AuthUser) {
+  // opts.id: UUID gerado no aparelho (sync offline). Sem ele, o banco gera o id.
+  async create(dto: CreateVisitDto, user: AuthUser, opts: { id?: string } = {}) {
     const visitedOn = parseDay(dto.visitedOn, 'Data da visita');
     if (dto.visitedOn > today()) throw new BadRequestException('A data da visita não pode ser no futuro.');
     const returnOn = dto.returnOn ? parseDay(dto.returnOn, 'Data de retorno') : null;
@@ -61,6 +62,7 @@ export class VisitsService {
       if (request) await tx.serviceRequest.update({ where: { id: request.id }, data: statusChange(request, 'DONE') });
       return tx.visit.create({
         data: {
+          id: opts.id,
           requestId: request?.id ?? null,
           producerId: producer.id,
           propertyId: dto.propertyId ?? null,

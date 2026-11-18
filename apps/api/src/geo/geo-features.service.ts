@@ -501,6 +501,41 @@ export class GeoFeaturesService {
     });
   }
 
+  // ---- Sync offline (módulo sync) ----
+
+  // A feição como está no banco, inclusive se excluída (o sync distingue "já excluída" de "não existe").
+  async findForSync(id: string): Promise<FeatureRow | null> {
+    return this.findRow(this.prisma, this.tenancy.organizationId(), id, { includeDeleted: true });
+  }
+
+  // A geometria enviada é a mesma que está gravada? Normaliza (ex.: Polygon → MultiPolygon) e compara
+  // com a precisão que o banco devolve (7 casas, ~1 cm). Geometria inválida conta como diferente:
+  // a gravação vai recusá-la com a mensagem certa.
+  isSameGeometry(featureType: PropertyFeatureType, incoming: unknown, stored: NormalizedGeometry): boolean {
+    let normalized: NormalizedGeometry;
+    try {
+      normalized = normalizeGeometry(featureType, incoming);
+    } catch {
+      return false;
+    }
+    const round = (value: unknown): unknown =>
+      Array.isArray(value) ? value.map(round) : typeof value === 'number' ? Math.round(value * 1e7) / 1e7 : value;
+    return normalized.type === stored.type && JSON.stringify(round(normalized.coordinates)) === JSON.stringify(round(stored.coordinates));
+  }
+
+  // Feições alteradas depois de `after` (ordem updatedAt, id) e até `until`, incluindo as excluídas.
+  async changedSince(after: { updatedAt: Date; id: string } | null, until: Date, limit: number): Promise<FeatureRow[]> {
+    const organizationId = this.tenancy.organizationId();
+    // As colunas são timestamp sem fuso, em UTC: converte o instante explicitamente (independe do fuso da sessão).
+    const utc = (d: Date) => Prisma.sql`(${d.toISOString()}::timestamptz AT TIME ZONE 'UTC')`;
+    const afterSql = after ? Prisma.sql`AND (f."updatedAt", f.id) > (${utc(after.updatedAt)}, ${after.id})` : Prisma.empty;
+    return this.prisma.$queryRaw<FeatureRow[]>`
+      SELECT ${FEATURE_COLUMNS} FROM "PropertyFeature" f
+      WHERE f."organizationId" = ${organizationId} AND f."updatedAt" <= ${utc(until)} ${afterSql}
+      ORDER BY f."updatedAt", f.id
+      LIMIT ${limit}`;
+  }
+
   private async findRow(raw: RawClient, organizationId: string, id: string, opts: { includeDeleted?: boolean } = {}) {
     const rows = await raw.$queryRaw<FeatureRow[]>`
       SELECT ${FEATURE_COLUMNS} FROM "PropertyFeature" f

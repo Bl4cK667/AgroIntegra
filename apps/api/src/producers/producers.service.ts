@@ -1,18 +1,32 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
-import { Prisma, Producer } from '@prisma/client';
+import { Prisma, Producer, Property } from '@prisma/client';
 import { AuditService } from '../audit/audit.service';
 import { AuthUser } from '../auth/current-user.decorator';
 import { maskCpf, onlyDigits } from '../common/cpf';
 import { normalizeSearch, searchWords } from '../common/search';
 import { NotificationsService } from '../notifications/notifications.service';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreatePropertyDto } from '../properties/property.dto';
+import { CreatePropertyDto, UpdatePropertyDto } from '../properties/property.dto';
 import { locationData, propertySearchText, propertyView } from '../properties/property.view';
 import { visitRow, visitRowInclude } from '../visits/visit.view';
 import { CreateProducerDto, UpdateProducerDto } from './producer.dto';
 
+export interface CreateOptions {
+  id?: string; // UUID v4 gerado no aparelho (validado pelo módulo sync antes de chegar aqui)
+}
+
+const ID_IN_USE = 'Este identificador já está em uso por outro registro.';
+
+// Violação de unicidade (P2002), opcionalmente só quando envolve o campo indicado.
+function isUniqueViolation(e: unknown, field?: string): boolean {
+  if (!(e instanceof Prisma.PrismaClientKnownRequestError) || e.code !== 'P2002') return false;
+  if (!field) return true;
+  const target = e.meta?.target;
+  return Array.isArray(target) ? target.includes(field) : String(target ?? '').includes(field);
+}
+
 // Formato público do produtor: o CPF sai sempre mascarado.
-function producerView(p: Producer) {
+export function producerView(p: Producer) {
   return {
     id: p.id,
     name: p.name,
@@ -77,11 +91,13 @@ export class ProducersService {
     };
   }
 
-  async create(dto: CreateProducerDto, user: AuthUser) {
+  // opts.id: UUID gerado no aparelho (sync offline). Sem ele, o banco gera o id.
+  async create(dto: CreateProducerDto, user: AuthUser, opts: CreateOptions = {}) {
     const cpf = onlyDigits(dto.cpf);
     try {
       const p = await this.prisma.producer.create({
         data: {
+          id: opts.id,
           name: dto.name,
           searchName: normalizeSearch(dto.name),
           cpf,
@@ -109,9 +125,8 @@ export class ProducersService {
       );
       return producerView(p);
     } catch (e) {
-      if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2002') {
-        throw new ConflictException('Já existe um produtor com este CPF.');
-      }
+      if (isUniqueViolation(e, 'cpf')) throw new ConflictException('Já existe um produtor com este CPF.');
+      if (isUniqueViolation(e)) throw new ConflictException(ID_IN_USE);
       throw e;
     }
   }
@@ -146,26 +161,60 @@ export class ProducersService {
     return producerView(p);
   }
 
-  async addProperty(producerId: string, dto: CreatePropertyDto, user: AuthUser) {
+  async addProperty(producerId: string, dto: CreatePropertyDto, user: AuthUser, opts: CreateOptions = {}) {
     await this.ensureExists(producerId);
-    const prop = await this.prisma.property.create({
-      data: {
-        producerId,
-        name: dto.name,
-        areaHa: new Prisma.Decimal(dto.areaHa),
-        locality: dto.locality,
-        searchText: propertySearchText(dto.name, dto.locality, dto.city),
-        mainActivity: dto.mainActivity || null,
-        ...locationData(dto),
-        createdById: user.id,
-      },
-    });
+    let prop: Property;
+    try {
+      prop = await this.prisma.property.create({
+        data: {
+          id: opts.id,
+          producerId,
+          name: dto.name,
+          areaHa: new Prisma.Decimal(dto.areaHa),
+          locality: dto.locality,
+          searchText: propertySearchText(dto.name, dto.locality, dto.city),
+          mainActivity: dto.mainActivity || null,
+          ...locationData(dto),
+          createdById: user.id,
+        },
+      });
+    } catch (e) {
+      throw isUniqueViolation(e) ? new ConflictException(ID_IN_USE) : e;
+    }
     await this.audit.record({
       userId: user.id,
       action: 'PROPERTY_CREATED',
       entity: 'Property',
       entityId: prop.id,
       details: { producerId },
+    });
+    return propertyView(prop);
+  }
+
+  // Edição da propriedade (antes ficava no PropertiesController; o sync offline reaproveita).
+  async updateProperty(id: string, dto: UpdatePropertyDto, user: AuthUser) {
+    const exists = await this.prisma.property.findUnique({ where: { id } });
+    if (!exists) throw new NotFoundException('Propriedade não encontrada.');
+    const name = dto.name ?? exists.name;
+    const locality = dto.locality ?? exists.locality;
+    const city = dto.city === undefined ? exists.city : dto.city;
+    const prop = await this.prisma.property.update({
+      where: { id },
+      data: {
+        name: dto.name,
+        areaHa: dto.areaHa === undefined ? undefined : new Prisma.Decimal(dto.areaHa),
+        locality: dto.locality,
+        searchText: propertySearchText(name, locality, city),
+        mainActivity: dto.mainActivity === undefined ? undefined : dto.mainActivity || null,
+        ...locationData(dto),
+      },
+    });
+    await this.audit.record({
+      userId: user.id,
+      action: 'PROPERTY_UPDATED',
+      entity: 'Property',
+      entityId: id,
+      details: { changed: Object.keys(dto).filter((k) => dto[k as keyof UpdatePropertyDto] !== undefined) },
     });
     return propertyView(prop);
   }

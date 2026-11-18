@@ -89,6 +89,38 @@ O `npm run dev` e o `npm run build` do web copiam o worker do MapLibre para `app
 - Para o SIGEF, o sistema importa a parcela baixada do próprio SIGEF ou do CAR (Shapefile/KML) e exporta o perímetro para o profissional credenciado. O envio oficial (planilha de vértices) continua fora do escopo.
 - Os arquivos são apoio técnico: não substituem o cadastro no CAR nem a certificação no SIGEF. Validar com a agrônoma da secretaria antes do piloto.
 
+## Sincronização offline (módulo sync)
+
+Base para o app do técnico trabalhar sem sinal (`apps/api/src/sync`). As duas rotas exigem login e valem para os dois perfis.
+
+**`POST /sync/push`**: até 50 operações por lote, aplicadas na ordem enviada, cada uma independente das outras.
+
+```json
+{ "operations": [
+  { "entity": "producer", "op": "upsert", "id": "<uuid v4 do aparelho>", "updatedAt": "2026-11-18T13:05:00.000Z",
+    "data": { "name": "Maria", "cpf": "123.456.789-09", "community": "Serra Dourada", "consent": true } },
+  { "entity": "feature", "op": "upsert", "id": "<uuid>", "updatedAt": "...", "baseUpdatedAt": "<updatedAt recebido do servidor>",
+    "data": { "geometry": { "type": "Polygon", "coordinates": [[...]] } } }
+] }
+```
+
+| Entidade | Operações | `data` |
+| --- | --- | --- |
+| `producer` | upsert | criar: como `POST /producers`; alterar: só os campos que mudaram. O CPF não muda. |
+| `property` | upsert | criar: `producerId` + campos de `POST /producers/:id/properties`; alterar: como `PATCH /properties/:id`. |
+| `visit` | upsert (só cria) | como `POST /visits`, **sem `photos`** (as fotos irão separadas, num passo seguinte). |
+| `feature` | upsert, delete | criar: `propertyId`, `type`, `name`, `geometry`; alterar: `name` e/ou `geometry`. |
+
+Resultado de cada operação: `applied`, `duplicate` (reenvio ou dados iguais), `rejected` (conflito vencido pelo servidor; `record` traz a versão dele) ou `error` (`message` em português; `retry: true` só para falha temporária do servidor). Gravações passam pelos mesmos serviços das rotas do painel: mesmas validações, permissões, auditoria e notificações.
+
+- **Idempotente:** o id é gerado no aparelho; reenviar o mesmo lote não duplica nada.
+- **Conflito:** só existe se o servidor mudou depois da versão que o aparelho conhecia (`baseUpdatedAt`). Aí vence o `updatedAt` mais recente, e o conflito fica na auditoria (`SYNC_CONFLICT`, com os valores descartados). Data mais de 5 minutos no futuro é recusada (relógio do aparelho errado).
+- **Contrato do app:** depois de cada resposta, gravar o `record` localmente e usar o `updatedAt` dele como `baseUpdatedAt` das operações pendentes do mesmo registro. Dentro de um mesmo lote o servidor já faz isso (criar e editar offline não vira conflito).
+
+**`GET /sync/pull?since=<cursor>&limit=200`**: produtores (CPF mascarado), propriedades, solicitações, visitas (sem bytes de fotos e assinatura) e feições em GeoJSON, alterados desde o cursor. Registros excluídos vêm só com `id`, `updatedAt` e `deletedAt`, para o app apagar a cópia local. Repita com `since=cursor` enquanto `hasMore` for `true`; `since` vazio faz a sincronização completa.
+
+- O pull entrega o que foi gravado até alguns segundos atrás (`SYNC_PULL_LAG_MS`, padrão 5000), para não perder gravação que termina fora de ordem. Os relógios da API e do banco precisam estar sincronizados (NTP).
+
 ## Testes
 
 ```bash

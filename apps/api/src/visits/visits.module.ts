@@ -2,5 +2,6 @@ import { Module } from '@nestjs/common';
 import { VisitsController } from './visits.controller';
 import { VisitsService } from './visits.service';
 
-@Module({ controllers: [VisitsController], providers: [VisitsService] })
+// VisitsService exportado para o módulo sync (offline).
+@Module({ controllers: [VisitsController], providers: [VisitsService], exports: [VisitsService] })
 export class VisitsModule {}

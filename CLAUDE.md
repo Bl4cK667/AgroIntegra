@@ -30,13 +30,13 @@ Toda funcionalidade nova se liga a um elo dessa cadeia. Exemplos: uma feição d
 | --- | --- |
 | Tiago (Bl4cK667) | Demo: `auth`, `audit`, `producers`, `properties`, `visits`, `requests`, `dashboard` (API), `programs`, `reports`, seed da demo |
 | Abner Castro | Multi-organização (`tenancy`, `prisma/organization-scope.ts`, RLS), `invitations`, `supabase`, `account`, `notifications`, temas e widgets do painel web |
-| João Pedro | `geo`, `calculos`, `clima`, `cotacoes`, `packages/map-styles`, `packages/calculos` |
+| João Pedro | `geo`, `sync`, `calculos`, `clima`, `cotacoes`, `packages/map-styles`, `packages/calculos` |
 
 Na dúvida sobre quem é dono de um arquivo, use `git log`.
 
 - **Não altere módulos de outra pessoa sem avisar o João Pedro.**
 - **Coisas compartilhadas:** schema de `Property`/`Visit`/`Producer`, `organization-scope.ts`, `PrismaService`, auth, `docker-compose.yml` e o `package.json` da raiz. Antes de mexer, explique a mudança e espere o ok.
-- Os quatro módulos do João Pedro são **módulos NestJS isolados** (`apps/api/src/geo`, `calculos`, `clima`, `cotacoes`). Eles conversam com o resto só por serviços exportados, nunca importando arquivos internos de outro módulo.
+- Os módulos do João Pedro são **módulos NestJS isolados** (`apps/api/src/geo`, `sync`, `calculos`, `clima`, `cotacoes`). Eles conversam com o resto só por serviços exportados, nunca importando arquivos internos de outro módulo.
 
 ## Estrutura do monorepo
 
@@ -48,6 +48,7 @@ Na dúvida sobre quem é dono de um arquivo, use `git log`.
   - `geo-map.service.ts`: mapa territorial e busca por raio.
   - `geo-export.service.ts` + `formats/`: GeoJSON, KML/KMZ e Shapefile próprio, sem dependência externa.
   - `geo.controller.ts`: rotas.
+- `apps/api/src/sync`: sync offline (`POST /sync/push`, `GET /sync/pull`). Grava só pelos serviços exportados de `producers`, `visits` e `geo`; o conflito vai para a auditoria (`SYNC_CONFLICT`). Contrato do app no `README.md`.
 - `apps/web/src/components/geo` + `lib/geo*.ts`: editor de geometria (`GeometryEditor`), campo de perímetro dos formulários (`PerimeterField`), importação (`ImportPanel`), mapa territorial. Telas: `/mapa` e `/propriedades/[id]/mapa`.
 - `packages/map-styles`: estilos e definições de camadas do mapa (cores por tipo de feição), compartilhados entre web e mobile.
 - `packages/calculos` (a criar): funções puras dos cálculos agronômicos e zootécnicos, reaproveitáveis no app offline.
@@ -101,7 +102,9 @@ Checklist para cada modelo novo:
 
 - Entidades que o app vai criar aceitam **UUID gerado no cliente** (v4, validado na API). O `@default(uuid())` continua valendo para quem não envia id.
 - O app grava numa `sync_queue` local (entidade, id, operação, tentativas, erro) e envia em lotes pequenos com retry.
-- O servidor terá `POST /sync/push` e `GET /sync/pull?since=`. O pull devolve também os registros excluídos (`deletedAt`) para o app apagar a cópia local.
+- O servidor tem `POST /sync/push` e `GET /sync/pull?since=` (módulo `sync`). O pull devolve também os registros excluídos (`deletedAt`) para o app apagar a cópia local.
+- Entidade nova que o app cria: o serviço de criação aceita `{ id }` opcional (como `ProducersService.create`, `addProperty` e `VisitsService.create`), e o sync chama esse serviço. Nunca grave direto no banco pelo sync.
+- O cursor do pull usa `(updatedAt, id)`: toda escrita em tabela sincronizada precisa atualizar `updatedAt` (o `@updatedAt` do Prisma faz isso; em SQL bruto ou trigger, atualize à mão).
 - **Operações idempotentes:** reenviar o mesmo lote não duplica nada (upsert por id).
 - Conflito: vence o `updatedAt` mais recente, e o conflito fica registrado em log.
 - Ao modelar qualquer tabela nova, considere desde já como ela entra no sync.
