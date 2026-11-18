@@ -309,7 +309,9 @@ export class SyncPushService {
       return { status: 'duplicate', record: syncVisit(existing) };
     }
     if (data.photos !== undefined) {
-      throw new BadRequestException('As fotos da visita são enviadas depois, separadas dos dados. Envie a visita sem o campo photos.');
+      throw new BadRequestException(
+        'As fotos da visita são enviadas depois, separadas dos dados: envie a visita sem o campo photos e cada foto em PUT /sync/visits/:id/photos/:photoId.',
+      );
     }
     const dto = await this.validated(CreateVisitDto, data);
     await this.visits.create(dto, user, { id: op.id });

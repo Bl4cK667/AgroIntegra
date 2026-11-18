@@ -1,9 +1,15 @@
-import { Body, Controller, Get, HttpCode, Post, Query } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, HttpCode, Param, ParseUUIDPipe, Post, Put, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { AuthUser, CurrentUser } from '../auth/current-user.decorator';
+import { VisitsService } from '../visits/visits.service';
 import { SyncPullService } from './sync-pull.service';
 import { SyncPushService } from './sync-push.service';
-import { DEFAULT_PULL_LIMIT, MAX_PUSH_OPERATIONS, SyncPullQueryDto, SyncPushDto } from './sync.dto';
+import { DEFAULT_PULL_LIMIT, MAX_PUSH_OPERATIONS, SyncPhotoDto, SyncPullQueryDto, SyncPushDto } from './sync.dto';
+
+const uuidV4 = new ParseUUIDPipe({
+  version: '4',
+  exceptionFactory: () => new BadRequestException('Identificador inválido: use um UUID v4 gerado no aparelho.'),
+});
 
 @ApiTags('sync')
 @ApiBearerAuth()
@@ -12,6 +18,7 @@ export class SyncController {
   constructor(
     private readonly pushService: SyncPushService,
     private readonly pullService: SyncPullService,
+    private readonly visits: VisitsService,
   ) {}
 
   @Post('push')
@@ -25,6 +32,24 @@ export class SyncController {
   })
   push(@Body() dto: SyncPushDto, @CurrentUser() user: AuthUser) {
     return this.pushService.push(dto.operations, user);
+  }
+
+  @Put('visits/:visitId/photos/:photoId')
+  @HttpCode(200)
+  @ApiOperation({
+    summary: 'Envia uma foto de visita já sincronizada (as fotos vão depois dos dados).',
+    description:
+      'photoId é o UUID v4 gerado no aparelho: reenviar a mesma foto devolve status duplicate. Só acrescenta (até 3 por visita) e só o técnico ' +
+      'que registrou a visita. O tipo é conferido pelo conteúdo do arquivo.',
+  })
+  async photo(
+    @Param('visitId', uuidV4) visitId: string,
+    @Param('photoId', uuidV4) photoId: string,
+    @Body() dto: SyncPhotoDto,
+    @CurrentUser() user: AuthUser,
+  ) {
+    const result = await this.visits.addPhoto(visitId, photoId, dto.image, user);
+    return { status: result.created ? 'applied' : 'duplicate', visitId, photo: result.photo };
   }
 
   @Get('pull')

@@ -108,7 +108,7 @@ Base para o app do técnico trabalhar sem sinal (`apps/api/src/sync`). As duas r
 | --- | --- | --- |
 | `producer` | upsert | criar: como `POST /producers`; alterar: só os campos que mudaram. O CPF não muda. |
 | `property` | upsert | criar: `producerId` + campos de `POST /producers/:id/properties`; alterar: como `PATCH /properties/:id`. |
-| `visit` | upsert (só cria) | como `POST /visits`, **sem `photos`** (as fotos irão separadas, num passo seguinte). |
+| `visit` | upsert (só cria) | como `POST /visits`, **sem `photos`**: as fotos vão depois, uma por vez (abaixo). |
 | `feature` | upsert, delete | criar: `propertyId`, `type`, `name`, `geometry`; alterar: `name` e/ou `geometry`. |
 
 Resultado de cada operação: `applied`, `duplicate` (reenvio ou dados iguais), `rejected` (conflito vencido pelo servidor; `record` traz a versão dele) ou `error` (`message` em português; `retry: true` só para falha temporária do servidor). Gravações passam pelos mesmos serviços das rotas do painel: mesmas validações, permissões, auditoria e notificações.
@@ -116,6 +116,13 @@ Resultado de cada operação: `applied`, `duplicate` (reenvio ou dados iguais), 
 - **Idempotente:** o id é gerado no aparelho; reenviar o mesmo lote não duplica nada.
 - **Conflito:** só existe se o servidor mudou depois da versão que o aparelho conhecia (`baseUpdatedAt`). Aí vence o `updatedAt` mais recente, e o conflito fica na auditoria (`SYNC_CONFLICT`, com os valores descartados). Data mais de 5 minutos no futuro é recusada (relógio do aparelho errado).
 - **Contrato do app:** depois de cada resposta, gravar o `record` localmente e usar o `updatedAt` dele como `baseUpdatedAt` das operações pendentes do mesmo registro. Dentro de um mesmo lote o servidor já faz isso (criar e editar offline não vira conflito).
+
+**`PUT /sync/visits/:visitId/photos/:photoId`** com `{ "image": "data:image/jpeg;base64,..." }`: uma foto por requisição, enviada depois que a visita já foi aceita pelo push. A foto deve ser comprimida no aparelho (JPEG, PNG ou WebP, até 2 MB, tipo conferido pelo conteúdo).
+
+- `photoId` é o UUID v4 do aparelho: reenviar a mesma foto devolve `duplicate`.
+- Só acrescenta, até 3 fotos por visita, e só o técnico que registrou a visita (403 para os demais). O restante da visita continua sem edição. A inclusão vai para a auditoria (`VISIT_PHOTO_ADDED`).
+- O `updatedAt` da visita muda, então o próximo pull entrega a visita com a lista de fotos nova.
+- Hoje os bytes ficam no banco (`bytea`), como na demo. A troca por storage compatível com S3 fica concentrada em `apps/api/src/visits/photo-store.ts`.
 
 **`GET /sync/pull?since=<cursor>&limit=200`**: produtores (CPF mascarado), propriedades, solicitações, visitas (sem bytes de fotos e assinatura) e feições em GeoJSON, alterados desde o cursor. Registros excluídos vêm só com `id`, `updatedAt` e `deletedAt`, para o app apagar a cópia local. Repita com `since=cursor` enquanto `hasMore` for `true`; `since` vazio faz a sincronização completa.
 

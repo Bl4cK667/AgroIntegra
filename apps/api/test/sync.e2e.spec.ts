@@ -17,6 +17,12 @@ const polygon = (lng: number, lat: number, size: number) => ({ type: 'Polygon', 
 const PLOT = polygon(-49.88, -6.5, 0.001);
 const PLOT_BIGGER = polygon(-49.88, -6.5, 0.002);
 
+// Imagens mínimas com a assinatura de bytes certa (o servidor confere o tipo pelo conteúdo).
+const PNG = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
+const JPEG_BYTES = Buffer.concat([Buffer.from([0xff, 0xd8, 0xff, 0xe0]), Buffer.alloc(64, 7)]);
+const JPEG = `data:image/jpeg;base64,${JPEG_BYTES.toString('base64')}`;
+const NOT_IMAGE = `data:image/png;base64,${Buffer.from('isto não é uma imagem').toString('base64')}`;
+
 const iso = (d: Date) => d.toISOString();
 const minutesAgo = (m: number) => new Date(Date.now() - m * 60_000);
 
@@ -294,6 +300,95 @@ describe('Sync offline: /sync/push e /sync/pull', () => {
     });
   });
 
+  describe('fotos enviadas depois dos dados', () => {
+    let producerId: string;
+    const putPhoto = (token: string, visitId: string, photoId: string, image = JPEG) =>
+      api().put(`/sync/visits/${visitId}/photos/${photoId}`).set(as(token)).send({ image });
+
+    async function newVisit(token = tech) {
+      const id = randomUUID();
+      const res = await push(token, [
+        { entity: 'visit', op: 'upsert', id, updatedAt: iso(new Date()), data: { producerId, visitedOn: '2026-11-11', diagnosis: 'Pasto degradado', actionPlan: 'Rotação' } },
+      ]).expect(200);
+      expect(res.body.results[0].status).toBe('applied');
+      return id;
+    }
+
+    beforeAll(async () => {
+      producerId = randomUUID();
+      await push(tech, [
+        { entity: 'producer', op: 'upsert', id: producerId, updatedAt: iso(new Date()), data: { name: 'Rita Fotos', cpf: makeCpf(4001), community: 'Mozartinópolis' } },
+      ]).expect(200);
+    });
+
+    it('grava a foto, serve os mesmos bytes no painel e registra na auditoria', async () => {
+      const visitId = await newVisit();
+      const photoId = randomUUID();
+      const res = await putPhoto(tech, visitId, photoId).expect(200);
+      expect(res.body).toEqual({ status: 'applied', visitId, photo: { id: photoId, position: 1, mimeType: 'image/jpeg' } });
+
+      const file = await api().get(`/visits/${visitId}/photos/${photoId}`).set(as(coord)).expect(200);
+      expect(Buffer.compare(Buffer.from(file.body), JPEG_BYTES)).toBe(0);
+      const detail = await api().get(`/visits/${visitId}`).set(as(coord)).expect(200);
+      expect(JSON.stringify(detail.body)).toContain(photoId);
+      expect(await prisma.auditLog.count({ where: { action: 'VISIT_PHOTO_ADDED', entityId: visitId } })).toBe(1);
+    });
+
+    it('reenviar a mesma foto não duplica', async () => {
+      const visitId = await newVisit();
+      const photoId = randomUUID();
+      await putPhoto(tech, visitId, photoId).expect(200);
+      const again = await putPhoto(tech, visitId, photoId).expect(200);
+      expect(again.body.status).toBe('duplicate');
+      expect(await prisma.visitPhoto.count({ where: { visitId } })).toBe(1);
+      expect(await prisma.auditLog.count({ where: { action: 'VISIT_PHOTO_ADDED', entityId: visitId } })).toBe(1);
+    });
+
+    it('o pull seguinte entrega a visita de novo, já com a foto', async () => {
+      const visitId = await newVisit();
+      const { cursor } = await pullAll(tech);
+      const photoId = randomUUID();
+      await putPhoto(tech, visitId, photoId, PNG).expect(200);
+      const { all } = await pullAll(tech, cursor);
+      expect(all.visits.map((v) => v.id)).toEqual([visitId]);
+      expect(all.visits[0].photos).toEqual([{ id: photoId, position: 1, mimeType: 'image/png' }]);
+    });
+
+    it('no máximo 3 fotos, mesmo com envios ao mesmo tempo', async () => {
+      const visitId = await newVisit();
+      const results = await Promise.all(Array.from({ length: 5 }, () => putPhoto(tech, visitId, randomUUID())));
+      expect(results.map((r) => r.status).sort()).toEqual([200, 200, 200, 400, 400]);
+      expect(results.find((r) => r.status === 400)!.body.message).toContain('já tem 3 fotos');
+      const photos = await prisma.visitPhoto.findMany({ where: { visitId }, orderBy: { position: 'asc' } });
+      expect(photos.map((p) => p.position)).toEqual([1, 2, 3]);
+    });
+
+    it('só o técnico que registrou a visita envia fotos (nem outro técnico, nem a coordenação)', async () => {
+      const visitId = await newVisit();
+      for (const token of [tech2, coord]) {
+        const res = await putPhoto(token, visitId, randomUUID()).expect(403);
+        expect(res.body.message).toContain('Só o técnico que registrou a visita');
+      }
+      expect(await prisma.visitPhoto.count({ where: { visitId } })).toBe(0);
+    });
+
+    it('recusa arquivo que não é imagem, id de foto de outra visita, id inválido e visita inexistente', async () => {
+      const visitId = await newVisit();
+      const notImage = await putPhoto(tech, visitId, randomUUID(), NOT_IMAGE).expect(400);
+      expect(notImage.body.message).toContain('não é uma imagem válida');
+
+      const photoId = randomUUID();
+      await putPhoto(tech, visitId, photoId).expect(200);
+      const other = await newVisit();
+      const reused = await putPhoto(tech, other, photoId).expect(409);
+      expect(reused.body.message).toContain('identificador de foto já está em uso');
+
+      const bad = await api().put(`/sync/visits/${visitId}/photos/123`).set(as(tech)).send({ image: JPEG }).expect(400);
+      expect(bad.body.message).toContain('UUID v4');
+      await putPhoto(tech, randomUUID(), randomUUID()).expect(404);
+    });
+  });
+
   describe('pull', () => {
     it('sincronização completa traz o que existe, sem CPF completo e sem bytes de foto ou assinatura', async () => {
       const { all } = await pullAll(tech);
@@ -396,6 +491,12 @@ describe('Sync offline: /sync/push e /sync/pull', () => {
       expect(res.body.results[0].message).toBe('Este identificador já está em uso por outro registro.');
       expect(JSON.stringify(res.body)).not.toContain(victim.name);
       expect((await prisma.producer.findUniqueOrThrow({ where: { id: victim.id } })).name).toBe(victim.name);
+    });
+
+    it('não envia foto para visita da organização A', async () => {
+      const visit = await prisma.visit.findFirstOrThrow({ where: { organizationId: ORG_A } });
+      await api().put(`/sync/visits/${visit.id}/photos/${randomUUID()}`).set(as(tokenB)).send({ image: JPEG }).expect(404);
+      expect(await prisma.visitPhoto.count({ where: { organizationId: orgB } })).toBe(0);
     });
   });
 });

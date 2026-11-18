@@ -69,7 +69,8 @@ Para trocar qualquer item da stack, explique em poucas linhas e espere a respost
 - **Desenho e edição de polígonos:** `terra-draw`.
 - **Importação no navegador:** `@tmcw/togeojson` + `jszip` (KML/KMZ) e `shpjs` (Shapefile).
 - **`@turf/turf` só para prévia** (ex.: área enquanto desenha). O valor oficial sempre vem do PostGIS.
-- **Fotos no piloto:** storage compatível com S3, enviadas depois dos dados e comprimidas. Na demo elas ficam em `bytea`.
+- **Fotos no piloto:** storage compatível com S3, enviadas depois dos dados e comprimidas. Por enquanto continuam em `bytea` (decisão de 18/11); a troca fica em `visits/photo-store.ts`.
+- **Visita salva não é editada**, com uma exceção (decisão de 18/11): o técnico autor pode **acrescentar** fotos depois, até 3 no total (`VisitsService.addPhoto`, rota `PUT /sync/visits/:id/photos/:photoId`). Foto gravada não é trocada nem apagada.
 - Detalhes de GIS: use a skill `gis` (`.claude/skills/gis/SKILL.md`).
 
 ## Regras de dados

@@ -75,6 +75,13 @@ export class SyncPushDto {
   operations: SyncOperationDto[];
 }
 
+export class SyncPhotoDto {
+  @ApiProperty({ description: 'Foto comprimida no aparelho, como data URL (data:image/jpeg;base64,...). JPEG, PNG ou WebP, até 2 MB.' })
+  @IsString({ message: 'Envie a foto como data URL (data:image/jpeg;base64,...).' })
+  @MaxLength(3_000_000, { message: 'A foto passa de 2 MB.' })
+  image: string;
+}
+
 export class SyncPullQueryDto {
   @ApiPropertyOptional({ description: 'Marcador devolvido pelo pull anterior (campo cursor). Vazio = sincronização completa.' })
   @IsOptional()

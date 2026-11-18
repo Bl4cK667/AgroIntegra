@@ -1,4 +1,5 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { Prisma, VisitPhoto } from '@prisma/client';
 import { AuditService } from '../audit/audit.service';
 import { AuthUser } from '../auth/current-user.decorator';
 import { parseDay, today } from '../common/dates';
@@ -6,8 +7,14 @@ import { NotificationsService } from '../notifications/notifications.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { statusChange } from '../requests/requests.service';
 import { decodeImage } from './image';
+import { fromStoredPhoto, toStoredPhoto } from './photo-store';
 import { CreateVisitDto } from './visit.dto';
 import { visitRow, visitRowInclude, visitView } from './visit.view';
+
+// Mesmo limite do cadastro da visita (CreateVisitDto: até 3 fotos).
+export const MAX_VISIT_PHOTOS = 3;
+const PHOTO_ID_IN_USE = 'Este identificador de foto já está em uso por outro registro.';
+const photoSummary = (p: Pick<VisitPhoto, 'id' | 'position' | 'mimeType'>) => ({ id: p.id, position: p.position, mimeType: p.mimeType });
 
 const detailInclude = {
   producer: { select: { id: true, name: true } },
@@ -76,14 +83,7 @@ export class VisitsService {
           latitude: dto.location?.latitude ?? null,
           longitude: dto.location?.longitude ?? null,
           locationAccuracy: dto.location?.accuracy ?? null,
-          photos: {
-            create: photos.map((p, i) => ({
-              position: i + 1,
-              mimeType: p.mimeType,
-              data: new Uint8Array(p.data),
-              size: p.data.length,
-            })),
-          },
+          photos: { create: photos.map((p, i) => ({ position: i + 1, ...toStoredPhoto(p) })) },
         },
         include: detailInclude,
       });
@@ -156,7 +156,52 @@ export class VisitsService {
   async photo(visitId: string, photoId: string) {
     const photo = await this.prisma.visitPhoto.findFirst({ where: { id: photoId, visitId } });
     if (!photo) throw new NotFoundException('Foto não encontrada.');
-    return { mimeType: photo.mimeType, data: Buffer.from(photo.data) };
+    return fromStoredPhoto(photo);
+  }
+
+  // Foto enviada depois da visita (app offline: os dados vão primeiro, as fotos quando houver sinal).
+  // A visita continua sem edição: aqui só se ACRESCENTA foto, até o limite, e só o técnico autor.
+  // photoId é o UUID gerado no aparelho: reenviar a mesma foto não duplica.
+  async addPhoto(visitId: string, photoId: string, image: string, user: AuthUser) {
+    const visit = await this.prisma.visit.findUnique({ where: { id: visitId } });
+    if (!visit || visit.deletedAt) throw new NotFoundException('Visita não encontrada.');
+    if (visit.technicianId !== user.id) {
+      throw new ForbiddenException('Só o técnico que registrou a visita pode enviar as fotos dela.');
+    }
+
+    const existing = await this.prisma.visitPhoto.findUnique({ where: { id: photoId } });
+    if (existing) {
+      if (existing.visitId !== visitId) throw new ConflictException(PHOTO_ID_IN_USE);
+      return { created: false, photo: photoSummary(existing) };
+    }
+
+    const decoded = decodeImage(image, 'Foto');
+    let photo;
+    try {
+      photo = await this.prisma.$transaction(async (tx) => {
+        // Trava a visita (dois envios ao mesmo tempo não passam do limite) e muda o updatedAt,
+        // para o próximo pull entregar a visita com a lista de fotos nova.
+        await tx.visit.update({ where: { id: visitId }, data: { updatedAt: new Date() } });
+        const current = await tx.visitPhoto.findMany({ where: { visitId, deletedAt: null }, select: { position: true } });
+        if (current.length >= MAX_VISIT_PHOTOS) {
+          throw new BadRequestException(`A visita já tem ${MAX_VISIT_PHOTOS} fotos, o máximo permitido.`);
+        }
+        const position = Math.max(0, ...current.map((p) => p.position)) + 1;
+        return tx.visitPhoto.create({ data: { id: photoId, visitId, position, ...toStoredPhoto(decoded) } });
+      });
+    } catch (e) {
+      if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2002') throw new ConflictException(PHOTO_ID_IN_USE);
+      throw e;
+    }
+
+    await this.audit.record({
+      userId: user.id,
+      action: 'VISIT_PHOTO_ADDED',
+      entity: 'Visit',
+      entityId: visitId,
+      details: { photoId, position: photo.position, mimeType: photo.mimeType, size: photo.size },
+    });
+    return { created: true, photo: photoSummary(photo) };
   }
 
   async signature(visitId: string) {
