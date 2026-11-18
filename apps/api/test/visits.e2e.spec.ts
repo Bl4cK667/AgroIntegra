@@ -1,6 +1,8 @@
 import { randomUUID } from 'node:crypto';
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
+import { PrismaService } from '../src/prisma/prisma.service';
+import { TenancyService } from '../src/tenancy/tenancy.service';
 import { TestDatabase } from './test-database';
 import { createTestApp, makeCpf, resetData, tokenFor } from './fixtures';
 
@@ -76,6 +78,40 @@ describe('Visitas', () => {
   it('exige login', async () => {
     await api().post('/visits').send(baseVisit()).expect(401);
     await api().get('/visits').expect(401);
+  });
+
+  // Os usuários de teste ficam na organização padrão, que também é o default da coluna.
+  // Aqui a visita é criada em outra organização para provar que as fotos herdam a da visita.
+  it('fotos herdam a organização da visita fora da organização padrão', async () => {
+    const scoped = app.get(PrismaService);
+    const tenancy = app.get(TenancyService);
+    const org = await prisma.organization.create({ data: { name: 'Organização de teste B' } });
+    try {
+      const user = await prisma.user.findUniqueOrThrow({ where: { email: 'tecnico@agrointegra.demo' } });
+      const visit = await tenancy.run({ organizationId: org.id }, async () => {
+        const producer = await scoped.producer.create({
+          data: { name: 'Produtor B', searchName: 'produtor b', cpf: makeCpf(502), community: 'B', createdById: user.id },
+        });
+        return scoped.visit.create({
+          data: {
+            producerId: producer.id,
+            technicianId: user.id,
+            visitedOn: new Date(),
+            diagnosis: 'Diagnóstico',
+            actionPlan: 'Plano',
+            photos: { create: [{ position: 1, mimeType: 'image/png', data: new Uint8Array([1]), size: 1 }] },
+          },
+          include: { photos: true },
+        });
+      });
+      expect(visit.organizationId).toBe(org.id);
+      expect(visit.photos.map((p) => p.organizationId)).toEqual([org.id]);
+    } finally {
+      await prisma.visitPhoto.deleteMany({ where: { organizationId: org.id } });
+      await prisma.visit.deleteMany({ where: { organizationId: org.id } });
+      await prisma.producer.deleteMany({ where: { organizationId: org.id } });
+      await prisma.organization.delete({ where: { id: org.id } });
+    }
   });
 
   describe('registro completo', () => {
@@ -165,6 +201,14 @@ describe('Visitas', () => {
       const user = await prisma.user.findUniqueOrThrow({ where: { email: 'tecnico@agrointegra.demo' } });
       expect(log.userId).toBe(user.id);
       expect(log.details).toMatchObject({ producerId, photos: 3, signature: true, location: true });
+    });
+
+    it('as fotos ficam na mesma organização da visita', async () => {
+      const visit = await prisma.visit.findUniqueOrThrow({
+        where: { id: visitId },
+        select: { organizationId: true, photos: { select: { organizationId: true } } },
+      });
+      expect(visit.photos.map((p) => p.organizationId)).toEqual(Array(3).fill(visit.organizationId));
     });
 
     it('lista as visitas mais recentes primeiro', async () => {

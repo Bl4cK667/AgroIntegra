@@ -8,7 +8,7 @@
   "scripts": {
     "db:up": "node scripts/db.mjs up",
     "db:down": "node scripts/db.mjs down",
-    "setup": "npm run db:up && npm run -w apps/api db:migrate && npm run -w apps/api db:seed",
+    "setup": "npm run db:up && npm run -w apps/api db:generate && npm run -w apps/api db:migrate && npm run -w apps/api db:seed",
     "dev": "concurrently --kill-others --names api,web --prefix-colors green,yellow \"npm:dev:api\" \"npm:dev:web\"",
     "dev:api":"npm run -w apps/api start:dev",
     "dev:web": "npm run -w apps/web dev",

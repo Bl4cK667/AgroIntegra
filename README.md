@@ -12,7 +12,7 @@ Requisitos: Node.js 22 ou mais novo. Docker é opcional.
 npm install
 cp apps/api/.env.example apps/api/.env
 cp apps/web/.env.example apps/web/.env.local
-npm run setup        # sobe o banco, aplica as migrações e cria os usuários da demo
+npm run setup        # sobe o banco, gera o Prisma Client, aplica as migrações e cria os usuários da demo
 npm run demo:reset   # carrega os dados fictícios da demonstração (apaga os atendimentos atuais)
 npm run dev          # API (http://localhost:3001) e painel (http://localhost:3000) juntos; Ctrl+C encerra os dois
 ```

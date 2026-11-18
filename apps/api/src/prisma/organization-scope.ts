@@ -19,15 +19,18 @@ function createData(data: Args, organizationId: string): Args {
     throw new ForbiddenException('Não é permitido alterar a organização do registro.');
   }
   const result: Args = { ...data, organizationId };
-  // Visit photos are the only nested domain create used by the application. Their composite
-  // FK must carry the same organization instead of falling back to the legacy default.
+  // Visit photos are the only nested domain create used by the application. Prisma fills their
+  // organizationId from the parent visit through the composite FK [visitId, organizationId] and
+  // rejects it as an explicit nested argument, so nested items must not carry any organization field.
   if (data.photos) {
     const nested = data.photos;
     if (Object.keys(nested).some((key) => key !== 'create')) {
       throw new ForbiddenException('Operação de fotos não permitida.');
     }
-    const items = Array.isArray(nested.create) ? nested.create : [nested.create];
-    result.photos = { create: items.map((item: Args) => createData(item, organizationId)) };
+    const items: Args[] = Array.isArray(nested.create) ? nested.create : [nested.create];
+    if (items.some((item) => item && ('organization' in item || 'organizationId' in item))) {
+      throw new ForbiddenException('Não é permitido alterar a organização do registro.');
+    }
   }
   return result;
 }

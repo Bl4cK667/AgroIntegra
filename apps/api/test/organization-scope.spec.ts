@@ -19,9 +19,9 @@ describe('Isolamento de dados por organização', () => {
       .toMatchObject({ where: { id: 'x', organizationId: 'org-a' }, create: { organizationId: 'org-a' } });
   });
 
-  it('fotos criadas na transação da visita herdam a organização da visita', () => {
+  it('fotos criadas junto com a visita não recebem organizationId: o Prisma herda da visita pela FK composta', () => {
     const scoped = scopeOrganizationOperation('create', { data: { photos: { create: [{ position: 1 }, { position: 2 }] } } }, 'org-a');
-    expect(scoped.data.photos.create).toEqual([{ position: 1, organizationId: 'org-a' }, { position: 2, organizationId: 'org-a' }]);
+    expect(scoped.data).toEqual({ organizationId: 'org-a', photos: { create: [{ position: 1 }, { position: 2 }] } });
   });
 
   it('não permite mover registros ou conectar uma organização por nested write', () => {
@@ -29,6 +29,8 @@ describe('Isolamento de dados por organização', () => {
     expect(() => scopeOrganizationOperation('create', { data: { organizationId: 'org-b' } }, 'org-a')).toThrow(ForbiddenException);
     expect(() => scopeOrganizationOperation('create', { data: { organization: { connect: { id: 'org-b' } } } }, 'org-a')).toThrow(ForbiddenException);
     expect(() => scopeOrganizationOperation('create', { data: { photos: { connect: { id: 'photo-b' } } } }, 'org-a')).toThrow(ForbiddenException);
+    expect(() => scopeOrganizationOperation('create', { data: { photos: { create: [{ position: 1, organizationId: 'org-b' }] } } }, 'org-a')).toThrow(ForbiddenException);
+    expect(() => scopeOrganizationOperation('create', { data: { photos: { create: { organization: { connect: { id: 'org-b' } } } } } }, 'org-a')).toThrow(ForbiddenException);
     expect(() => scopeOrganizationOperation('findMany', {}, '')).toThrow(ForbiddenException);
   });
 
