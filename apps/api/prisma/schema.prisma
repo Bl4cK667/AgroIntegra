@@ -44,6 +44,8 @@ model User {
   featuresCreated PropertyFeature[]        @relation("PropertyFeatureCreatedBy")
   featuresUpdated PropertyFeature[]        @relation("PropertyFeatureUpdatedBy")
   featureVersions PropertyFeatureVersion[]
+  // Módulo cotacoes.
+  localPrices     LocalPrice[]
 }
 
 // Registro de auditoria (LGPD): quem fez, o quê, quando.
@@ -359,6 +361,7 @@ model Organization {
   propertyFeatures PropertyFeature[]
   propertyFeatureVersions PropertyFeatureVersion[]
   weatherForecasts WeatherForecast[]
+  localPrices LocalPrice[]
 }
 
 model OrganizationMembership {
@@ -477,6 +480,81 @@ model WeatherForecast {
   deletedAt     DateTime?
 
   @@unique([organizationId, source, locationKey])
+  @@index([organizationId])
+  @@unique([id, organizationId])
+}
+
+// ============================================================================
+// Módulo cotacoes (dono: João Pedro).
+// MarketPrice e MarketPriceImport são GLOBAIS (sem organizationId): preço público da CONAB,
+// igual para todas as organizações. Exceção ao checklist de multi-organização aprovada em
+// 18/11/2026 (ver CLAUDE.md). Preço digitado pela equipe fica em LocalPrice, por organização.
+// ============================================================================
+
+enum MarketPriceScope {
+  STATE        // média da UF
+  MUNICIPALITY // praça municipal
+}
+
+// Preço recebido pelo produtor, semanal (CONAB, "PREÇO RECEBIDO P/ PR").
+model MarketPrice {
+  id           String           @id @default(uuid())
+  source       String           // "CONAB"
+  productCode  String           // id_produto da CONAB
+  productName  String           // ex.: "BOI"
+  productClass String           // ex.: "GORDO"
+  scope        MarketPriceScope
+  uf           String           @db.Char(2)
+  ibgeCode     String?          // só na praça municipal
+  placeKey     String           // UF ("PA") ou código IBGE
+  placeName    String           // ex.: "Pará" ou "Marabá/PA"
+  weekStart    DateTime         @db.Date
+  weekEnd      DateTime         @db.Date
+  // Valor como a CONAB publica (coluna valor_produto_kg: R$/kg na maioria dos produtos).
+  // A conversão para R$/@, saca etc. é feita na leitura (src/cotacoes/products.ts).
+  value        Decimal          @db.Decimal(14, 4)
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+
+  @@unique([source, scope, placeKey, productCode, weekStart])
+  @@index([productCode, scope, weekEnd])
+}
+
+// Cada tentativa de importação (data do dado, falhas, "não mudou").
+model MarketPriceImport {
+  id           String    @id @default(uuid())
+  source       String    // "CONAB"
+  file         String    // "UF" ou "MUNICIPIO"
+  status       String    // SUCCESS, NOT_MODIFIED, FAILED
+  rows         Int       @default(0)
+  lastModified String?   // cabeçalho Last-Modified da fonte (download condicional)
+  error        String?
+  startedAt    DateTime  @default(now())
+  finishedAt   DateTime?
+
+  @@index([source, file, startedAt])
+}
+
+// Preço local lançado pela equipe (feira, laticínio, frigorífico...). Por organização.
+model LocalPrice {
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  id          String    @id @default(uuid())
+  productKey  String?   // produto da lista acompanhada (ex.: BOI_GORDO); nulo = outro produto
+  productName String
+  unit        String    // ex.: "R$/@", "R$/L"
+  price       Decimal   @db.Decimal(14, 2)
+  place       String    // praça: ex.: "Laticínio Serra Dourada, Canaã dos Carajás"
+  observedOn  DateTime  @db.Date
+  notes       String?
+  createdById String
+  createdBy   User      @relation(fields: [createdById], references: [id])
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+
+  @@index([organizationId, productKey, observedOn])
   @@index([organizationId])
   @@unique([id, organizationId])
 }

@@ -105,6 +105,25 @@ Previsão do tempo por propriedade e por município (`apps/api/src/clima`). Apar
 - Toda chamada tem timeout (`CLIMA_TIMEOUT_MS`), até 2 novas tentativas com espera progressiva só para falha temporária (rede, 429, 5xx) e log estruturado em JSON (a chave do Open-Meteo não aparece no log).
 - Variáveis em `apps/api/.env.example` (bloco "Módulo clima").
 
+## Cotações (módulo cotacoes)
+
+Preço recebido pelo produtor e preços locais (`apps/api/src/cotacoes`). Tela: `/cotacoes` (menu "Cotações").
+
+| Fonte | O que traz | Acesso e licença |
+| --- | --- | --- |
+| **CONAB**, Portal de Informações Agropecuárias | Preço recebido pelo produtor, semanal, por UF e por município (`PrecosSemanalUF.txt` e `PrecosSemanalMunicipio.txt`). | Arquivos públicos para download, sem chave. Não há termos de uso publicados no portal (conferido em 18/11/2026). |
+| **Preço local** | Lançado pela equipe (coordenação e técnicos): produto, praça, unidade, valor e data. | Dado da própria organização, com auditoria (`LOCAL_PRICE_CREATED` / `LOCAL_PRICE_DELETED`). |
+
+Fora do piloto: CEPEA (licença CC BY-NC, uso comercial só com autorização), B3 (licença paga) e scraping de portais.
+
+- **Importação:** uma vez por dia (`COTACOES_CRON`, padrão 10h30 de Belém) e ao subir a API se a última importação tiver mais de 7 dias. O download é condicional (`If-Modified-Since`): a CONAB atualiza às quartas. Só entra o nível "PREÇO RECEBIDO P/ PR" das UFs em `COTACOES_UFS` (padrão `PA`). Repetir não duplica (chave: fonte, escopo, praça, produto e semana). A coordenação pode forçar em `POST /cotacoes/import` (botão na tela).
+- **Formato do arquivo:** `;` como separador, vírgula decimal e texto em Latin-1 (o servidor anuncia UTF-8, mas não é). Se as colunas mudarem, a importação falha com mensagem clara e os preços anteriores continuam.
+- **Unidades:** a CONAB publica em `valor_produto_kg`, em R$/kg na maioria dos produtos (mas não em todos: ovos vêm por unidade). Por isso a tela mostra só uma lista conferida (`src/cotacoes/products.ts`), convertida para a unidade do campo: boi em R$/@ (×15), milho, soja e feijão em R$/sc 60 kg, arroz em casca em R$/sc 50 kg e mandioca em R$/t.
+- **Praça:** no Pará, o preço recebido por município parou em janeiro de 2026; por UF está em dia. A tela mostra a média do Pará e as praças municipais só quando o dado tem até `COTACOES_STALE_DAYS` dias (padrão 21). Preço da UF mais antigo que isso aparece com aviso de desatualizado.
+- **Rotas:** `GET /cotacoes` (painel), `GET /cotacoes/products/:key/history`, `GET|POST /cotacoes/local`, `DELETE /cotacoes/local/:id` (coordenação ou quem lançou) e `POST /cotacoes/import` (coordenação).
+- Os preços da CONAB ficam em tabela global (`MarketPrice`), sem organização: são públicos e iguais para todos. Os preços locais (`LocalPrice`) são por organização.
+- Variáveis em `apps/api/.env.example` (bloco "Módulo cotacoes").
+
 ## Sincronização offline (módulo sync)
 
 Base para o app do técnico trabalhar sem sinal (`apps/api/src/sync`). As duas rotas exigem login e valem para os dois perfis.

@@ -1,0 +1,11 @@
+produto;classificao_produto;id_produto;uf;regiao;ano;mes;data_inicial_final_semana;semana;dsc_nivel_comercializacao;valor_produto_kg
+BOI                      ;GORDO               ;4193;PA        ;NORTE                    ;2026;11;09-11-2026 - 13-11-2026  ;2;PREÇO RECEBIDO P/ PR;25,22
+BOI                      ;GORDO               ;4193;PA        ;NORTE                    ;2026;11;02-11-2026 - 06-11-2026  ;1;PREÇO RECEBIDO P/ PR;25,16
+BOI                      ;GORDO               ;4193;PA        ;NORTE                    ;2026;10;26-10-2026 - 30-10-2026  ;4;PREÇO RECEBIDO P/ PR;25,15
+LEITE DE VACA            ;IN NATURA           ;6542;PA        ;NORTE                    ;2026;11;09-11-2026 - 13-11-2026  ;2;PREÇO RECEBIDO P/ PR;2,35
+LEITE DE VACA            ;IN NATURA           ;6542;PA        ;NORTE                    ;2026;11;02-11-2026 - 06-11-2026  ;1;PREÇO RECEBIDO P/ PR;2,38
+LEITE DE VACA            ;IN NATURA           ;6542;PA        ;NORTE                    ;2026;10;26-10-2026 - 30-10-2026  ;4;PREÇO RECEBIDO P/ PR;2,38
+ABACAXI                  ;PÉROLA              ;6320;PA        ;NORTE                    ;2026;1;12-01-2026 - 16-01-2026  ;2;VAREJO              ;8,45
+ABACAXI                  ;PÉROLA              ;6320;PA        ;NORTE                    ;2026;1;26-01-2026 - 30-01-2026  ;4;VAREJO              ;8,45
+ALGODAO EM PLUMA         ;TIPO BÁSICO - SLM 41;11182;MT        ;CENTRO-OESTE             ;2025;11;17-11-2025 - 21-11-2025  ;3;PREÇO RECEBIDO P/ PR;7,25
+ALGODAO EM PLUMA         ;TIPO BÁSICO - SLM 41;11182;MT        ;CENTRO-OESTE             ;2025;11;24-11-2025 - 28-11-2025  ;4;PREÇO RECEBIDO P/ PR;7,23

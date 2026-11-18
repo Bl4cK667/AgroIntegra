@@ -1,0 +1,5 @@
+produto;classificao_produto;id_produto;nom_municipio;cod_ibge;uf;regiao;ano;mes;data_inicial_final_semana;semana;dsc_nivel_comercializacao;valor_produto_kg
+BOI                      ;GORDO               ;4193;MARABÁ-PA                                         ;1504208                       ;PA        ;NORTE                    ;2025;11;03-11-2025 - 07-11-2025  ;1;PREÇO RECEBIDO P/ PR;20,0
+BOI                      ;GORDO               ;4193;MARABÁ-PA                                         ;1504208                       ;PA        ;NORTE                    ;2025;11;17-11-2025 - 21-11-2025  ;3;PREÇO RECEBIDO P/ PR;20,33
+CASTANHA DE BABACU       ;AMÊNDOA             ;7995;SÃO DOMINGOS DO ARAGUAIA-PA                       ;1507151                       ;PA        ;NORTE                    ;2025;11;03-11-2025 - 07-11-2025  ;1;PREÇO RECEBIDO P/ PR;6,5
+ABACAXI                  ;PÉROLA              ;6320;BELÉM-PA                                          ;1501402                       ;PA        ;NORTE                    ;2026;1;19-01-2026 - 23-01-2026  ;3;VAREJO              ;8,45

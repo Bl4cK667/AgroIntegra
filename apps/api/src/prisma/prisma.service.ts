@@ -41,6 +41,10 @@ export class PrismaService implements OnModuleInit, OnModuleDestroy {
   get propertyFeature() { return this.scoped.propertyFeature; }
   get propertyFeatureVersion() { return this.scoped.propertyFeatureVersion; }
   get weatherForecast() { return this.scoped.weatherForecast; }
+  get localPrice() { return this.scoped.localPrice; }
+  // Globais (sem organizationId): preço público da CONAB. O escopo não se aplica a eles.
+  get marketPrice() { return this.scoped.marketPrice; }
+  get marketPriceImport() { return this.scoped.marketPriceImport; }
   get $transaction() { return this.scoped.$transaction.bind(this.scoped); }
 
   // Raw SQL is limited to the existing health check and the explicitly scoped dashboard SQL.

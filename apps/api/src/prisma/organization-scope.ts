@@ -9,6 +9,8 @@ export const ORGANIZATION_MODELS = new Set([
   'PropertyFeature', 'PropertyFeatureVersion',
   // Módulo clima.
   'WeatherForecast',
+  // Módulo cotacoes (MarketPrice e MarketPriceImport são globais: preço público da CONAB).
+  'LocalPrice',
 ]);
 
 type Args = Record<string, any>;

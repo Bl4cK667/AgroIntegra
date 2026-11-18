@@ -29,6 +29,7 @@ export async function createTestApp() {
 
 // Apaga os dados na ordem certa por causa das chaves estrangeiras.
 export async function resetData(prisma: TestDatabase) {
+  await prisma.localPrice.deleteMany(); // cotacoes: referencia User
   await prisma.auditLog.deleteMany();
   await prisma.visitPhoto.deleteMany();
   await prisma.visit.deleteMany();

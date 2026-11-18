@@ -1,0 +1,155 @@
+/* Módulo cotacoes: tela de cotações. Usa os tokens dos temas (themes.css). */
+
+.status {
+  margin: 0 0 14px;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.product {
+  display: grid;
+  align-content: start;
+  justify-items: start;
+  gap: 6px;
+}
+
+.product > * {
+  max-width: 100%;
+}
+
+.selected {
+  outline: 2px solid var(--chart-1);
+  outline-offset: -2px;
+}
+
+.productHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.productHead h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.value {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.value strong {
+  font-size: 1.45rem;
+  color: var(--ink);
+}
+
+.change {
+  font-size: 0.85rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.up {
+  color: var(--success);
+}
+
+.down {
+  color: var(--perigo);
+}
+
+.flat {
+  color: var(--muted);
+}
+
+.meta {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.staleNote {
+  margin: 0;
+  padding: 6px 10px;
+  border-radius: var(--radius-md);
+  border-left: 3px solid var(--warning);
+  background: var(--warning-bg);
+  color: var(--ink);
+  font-size: 0.84rem;
+}
+
+.places {
+  display: grid;
+  gap: 2px;
+  padding-top: 6px;
+  border-top: 1px solid var(--card-border);
+}
+
+.quoteLine {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  font-size: 0.88rem;
+}
+
+.local {
+  margin: 0;
+  padding-top: 6px;
+  border-top: 1px solid var(--card-border);
+  font-size: 0.88rem;
+}
+
+.history {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.sectionTitle {
+  margin: 0;
+  font-size: 1.02rem;
+}
+
+.localGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.form {
+  display: grid;
+  align-content: start;
+  gap: 12px;
+}
+
+.localList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.localList li {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--card-border);
+}
+
+.localList li:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}

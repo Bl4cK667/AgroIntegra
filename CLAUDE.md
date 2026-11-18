@@ -49,6 +49,8 @@ Na dúvida sobre quem é dono de um arquivo, use `git log`.
   - `geo-export.service.ts` + `formats/`: GeoJSON, KML/KMZ e Shapefile próprio, sem dependência externa.
   - `geo.controller.ts`: rotas.
 - `apps/api/src/clima`: previsão do tempo. INMET por município (principal) e Open-Meteo por coordenada (plano grátis só não comercial: em produção exige chave), cache e último valor válido em `WeatherForecast`. Web: `components/clima/WeatherCard` no mapa da propriedade. Fontes e licenças no `README.md`.
+- `apps/api/src/cotacoes`: preço recebido pelo produtor (CONAB, semanal, importação diária com `@nestjs/schedule`) e preços locais lançados pela equipe. Produtos e conversão de unidades em `products.ts`. Web: `/cotacoes`. Fontes e licenças no `README.md`.
+- `apps/api/src/common/external-http.ts`: cliente das fontes externas (timeout, novas tentativas, log estruturado), usado por `clima` e `cotacoes`.
 - `apps/api/src/sync`: sync offline (`POST /sync/push`, `GET /sync/pull`). Grava só pelos serviços exportados de `producers`, `visits` e `geo`; o conflito vai para a auditoria (`SYNC_CONFLICT`). Contrato do app no `README.md`.
 - `apps/web/src/components/geo` + `lib/geo*.ts`: editor de geometria (`GeometryEditor`), campo de perímetro dos formulários (`PerimeterField`), importação (`ImportPanel`), mapa territorial. Telas: `/mapa` e `/propriedades/[id]/mapa`.
 - `packages/map-styles`: estilos e definições de camadas do mapa (cores por tipo de feição), compartilhados entre web e mobile.
@@ -92,6 +94,8 @@ Checklist para cada modelo novo:
 - [ ] **SQL bruto (`$queryRaw`/`$executeRaw`) não tem escopo automático.** Toda consulta bruta filtra `"organizationId" = ${this.tenancy.organizationId()}` de forma explícita, inclusive nos JOINs (ver `dashboard/dashboard.service.ts`). Isso vale para todas as consultas PostGIS.
 - [ ] **Creates aninhados:** quando a FK composta inclui `organizationId`, o Prisma herda o valor do registro pai e **rejeita** o campo explícito. Hoje o `createData` só conhece `photos`; um create aninhado novo precisa ser tratado lá.
 - [ ] Teste e2e que cria dados em **outra organização** (não a padrão) e prova o isolamento.
+
+**Exceção aprovada (18/11/2026):** `MarketPrice` e `MarketPriceImport` (módulo `cotacoes`) são **globais**, sem `organizationId`: guardam preço público da CONAB, igual para todas as organizações. RLS só libera leitura de `MarketPrice` para `authenticated`; a escrita é só da API. Não crie outra tabela global sem perguntar.
 
 ### Exclusão lógica, datas e auditoria
 
