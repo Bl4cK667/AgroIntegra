@@ -14,6 +14,7 @@ export const MENU: MenuItem[] = [
   { href: '/painel', label: 'Painel', icon: 'painel', mobile: true },
   { href: '/produtores', label: 'Produtores', icon: 'produtores', mobile: true },
   { href: '/propriedades', label: 'Propriedades', icon: 'propriedades', mobile: false },
+  { href: '/mapa', label: 'Mapa', icon: 'mapa', mobile: false },
   { href: '/solicitacoes', label: 'Solicitações', icon: 'solicitacoes', mobile: true },
   { href: '/visitas', label: 'Visitas', icon: 'visitas', mobile: true },
   { href: '/programas', label: 'Programas', icon: 'programas', mobile: false },

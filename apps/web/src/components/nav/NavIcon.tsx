@@ -1,7 +1,7 @@
 import s from './nav.module.css';
 
 export type NavIconName =
-  | 'painel' | 'produtores' | 'propriedades' | 'solicitacoes' | 'visitas' | 'programas' | 'relatorios'
+  | 'painel' | 'produtores' | 'propriedades' | 'mapa' | 'solicitacoes' | 'visitas' | 'programas' | 'relatorios'
   | 'mais' | 'sair' | 'sol' | 'lua' | 'recolher' | 'busca' | 'fechar';
 
 // Ícones desenhados para o menu. Cada parte tem uma classe própria, animada pelo CSS
@@ -53,6 +53,14 @@ const PATHS: Record<NavIconName, React.ReactNode> = {
       <path className={s.p1} d="M3 11.2 12 4l9 7.2" />
       <path d="M5.5 9.5v10.5h13V9.5" />
       <path className={s.p2} d="M10 20v-5.2h4V20" />
+    </>
+  ),
+  // Módulo geo: mapa dobrado com um marcador.
+  mapa: (
+    <>
+      <path d="M3.5 6.5 9 4.5l6 2 5.5-2v13l-5.5 2-6-2-5.5 2z" />
+      <path d="M9 4.5v13M15 6.5v13" />
+      <path className={s.p1} d="M15 10.2a1.8 1.8 0 1 0 0-.01" />
     </>
   ),
   solicitacoes: (

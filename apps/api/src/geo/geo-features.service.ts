@@ -156,6 +156,7 @@ export class GeoFeaturesService {
       if (!(await this.insert(tx, organizationId, { id, propertyId: input.propertyId, type: input.type, name, geometry }, user))) {
         throw new ConflictException('Este identificador já está em uso por outra feição.');
       }
+      if (input.type === 'PERIMETER') await this.fillPropertyLocation(tx, organizationId, input.propertyId);
       return { row: (await this.findRow(tx, organizationId, id))!, created: true };
     });
 
@@ -256,6 +257,7 @@ export class GeoFeaturesService {
         if (!inserted) throw new ConflictException(`Feição ${p.item.index + 1}: este identificador já está em uso.`);
         saved.push((await this.findRow(tx, organizationId, id))!);
       }
+      if (perimeters.length) await this.fillPropertyLocation(tx, organizationId, propertyId);
       return saved;
     });
 
@@ -353,9 +355,47 @@ export class GeoFeaturesService {
       ORDER BY f.type, f."createdAt"`;
   }
 
+  // FeatureCollection + resumo da propriedade (membro extra, permitido pela RFC 7946). Sem CPF.
   async listByProperty(propertyId: string) {
     const rows = await this.listRows(propertyId);
-    return { type: 'FeatureCollection' as const, features: rows.map(featureView) };
+    const p = await this.prisma.property.findFirst({
+      where: { id: propertyId, deletedAt: null },
+      select: {
+        id: true, name: true, locality: true, areaHa: true, calculatedAreaHa: true, calculatedPerimeterM: true,
+        latitude: true, longitude: true, producer: { select: { id: true, name: true } },
+      },
+    });
+    if (!p) throw new NotFoundException('Propriedade não encontrada.');
+    return {
+      type: 'FeatureCollection' as const,
+      features: rows.map(featureView),
+      property: {
+        id: p.id,
+        name: p.name,
+        locality: p.locality,
+        producer: p.producer,
+        declaredAreaHa: Number(p.areaHa),
+        calculatedAreaHa: num(p.calculatedAreaHa),
+        calculatedPerimeterM: num(p.calculatedPerimeterM),
+        coordinates: p.latitude !== null && p.longitude !== null ? { latitude: p.latitude, longitude: p.longitude } : null,
+      },
+    };
+  }
+
+  // Lat/lng da propriedade vazia? Usa um ponto dentro do perímetro (ST_PointOnSurface).
+  // Nunca sobrescreve coordenadas já digitadas.
+  private async fillPropertyLocation(raw: RawClient, organizationId: string, propertyId: string) {
+    await raw.$queryRaw`
+      UPDATE "Property" p SET latitude = ST_Y(pt.g), longitude = ST_X(pt.g)
+      FROM (
+        SELECT ST_PointOnSurface(f.geom) AS g FROM "PropertyFeature" f
+        WHERE f."propertyId" = ${propertyId} AND f."organizationId" = ${organizationId}
+          AND f.type = 'PERIMETER' AND f."deletedAt" IS NULL
+        LIMIT 1
+      ) pt
+      WHERE p.id = ${propertyId} AND p."organizationId" = ${organizationId}
+        AND (p.latitude IS NULL OR p.longitude IS NULL)
+      RETURNING p.id`;
   }
 
   async history(id: string) {

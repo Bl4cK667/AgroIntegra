@@ -8,6 +8,8 @@ dist/
 coverage/
 .pgdata/
 next-env.d.ts
+# Worker do MapLibre copiado do node_modules (apps/web/scripts/copy-maplibre-worker.mjs)
+apps/web/public/maplibre/
 *.tsbuildinfo
 # Playwright CLI output (may contain credentials)
 .playwright-cli/

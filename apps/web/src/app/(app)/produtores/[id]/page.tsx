@@ -8,6 +8,8 @@ import { FieldHeading, FieldIcon, FieldLoading, FieldStats, SectionTitle, fieldS
 import { useParams } from 'next/navigation';
 import { FormEvent, useCallback, useEffect, useState } from 'react';
 import { LocationDraft, locationDraft, LocationFields, locationInput, LocationSummary } from '@/components/property/LocationFields';
+import { PerimeterField } from '@/components/geo/PerimeterField';
+import { checkPerimeter, emptyPerimeter, savePerimeter, type PerimeterDraft } from '@/lib/geo';
 import { PriorityTag } from '@/components/request/PriorityTag';
 import { VisitTable } from '@/components/visit/VisitTable';
 import {
@@ -36,6 +38,8 @@ export default function ProdutorPage() {
   // Volta do formulário de visita com ?visita=<id>: mostra o aviso uma vez.
   const [savedVisit, setSavedVisit] = useState(false);
   const [success, setSuccess] = useState<string | null>(null);
+  // Aviso que sobrevive ao recarregamento (ex.: cadastro salvo pela metade).
+  const [warning, setWarning] = useState<string | null>(null);
 
   useEffect(() => {
     const url = new URL(window.location.href);
@@ -48,6 +52,12 @@ export default function ProdutorPage() {
     if (saved === 'criado' || saved === 'atualizado') {
       setSuccess(saved === 'criado' ? 'Produtor cadastrado com sucesso. Agora você pode adicionar uma propriedade ou registrar uma visita.' : 'Dados do produtor atualizados com sucesso.');
       url.searchParams.delete('cadastro');
+      window.history.replaceState(null, '', url.pathname + url.search);
+    }
+    if (saved === 'parcial') {
+      setWarning(url.searchParams.get('motivo') ?? 'Parte do cadastro não foi salva. Confira os dados abaixo.');
+      url.searchParams.delete('cadastro');
+      url.searchParams.delete('motivo');
       window.history.replaceState(null, '', url.pathname + url.search);
     }
     if (url.searchParams.has('visita')) {
@@ -103,6 +113,12 @@ export default function ProdutorPage() {
       ]} />
 
       {error && <p className="alert">{error}</p>}
+      {warning && (
+        <p className="alert" role="alert">
+          {warning}{' '}
+          <button type="button" className="btn-link" onClick={() => setWarning(null)}>Fechar aviso</button>
+        </p>
+      )}
       <Toast message={success} onClose={() => setSuccess(null)} />
       {savedVisit && (
         <p className="notice" role="status">
@@ -159,9 +175,10 @@ export default function ProdutorPage() {
           {adding && (
             <PropertyForm
               producerId={id}
-              onDone={() => {
+              onDone={(warn) => {
                 setAdding(false);
-                setSuccess('Propriedade cadastrada com sucesso.');
+                if (warn) setWarning(warn);
+                else setSuccess('Propriedade cadastrada com sucesso.');
                 load();
               }}
               onCancel={() => setAdding(false)}
@@ -182,7 +199,8 @@ export default function ProdutorPage() {
                     <th>Localidade</th>
                     <th>Localização</th>
                     <th>Atividade principal</th>
-                    <th className="right">Área</th>
+                    <th className="right">Área declarada</th>
+                    <th className="right">Área demarcada</th>
                     <th className="right">Ação</th>
                   </tr>
                 </thead>
@@ -190,13 +208,14 @@ export default function ProdutorPage() {
                   {producer.properties.map((p) =>
                     editingId === p.id ? (
                       <tr key={p.id}>
-                        <td colSpan={6}>
+                        <td colSpan={7}>
                           <PropertyForm
                             producerId={id}
                             property={p}
-                            onDone={() => {
+                            onDone={(warn) => {
                               setEditingId(null);
-                              setSuccess('Propriedade atualizada com sucesso.');
+                              if (warn) setWarning(warn);
+                              else setSuccess('Propriedade atualizada com sucesso.');
                               load();
                             }}
                             onCancel={() => setEditingId(null)}
@@ -211,11 +230,16 @@ export default function ProdutorPage() {
                           <LocationSummary property={p} />
                         </td>
                         <td data-label="Atividade principal">{p.mainActivity || <span className="muted">Não informada</span>}</td>
-                        <td className="right area" data-label="Área">{formatArea(p.areaHa)}</td>
-                        <td className="right" data-label="Ação">
+                        <td className="right area" data-label="Área declarada">{formatArea(p.areaHa)}</td>
+                        <td className="right area" data-label="Área demarcada">
+                          {p.calculatedAreaHa != null ? formatArea(p.calculatedAreaHa) : <span className="badge badge-neutral">Não demarcada</span>}
+                        </td>
+                        <td className="right nowrap" data-label="Ação">
                           <button type="button" className="btn-link" onClick={() => (setEditingId(p.id), setAdding(false))}>
                             Editar
                           </button>
+                          {' · '}
+                          <Link href={`/propriedades/${p.id}/mapa`}>Mapa</Link>
                         </td>
                       </tr>
                     ),
@@ -308,7 +332,8 @@ function PropertyForm({
 }: {
   producerId: string;
   property?: Property;
-  onDone: () => void;
+  /** `warning` quando a propriedade foi salva mas a demarcação não */
+  onDone: (warning?: string) => void;
   onCancel: () => void;
 }) {
   const [name, setName] = useState(property?.name ?? '');
@@ -316,6 +341,7 @@ function PropertyForm({
   const [locality, setLocality] = useState(property?.locality ?? '');
   const [activity, setActivity] = useState(property?.mainActivity ?? '');
   const [location, setLocation] = useState<LocationDraft>(() => locationDraft(property));
+  const [perimeter, setPerimeter] = useState<PerimeterDraft>(emptyPerimeter);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
@@ -335,10 +361,23 @@ function PropertyForm({
     setError(null);
     setSaving(true);
     try {
-      if (property) {
-        await updateProperty(property.id, { name: name.trim(), areaHa, locality: locality.trim(), mainActivity: activity.trim(), ...place });
-      } else {
-        await addProperty(producerId, { name: name.trim(), areaHa, locality: locality.trim(), mainActivity: activity.trim() || undefined, ...place });
+      // Confere o desenho antes de salvar a propriedade.
+      const problem = await checkPerimeter(perimeter);
+      if (problem) {
+        setError(`Demarcação: ${problem.message}`);
+        setSaving(false);
+        return;
+      }
+      const saved = property
+        ? await updateProperty(property.id, { name: name.trim(), areaHa, locality: locality.trim(), mainActivity: activity.trim(), ...place })
+        : await addProperty(producerId, { name: name.trim(), areaHa, locality: locality.trim(), mainActivity: activity.trim() || undefined, ...place });
+      try {
+        await savePerimeter(saved.id, perimeter);
+      } catch (err) {
+        // A propriedade já foi salva: fecha o formulário (reenviar duplicaria) e avisa o que faltou.
+        const why = err instanceof ApiError ? err.message : 'erro de conexão';
+        onDone(`A propriedade "${saved.name}" foi salva, mas a demarcação não (${why}). Abra "Editar" para tentar de novo.`);
+        return;
       }
       onDone();
     } catch (err) {
@@ -359,8 +398,9 @@ function PropertyForm({
           <input className="input" name="name" required data-required-message="Informe o nome da propriedade." placeholder="Ex.: Sítio Boa Vista" value={name} onChange={(e) => setName(e.target.value)} maxLength={120} autoFocus />
         </label>
         <label className="field">
-          <span>Área (hectares) *</span>
+          <span>Área declarada (hectares) *</span>
           <input className="input num" name="area" required data-required-message="Informe a área da propriedade. Exemplo: 12,5 hectares." inputMode="decimal" placeholder="12,5" value={area} onChange={(e) => setArea(e.target.value)} />
+          <small>A do documento (CAR, escritura). A área demarcada é calculada pelo mapa.</small>
         </label>
       </div>
       <div className="form-row">
@@ -380,6 +420,7 @@ function PropertyForm({
         </label>
       </div>
       <LocationFields value={location} onChange={setLocation} />
+      <PerimeterField propertyId={property?.id} value={perimeter} onChange={setPerimeter} onUseArea={(ha) => setArea(String(ha).replace('.', ','))} disabled={saving} />
       </fieldset>
       {error && (
         <p role="alert" className="alert">

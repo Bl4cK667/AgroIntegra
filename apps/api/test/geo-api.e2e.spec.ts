@@ -115,6 +115,16 @@ describe('Geo: API HTTP', () => {
       expect(pt.properties).toMatchObject({ demarcated: false, calculatedAreaHa: null, openRequests: 1 });
     });
 
+    it('a página do produtor passa a mostrar a área demarcada da propriedade', async () => {
+      const producerId = (await prisma.property.findUniqueOrThrow({ where: { id: p.demarcated } })).producerId;
+      const res = await api().get(`/producers/${producerId}`).set(as(tech)).expect(200);
+      const prop = res.body.properties.find((x: { id: string }) => x.id === p.demarcated);
+      expect(prop).toMatchObject({ areaHa: 10, demarcated: true });
+      expect(prop.calculatedAreaHa).toBeCloseTo(1.2003, 3);
+      const list = await api().get('/properties').set(as(tech)).expect(200);
+      expect(list.body.items.find((x: { id: string }) => x.id === p.pointOnly)).toMatchObject({ demarcated: false, calculatedAreaHa: null });
+    });
+
     it('nunca devolve CPF', async () => {
       const res = await api().get('/properties/geojson').set(as(coord)).expect(200);
       for (const seed of [800, 801]) expect(JSON.stringify(res.body)).not.toContain(makeCpf(seed));

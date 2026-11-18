@@ -80,7 +80,8 @@ export default function PropriedadesPage() {
                   <th className="hide-sm">Localidade</th>
                   <th className="hide-sm">Município</th>
                   <th className="hide-sm">Atividade principal</th>
-                  <th className="right">Área</th>
+                  <th className="right">Área declarada</th>
+                  <th className="right">Área demarcada</th>
                 </tr>
               </thead>
               <tbody>
@@ -93,7 +94,14 @@ export default function PropriedadesPage() {
                     <td className="hide-sm" data-label="Localidade">{p.locality}</td>
                     <td className="hide-sm" data-label="Município">{formatPlace(p.city, p.state) || <span className="muted">Não informado</span>}</td>
                     <td className="hide-sm" data-label="Atividade principal">{p.mainActivity || <span className="muted">Não informada</span>}</td>
-                    <td className="right area" data-label="Área">{formatArea(p.areaHa)}</td>
+                    <td className="right area" data-label="Área declarada">{formatArea(p.areaHa)}</td>
+                    <td className="right area" data-label="Área demarcada">
+                      {p.calculatedAreaHa != null ? (
+                        <Link href={`/propriedades/${p.id}/mapa`}>{formatArea(p.calculatedAreaHa)}</Link>
+                      ) : (
+                        <Link href={`/propriedades/${p.id}/mapa`} className="muted">Demarcar</Link>
+                      )}
+                    </td>
                   </tr>
                 ))}
               </tbody>

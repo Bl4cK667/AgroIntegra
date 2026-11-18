@@ -82,6 +82,29 @@ describe('Geo: feições da propriedade (PostGIS)', () => {
       expect(Number(p.areaHa)).toBe(1.5);
     });
 
+    it('lat/lng vazia da propriedade recebe um ponto dentro do perímetro', async () => {
+      const p = await property();
+      expect(p.latitude).toBeGreaterThan(-12.971);
+      expect(p.latitude).toBeLessThan(-12.97);
+      expect(p.longitude).toBeGreaterThan(-38.5);
+      expect(p.longitude).toBeLessThan(-38.499);
+    });
+
+    it('lat/lng já digitada nunca é sobrescrita pelo perímetro', async () => {
+      const other = await createProperty(ORG_A, 702);
+      await prisma.property.update({ where: { id: other.id }, data: { latitude: -12.5, longitude: -38.1 } });
+      await asA(() => geo.create({ propertyId: other.id, type: 'PERIMETER', geometry: SQUARE }, user));
+      const after = await prisma.property.findUniqueOrThrow({ where: { id: other.id } });
+      expect([after.latitude, after.longitude]).toEqual([-12.5, -38.1]);
+    });
+
+    it('a lista de feições traz o resumo da propriedade, sem CPF', async () => {
+      const fc = await asA(() => geo.listByProperty(propertyId));
+      expect(fc.property).toMatchObject({ id: propertyId, name: 'Sítio Mapa 700', declaredAreaHa: 1.5, producer: { name: 'Produtor Geo 700' } });
+      near(fc.property.calculatedAreaHa, SQUARE_HA);
+      expect(JSON.stringify(fc)).not.toContain(makeCpf(700));
+    });
+
     it('não aceita um segundo perímetro ativo na mesma propriedade', async () => {
       await expect(asA(() => geo.create({ propertyId, type: 'PERIMETER', geometry: BIGGER }, user))).rejects.toThrow(ConflictException);
     });

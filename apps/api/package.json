@@ -11,7 +11,8 @@
     "db:migrate:dev": "prisma migrate dev",
     "db:seed": "prisma db seed",
     "test": "node test/prepare-test-db.mjs && jest --runInBand",
-    "demo:reset": "ts-node prisma/seed-demo.ts"
+    "demo:reset": "ts-node prisma/seed-demo.ts",
+    "demo:geo": "ts-node prisma/seed-geo-demo.ts"
   },
   "prisma": {
     "seed": "ts-node prisma/seed.ts"

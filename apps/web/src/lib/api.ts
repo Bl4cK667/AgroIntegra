@@ -98,6 +98,9 @@ export interface Property {
   city: string | null;
   state: string | null; // sigla da UF
   coordinates: Coordinates | null;
+  /** módulo geo: área calculada pelo perímetro demarcado (null = não demarcada) */
+  calculatedAreaHa?: number | null;
+  demarcated?: boolean;
   createdAt: string;
 }
 

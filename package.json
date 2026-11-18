@@ -3,7 +3,8 @@
   "private": true,
   "workspaces": [
     "apps/api",
-    "apps/web"
+    "apps/web",
+    "packages/*"
   ],
   "scripts": {
     "db:up": "node scripts/db.mjs up",
@@ -13,7 +14,8 @@
     "dev:api":"npm run -w apps/api start:dev",
     "dev:web": "npm run -w apps/web dev",
     "test": "npm run -w apps/api test",
-    "demo:reset": "npm run -w apps/api demo:reset"
+    "demo:reset": "npm run -w apps/api demo:reset && npm run -w apps/api demo:geo",
+    "demo:geo": "npm run -w apps/api demo:geo"
   },
   "devDependencies": {
     "concurrently": "^9.2.5",

@@ -2,11 +2,13 @@
 
 import Link from 'next/link';
 import { FormFeedback } from '@/components/property/FormFeedback';
-import { checkRequiredFields, clearFieldError, reportFieldError, validCpf } from '@/components/property/formValidation';
+import { checkRequiredFields, clearFieldError, propertyArea, reportFieldError, validCpf } from '@/components/property/formValidation';
 import { FieldHeading, FieldIcon, fieldStyles as ui } from '@/components/property/FieldUI';
+import { PerimeterField } from '@/components/geo/PerimeterField';
 import { useRouter } from 'next/navigation';
 import { FormEvent, useState } from 'react';
-import { ApiError, createProducer } from '@/lib/api';
+import { addProperty, ApiError, createProducer } from '@/lib/api';
+import { checkPerimeter, emptyPerimeter, savePerimeter, type PerimeterDraft } from '@/lib/geo';
 import { cpfInput } from '@/lib/format';
 
 export default function NovoProdutorPage() {
@@ -16,18 +18,58 @@ export default function NovoProdutorPage() {
   const [phone, setPhone] = useState('');
   const [community, setCommunity] = useState('');
   const [consent, setConsent] = useState(false);
+  // Primeira propriedade + demarcação (módulo geo), opcional.
+  const [withProperty, setWithProperty] = useState(false);
+  const [propName, setPropName] = useState('');
+  const [propArea, setPropArea] = useState('');
+  const [propLocality, setPropLocality] = useState('');
+  const [propActivity, setPropActivity] = useState('');
+  const [perimeter, setPerimeter] = useState<PerimeterDraft>(emptyPerimeter);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
   async function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    if (saving || !checkRequiredFields(e.currentTarget)) return;
-    if (!validCpf(cpf)) { reportFieldError(e.currentTarget, 'cpf', 'Confira o CPF. Digite os 11 números de um CPF válido.'); return; }
+    const form = e.currentTarget;
+    if (saving || !checkRequiredFields(form)) return;
+    if (!validCpf(cpf)) { reportFieldError(form, 'cpf', 'Confira o CPF. Digite os 11 números de um CPF válido.'); return; }
+    const areaHa = withProperty ? propertyArea(propArea) : null;
+    if (withProperty && areaHa === null) {
+      reportFieldError(form, 'propArea', 'Informe a área declarada, maior que zero, com no máximo duas casas após a vírgula. Exemplo: 12,5.');
+      return;
+    }
     setError(null);
     setSaving(true);
     try {
+      // Confere o desenho antes de gravar qualquer coisa, para não criar o produtor e falhar no perímetro.
+      if (withProperty) {
+        const problem = await checkPerimeter(perimeter);
+        if (problem) {
+          setError(`Demarcação: ${problem.message}`);
+          setSaving(false);
+          return;
+        }
+      }
       const p = await createProducer({ name: name.trim(), cpf, phone: phone.trim() || undefined, community: community.trim(), consent });
-      router.replace(`/produtores/${p.id}?cadastro=criado`);
+      if (!withProperty) {
+        router.replace(`/produtores/${p.id}?cadastro=criado`);
+        return;
+      }
+      // Produtor já existe a partir daqui: se algo falhar, seguimos para a página dele com o aviso.
+      try {
+        const prop = await addProperty(p.id, { name: propName.trim(), areaHa: areaHa!, locality: propLocality.trim(), mainActivity: propActivity.trim() || undefined });
+        try {
+          await savePerimeter(prop.id, perimeter);
+        } catch (err) {
+          const why = err instanceof ApiError ? err.message : 'erro de conexão';
+          router.replace(`/produtores/${p.id}?cadastro=parcial&motivo=${encodeURIComponent(`A propriedade foi salva, mas a demarcação não (${why}). Abra "Editar" na propriedade para demarcar de novo.`)}`);
+          return;
+        }
+        router.replace(`/produtores/${p.id}?cadastro=criado`);
+      } catch (err) {
+        const why = err instanceof ApiError ? err.message : 'erro de conexão';
+        router.replace(`/produtores/${p.id}?cadastro=parcial&motivo=${encodeURIComponent(`O produtor foi salvo, mas a propriedade não (${why}). Adicione a propriedade abaixo.`)}`);
+      }
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Não foi possível cadastrar o produtor.');
       setSaving(false);
@@ -39,7 +81,7 @@ export default function NovoProdutorPage() {
       <Link href="/produtores" className="back">
         Produtores
       </Link>
-      <FieldHeading icon="people" eyebrow="Cadastro de produtores" title="Novo produtor" description="Comece pela identificação. Propriedades e visitas podem ser adicionadas após o cadastro." />
+      <FieldHeading icon="people" eyebrow="Cadastro de produtores" title="Novo produtor" description="Comece pela identificação. Se quiser, já cadastre a primeira propriedade e demarque o perímetro no mapa." />
 
       <form className={ui.form} onSubmit={onSubmit} onInput={clearFieldError} noValidate>
           <FormFeedback />
@@ -86,6 +128,41 @@ export default function NovoProdutorPage() {
           </span>
         </label>
 
+          </fieldset>
+          <fieldset disabled={saving} className={`card enter ${ui.formSection}`} style={{ '--i': 2 } as React.CSSProperties}><legend><FieldIcon name="land" /> Primeira propriedade e demarcação</legend>
+        <label className="check">
+          <input type="checkbox" checked={withProperty} onChange={(e) => setWithProperty(e.target.checked)} />
+          <span>
+            Cadastrar a primeira propriedade agora
+            <small>Opcional. A demarcação fica disponível na página do produtor, no mapa da propriedade e no mapa territorial.</small>
+          </span>
+        </label>
+        {withProperty && (
+          <>
+            <div className="form-row">
+              <label className="field">
+                <span>Nome da propriedade *</span>
+                <input className="input" name="propName" required data-required-message="Informe o nome da propriedade." placeholder="Ex.: Sítio Boa Vista" value={propName} onChange={(e) => setPropName(e.target.value)} maxLength={120} />
+              </label>
+              <label className="field">
+                <span>Área declarada (hectares) *</span>
+                <input className="input num" name="propArea" required data-required-message="Informe a área declarada da propriedade. Exemplo: 12,5 hectares." inputMode="decimal" placeholder="12,5" value={propArea} onChange={(e) => setPropArea(e.target.value)} />
+                <small>A do documento (CAR, escritura). A área demarcada é calculada pelo mapa.</small>
+              </label>
+            </div>
+            <div className="form-row">
+              <label className="field">
+                <span>Localidade *</span>
+                <input className="input" name="propLocality" required data-required-message="Informe onde fica a propriedade." placeholder="Ex.: Vicinal da Serra" value={propLocality} onChange={(e) => setPropLocality(e.target.value)} maxLength={80} />
+              </label>
+              <label className="field">
+                <span>Atividade principal</span>
+                <input className="input" placeholder="Ex.: bovinocultura de leite" value={propActivity} onChange={(e) => setPropActivity(e.target.value)} maxLength={80} />
+              </label>
+            </div>
+            <PerimeterField value={perimeter} onChange={setPerimeter} onUseArea={(ha) => setPropArea(String(ha).replace('.', ','))} disabled={saving} />
+          </>
+        )}
           </fieldset>
         {error && (
           <p role="alert" className="alert">

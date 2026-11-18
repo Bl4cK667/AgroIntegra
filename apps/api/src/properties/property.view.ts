@@ -33,6 +33,9 @@ export function propertyView(p: Property) {
     city: p.city,
     state: p.state,
     coordinates: p.latitude !== null && p.longitude !== null ? { latitude: p.latitude, longitude: p.longitude } : null,
+    // Módulo geo: área calculada pelo PostGIS a partir do perímetro demarcado (null = não demarcada).
+    calculatedAreaHa: p.calculatedAreaHa === null ? null : new Prisma.Decimal(p.calculatedAreaHa).toNumber(),
+    demarcated: p.calculatedAreaHa !== null,
     createdAt: p.createdAt,
   };
 }
