@@ -34,17 +34,12 @@
   color: var(--muted);
   font-size: 0.82rem;
   font-weight: 600;
-  transition:
-    background-color var(--dur-med, 300ms) var(--ease-out, ease),
-    color var(--dur-med, 300ms) var(--ease-out, ease),
-    transform var(--dur-med, 300ms) var(--ease-spring, ease);
 }
 
 .stepNum[data-done] {
   background: var(--chart-1);
   border-color: var(--chart-1);
-  color: var(--card);
-  transform: scale(1.06);
+  color: var(--on-accent);
 }
 
 .stepLabel {
@@ -110,8 +105,7 @@
 }
 
 .paperHead h2 {
-  font-size: 1.4rem;
-  letter-spacing: -0.01em;
+  font-size: var(--text-xl);
   color: var(--ink);
 }
 
@@ -150,7 +144,7 @@
   bottom: 8px;
   width: 2px;
   border-radius: var(--radius-sm);
-  background: linear-gradient(var(--chart-1), color-mix(in srgb, var(--chart-1) 10%, transparent));
+  background: var(--linha);
 }
 
 .timeline li {
@@ -166,8 +160,7 @@
   height: 12px;
   border-radius: 50%;
   background: var(--card);
-  border: 2.5px solid var(--chart-1);
-  box-shadow: 0 0 0 4px var(--card);
+  border: 2px solid var(--chart-1);
 }
 
 .timeline p {
