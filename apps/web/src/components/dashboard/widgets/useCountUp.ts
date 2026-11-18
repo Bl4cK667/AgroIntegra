@@ -1,25 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-
+// Antes, o número contava de 0 até o valor em quase 1 segundo. No redesign corporativo o
+// valor aparece direto: durante a contagem a tela mostrava um número errado.
+// A função continua existindo para não mudar quem a usa (widgets/Widgets.tsx).
 export function useCountUp(value: number) {
-  const [count, setCount] = useState(value);
-  useEffect(() => {
-    const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
-    if (motion.matches) { setCount(value); return; }
-    let frame = 0;
-    const start = performance.now();
-    const tick = (now: number) => {
-      const progress = Math.min(1, (now - start) / 850);
-      setCount(Math.round(value * (1 - Math.pow(1 - progress, 3))));
-      if (progress < 1) frame = requestAnimationFrame(tick);
-    };
-    frame = requestAnimationFrame(tick);
-    const stop = () => {
-      if (motion.matches) { cancelAnimationFrame(frame); setCount(value); }
-    };
-    motion.addEventListener('change', stop);
-    return () => { cancelAnimationFrame(frame); motion.removeEventListener('change', stop); };
-  }, [value]);
-  return count;
+  return value;
 }
