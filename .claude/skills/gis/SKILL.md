@@ -1,91 +1,103 @@
 ---
 name: gis
-description: Convenções geoespaciais do AgroIntegra (PostGIS, GeoJSON, SRID, zona UTM SIRGAS 2000, cálculo de área/perímetro/distância/declividade, tiles offline). Use antes de criar ou alterar qualquer coluna de geometria, migração PostGIS, rota GeoJSON, cálculo de área ou distância, mapa no painel (Leaflet/MapLibre) ou demarcação de propriedade no app.
+description: Convenções geoespaciais do AgroIntegra (PostGIS, GeoJSON, SRID 4326, área e perímetro via geography, feições da propriedade, KML/KMZ/Shapefile, MapLibre, tiles offline). Use antes de criar ou alterar qualquer coluna de geometria, migração PostGIS, rota GeoJSON, importação/exportação de arquivo geográfico, cálculo de área ou distância, mapa no painel ou demarcação de propriedade no app.
 ---
 
 # GIS no AgroIntegra
 
-Fonte: "AgroIntegra — Planejamento Técnico do MVP" (v1.0, 10/11/2026), seções 10 e 10.1, e prompts 4 e 6.
+Fontes: "AgroIntegra — Planejamento Técnico do MVP" (v1.0, 10/11/2026), seções 10 e 10.1, mais as decisões do João Pedro de 17/11/2026. Quando as duas divergem, valem as decisões de 17/11: área via `geography`, `MultiPolygon` e MapLibre no lugar de Leaflet.
 
 ## Regra número 1
 
-**Nunca calcule área ou distância em graus.** Sempre projete para metros primeiro (UTM SIRGAS 2000) ou use `geography`.
+**Nunca calcule área ou distância em graus.** No servidor, use `geography`.
 
 ## Sistemas de referência
 
-| Uso | SRID | Observação |
+| Uso | Como | Observação |
 | --- | --- | --- |
-| Armazenar e trocar dados | 4326 (WGS 84) | Todas as colunas e todas as rotas |
-| Calcular área e perímetro | SIRGAS 2000 / UTM da zona do município | Sul do equador: EPSG = 31960 + zona (ex.: 23S → 31983, 24S → 31984) |
+| Armazenar e trocar dados | SRID 4326 (WGS 84) | Todas as colunas e todas as rotas |
+| Área e perímetro | `ST_Area(geom::geography)` / `ST_Perimeter(geom::geography)` | Cálculo sobre o esferoide, em m² e m. Não depende da zona UTM |
 | Distância entre pontos | `geography` (servidor) / Haversine (app) | Resultado em metros |
 
-Zona UTM a partir da longitude: `zona = floor((lon + 180) / 6) + 1`.
+A zona UTM SIRGAS 2000 do município (EPSG = 31960 + zona no hemisfério sul) só é necessária para exportações que a exijam, como alguns fluxos do SIGEF. Nesse caso, ela vem de uma única constante de configuração (`GIS_UTM_EPSG`), nunca repetida em consultas.
 
-**Zona do município: PENDENTE.** O planejamento lista "levantar os limites geográficos do município e a zona UTM" como próximo passo. Até lá, a zona deve vir de uma única constante de configuração (ex.: `GIS_UTM_EPSG` no `.env` da API e no app), nunca repetida em consultas. Quando o município for definido, atualize esta linha.
+**Município piloto: Canaã dos Carajás (PA)**, zona **22S**, **EPSG:31982**. Centro aproximado: latitude −6,4966, longitude −49,8786. A Floresta Nacional de Carajás e a mina S11D ficam a oeste e noroeste da cidade; dados fictícios de demonstração ficam a leste e ao sul.
 
-## Colunas e índices (Prisma não suporta PostGIS nativamente)
+## Colunas e índices (o Prisma não suporta PostGIS nativamente)
 
-- `Property.geom geometry(Polygon, 4326)` e ponto de visita `geometry(Point, 4326)`.
-- No `schema.prisma`, declarar como `Unsupported("geometry(Polygon, 4326)")?` e ler/gravar com `$queryRaw` / `$executeRaw`.
-- Migração SQL manual com `CREATE EXTENSION IF NOT EXISTS postgis;` e índice GiST:
-  ```sql
-  CREATE INDEX property_geom_gist ON "Property" USING GIST (geom);
-  ```
-- O banco atual usa `organizationId` em todas as tabelas de domínio: toda consulta espacial bruta precisa filtrar por `organizationId` explicitamente (o escopo automático do Prisma não cobre `$queryRaw`).
+- Geometria de área (perímetro da propriedade, talhão, APP, Reserva Legal): `geometry(MultiPolygon, 4326)`. O tipo das feições pontuais e lineares (sede, benfeitoria, água, estrada) se define na modelagem de `property_features`.
+- No `schema.prisma`: `Unsupported("geometry(MultiPolygon, 4326)")?`. Ler e gravar com `$queryRaw` / `$executeRaw`.
+- Índice GiST declarado **no schema** (`@@index([geom], type: Gist)`), para o Prisma não acusar drift. Na migração, à mão, só o que o Prisma não representa: `CREATE EXTENSION IF NOT EXISTS postgis;`, `CHECK` e triggers.
+- Implementação de referência: `PropertyFeature`/`PropertyFeatureVersion` (migração `20261118100000_geo_features_sync_base`) e `apps/api/src/geo/geo-features.service.ts`.
+- **Multi-organização:** toda consulta espacial bruta filtra `"organizationId"` explicitamente, inclusive nos JOINs. O escopo automático do Prisma não cobre `$queryRaw`. Ver o checklist no `CLAUDE.md`.
+- Toda tabela geográfica tem `deletedAt`, auditoria e histórico de versões da demarcação.
 
-## Validação do polígono
+## Área calculada × área declarada
 
-Rejeitar quando:
-- tiver menos de 3 vértices distintos (anel GeoJSON fechado tem no mínimo 4 posições, a última igual à primeira);
-- `ST_IsValid(geom)` for falso (auto-intersecção). Use `ST_IsValidReason` na mensagem de erro, traduzida para português.
+- **Área calculada** (ha, 2 casas): sempre do PostGIS, nunca digitada.
+- **Área declarada**: campo separado, vinda do documento (CAR, matrícula). As duas podem divergir; a tela mostra ambas.
+
+## Validação da geometria
+
+Rejeitar, com mensagem clara em português, quando:
+- o anel tiver menos de 3 vértices distintos (um anel GeoJSON fechado tem no mínimo 4 posições, com a última igual à primeira);
+- `ST_IsValid(geom)` for falso (ex.: auto-intersecção). Traduza o `ST_IsValidReason` na mensagem.
+
+`ST_MakeValid` serve só para **propor** correção (ex.: arquivo importado com pequenos defeitos), mostrando o resultado para o usuário confirmar. Nunca corrija em silêncio.
 
 ## Cálculos (servidor)
 
 ```sql
 -- área em hectares, 2 casas
-ROUND((ST_Area(ST_Transform(geom, :utm)) / 10000)::numeric, 2)
+ROUND((ST_Area(geom::geography) / 10000)::numeric, 2)
 -- perímetro em metros
-ST_Perimeter(ST_Transform(geom, :utm))
+ST_Perimeter(geom::geography)
 -- distância entre dois pontos em metros
 ST_Distance(a::geography, b::geography)
 -- propriedades num raio (metros) de um ponto
 ST_DWithin(geom::geography, ST_SetSRID(ST_MakePoint(:lng, :lat), 4326)::geography, :radius)
+-- centroide (usado pelo módulo clima)
+ST_PointOnSurface(geom)  -- garante ponto dentro do polígono; ST_Centroid pode cair fora
 ```
 
-Atenção: `ST_MakePoint` recebe **(longitude, latitude)**, nessa ordem. GeoJSON também é `[lng, lat]`.
+Atenção: `ST_MakePoint` recebe **(longitude, latitude)**, nessa ordem. GeoJSON também é `[lng, lat]` (RFC 7946).
 
-## Cálculos (app, TypeScript puro, espelhando o servidor)
+## Cálculos (cliente: web e app)
 
-- Área: projetar os vértices para UTM (proj4 ou Turf.js) e aplicar Gauss/shoelace: `A = ½ |Σ (xᵢ·yᵢ₊₁ − xᵢ₊₁·yᵢ)|`, dividir por 10.000.
-- Perímetro: soma das distâncias entre vértices consecutivos (fechando o anel).
-- Distância: Haversine com R = 6.371 km.
-- Declividade: `S(%) = Δh / D × 100`, Δh e D em metros (altitude do GPS ou SRTM).
-- Tolerância: app e servidor devem bater dentro de **0,5%**. Escrever teste que compara os dois com o mesmo polígono de referência.
+- `@turf/turf` **só para prévia** (área enquanto desenha). O valor oficial vem do servidor.
+- Distância no app: Haversine com R = 6.371 km.
+- Declividade: `S(%) = Δh / D × 100`, com Δh e D em metros (altitude do GPS ou SRTM).
+- Meta do planejamento: prévia e servidor batem dentro de **0,5%**. Escrever um teste com polígono de referência; se o Turf (esfera) e o `geography` (esferoide) divergirem acima disso, reporte em vez de mascarar.
 
-## Precisão do GPS
+## Precisão do GPS (app)
 
 - Exibir a precisão ao gravar cada vértice.
 - Alertar quando a precisão for pior que **10 m**.
-- Permitir editar e remover vértices manualmente (área de mata degrada o sinal).
+- Permitir editar e remover vértices manualmente (a mata degrada o sinal).
 
-## Formato de troca
+## Formato de troca, importação e exportação
 
-- Todas as rotas usam GeoJSON. `GET /properties/geojson` devolve `FeatureCollection` com `properties` mínimas (id, nome, produtor, área) — nunca CPF.
-- Rotas: `GET /properties/near?lat&lng&radius` (ST_DWithin) e serviço de distância (ST_Distance em geography).
+- Todas as rotas usam GeoJSON. `GET /properties/geojson` devolve `FeatureCollection` com `properties` mínimas (id, nome, produtor, área), **nunca CPF**, e aceita filtros.
+- `GET /properties/near?lat&lng&radius` (ST_DWithin) e CRUD de feições em GeoJSON.
+- Importar e exportar **KML, KMZ, GeoJSON e Shapefile**, compatíveis com CAR/SICAR e SIGEF/INCRA.
+- No navegador: `@tmcw/togeojson` + `jszip` (KML/KMZ) e `shpjs` (Shapefile). O servidor revalida tudo; nunca confie na geometria vinda do cliente.
 
 ## Mapas e tiles
 
-- Base: OpenStreetMap (gratuito). Satélite: provedor com plano gratuito, avaliar limites antes de escolher (decisão pendente).
-- Offline: baixar tiles só da área do município, zoom 12 a 17.
-- Painel: Leaflet. App: MapLibre.
+- **MapLibre GL em tudo.** Web: `react-map-gl` + `maplibre-gl`, com `dynamic(() => import(...), { ssr: false })`. Mobile: `@maplibre/maplibre-react-native`. **Não usar Leaflet.**
+- Satélite: **Esri World Imagery**, atribuição sempre visível, URL vinda do `.env` (troca futura por MapTiler).
+- Desenho e edição: `terra-draw`.
+- Estilos e cores por tipo de feição em `packages/map-styles`, compartilhados entre web e mobile.
+- Offline (app): baixar tiles só da área do município, zoom 12 a 17.
 
-## Camadas futuras (fora do MVP)
+## Camadas de referência (futuras)
 
 Limites do município, estradas vicinais, hidrografia e CAR, importados como camadas de referência.
 
 ## Testes obrigatórios
 
-- Polígono válido com área conhecida (ex.: quadrado de 100 m × 100 m projetado = 1,00 ha).
-- Polígono com auto-intersecção (forma de "laço") → rejeitado.
-- Polígono com 2 vértices → rejeitado.
-- Ordem lng/lat invertida deve ser detectada pelo teste (o ponto cai fora do município).
+- Polígono de área conhecida (ex.: quadrado de ~100 m × 100 m perto do equador ≈ 1,00 ha; conferir o valor esperado com o próprio PostGIS).
+- Polígono com auto-intersecção (forma de "laço") → rejeitado com mensagem em português.
+- Anel com 2 vértices distintos → rejeitado.
+- Ordem lng/lat invertida é detectada (o ponto cai fora do município ou da faixa válida).
+- Consulta espacial não vaza dados de outra organização (e2e com uma segunda organização).
