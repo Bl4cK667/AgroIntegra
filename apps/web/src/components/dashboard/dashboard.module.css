@@ -24,7 +24,7 @@
 .toolbarTitle {
   margin: 0;
   font-size: 1.45rem;
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: -0.02em;
   color: var(--ink);
 }
@@ -429,7 +429,7 @@
 .catalogHead h2 {
   margin: 0;
   font-size: 1.1rem;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--ink);
 }
 
@@ -496,7 +496,7 @@
   background: var(--chart-1);
   color: var(--on-accent);
   font-size: 0.82rem;
-  font-weight: 700;
+  font-weight: 600;
   cursor: pointer;
   flex: none;
   transition: transform var(--dur-fast) var(--ease-out), filter var(--dur-fast) var(--ease-out);

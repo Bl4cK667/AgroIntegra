@@ -1,18 +1,39 @@
 @import "./themes.css";
 
 :root {
-  --radius-lg: 20px;
-  --radius-md: 12px;
-  --radius-pill: 9999px;
+  /* Raios: discretos. Avatar e pontos de status continuam redondos (50%). */
+  --radius-sm: 2px;
+  --radius-md: 3px;
+  --radius-lg: 4px;
+  --radius-pill: 2px; /* nome mantido por compatibilidade; não há mais formato de pílula */
+  --radius: 4px;
 
-  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
-  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
-  --dur-fast: 150ms;
-  --dur-med: 300ms;
-  --dur-slow: 600ms;
+  /* Espaçamento em passos de 4px */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+
+  /* Tipografia */
+  --text-xs: 0.8rem;    /* 12px */
+  --text-sm: 0.8667rem; /* 13px */
+  --text-md: 0.9333rem; /* 14px */
+  --text-base: 1rem;    /* 15px */
+  --text-lg: 1.1333rem; /* 17px: título de seção */
+  --text-xl: 1.4667rem; /* 22px: título de página */
+
+  /* Movimento: só quando responde a uma ação, curto e sem efeito de mola. */
+  --ease-out: cubic-bezier(0.2, 0, 0, 1);
+  --ease-spring: var(--ease-out);
+  --dur-fast: 120ms;
+  --dur-med: 160ms;
+  --dur-slow: 200ms;
   --row-h: 84px;
 
-  --fonte: var(--font-archivo), 'Segoe UI', system-ui, sans-serif;
+  --fonte: var(--font-sans), 'Segoe UI', system-ui, sans-serif;
+  --focus: var(--accent);
 }
 
 * {
@@ -28,26 +49,28 @@ body {
   font-family: var(--fonte);
   font-size: 15px;
   line-height: 1.5;
+  font-variant-numeric: tabular-nums;
   -webkit-font-smoothing: antialiased;
 }
 
 h1,
 h2,
 h3 {
-  font-stretch: 88%;
-  line-height: 1.2;
+  line-height: 1.25;
   margin: 0;
+  font-weight: 600;
 }
 
 h1 {
-  font-size: 1.75rem;
-  font-weight: 650;
-  letter-spacing: -0.01em;
+  font-size: var(--text-xl);
 }
 
 h2 {
-  font-size: 1.125rem;
-  font-weight: 650;
+  font-size: var(--text-lg);
+}
+
+h3 {
+  font-size: var(--text-base);
 }
 
 a {
@@ -64,7 +87,7 @@ textarea {
 }
 
 :focus-visible {
-  outline: 2px solid var(--ouro);
+  outline: 2px solid var(--focus);
   outline-offset: 2px;
 }
 
@@ -527,7 +550,7 @@ textarea {
 .eyebrow {
   display: block;
   font-size: 0.74rem;
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--muted);
@@ -573,7 +596,7 @@ textarea {
 .card-title {
   margin: 0;
   font-size: 1rem;
-  font-weight: 650;
+  font-weight: 600;
   color: var(--ink);
 }
 

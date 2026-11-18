@@ -6,7 +6,7 @@
 .kpiMain { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 .kpiValue { font-size: clamp(2rem, 3.2vw, 3.2rem); letter-spacing: -.055em; line-height: 1.05; font-weight: 600; }
 .kpiNote { display: flex; align-items: flex-start; flex-wrap: wrap; gap: 7px; color: var(--muted, #5b675f); font-size: .76rem; }
-.badge, .priority { display: inline-block; padding: 3px 8px; border-radius: var(--radius-pill, 999px); font-size: .72rem; font-weight: 550; background: var(--card-2, #f2f3ef); color: var(--chart-1, #3f6b55); }
+.badge, .priority { display: inline-block; padding: 3px 8px; border-radius: var(--radius-pill, 999px); font-size: .72rem; font-weight: 500; background: var(--card-2, #f2f3ef); color: var(--chart-1, #3f6b55); }
 .priority { color: var(--chart-4, #7a4b2a); background: color-mix(in srgb, var(--chart-2, #b08a2e) 13%, transparent); }
 .miniRing { flex: none; width: 48px; height: 48px; }
 .ring { width: min(100%, 180px); flex-shrink: 1; min-height: 95px; }
@@ -25,7 +25,7 @@
 .gridLine { stroke: var(--chart-grid, #e4e8e0); stroke-width: 1; stroke-dasharray: 3 5; }
 .axis, .currentMonth { fill: var(--muted, #5b675f); font-size: 10px; font-family: inherit; }
 .futureMonth { opacity: .4; }
-.currentMonth { fill: var(--chart-1, #3f6b55); font-weight: 700; }
+.currentMonth { fill: var(--chart-1, #3f6b55); font-weight: 600; }
 .areaLine { fill: none; stroke: var(--chart-1, #3f6b55); stroke-width: 2.8; stroke-linecap: round; stroke-dasharray: 1; animation: drawLine 1s var(--ease-out, ease-out) both; }
 .dot { fill: var(--chart-1, #3f6b55); }
 .activeDot { fill: var(--chart-1, #3f6b55); stroke: var(--card, #fff); stroke-width: 2.5; }
@@ -58,7 +58,7 @@
 .rank { color: var(--muted, #5b675f); font-size: .72rem; }
 .community { flex: 1; min-width: 0; }
 .community > div:first-child { display: flex; align-items: baseline; justify-content: space-between; gap: 14px; margin-bottom: 8px; }
-.community strong { font-size: .82rem; font-weight: 550; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.community strong { font-size: .82rem; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .community span { display: flex; gap: 18px; flex-shrink: 0; font-size: .82rem; }
 .community small { color: var(--muted, #5b675f); font-size: .7rem; }
 .community b { min-width: 24px; text-align: right; font-weight: 600; }
@@ -74,7 +74,7 @@
 .coverageCompact .ring { width: 115px; }
 .empty { height: 100%; min-height: 110px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 8px; padding: 12px; color: var(--muted, #5b675f); }
 .empty svg { color: var(--chart-1, #3f6b55); opacity: .7; }
-.empty strong { font-size: .86rem; color: var(--ink, #18211c); font-weight: 550; }
+.empty strong { font-size: .86rem; color: var(--ink, #18211c); font-weight: 500; }
 .empty span { max-width: 260px; font-size: .77rem; }
 .compact .kpiValue { font-size: 2rem; }
 .compact .community span { gap: 8px; }

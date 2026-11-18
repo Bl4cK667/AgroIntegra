@@ -33,7 +33,7 @@
   border: 1px solid var(--card-border);
   color: var(--muted);
   font-size: 0.82rem;
-  font-weight: 800;
+  font-weight: 600;
   transition:
     background-color var(--dur-med, 300ms) var(--ease-out, ease),
     color var(--dur-med, 300ms) var(--ease-out, ease),
@@ -52,7 +52,7 @@
   margin-bottom: 8px;
   color: var(--ink);
   font-size: 0.86rem;
-  font-weight: 650;
+  font-weight: 600;
 }
 
 .who,
@@ -184,7 +184,7 @@
 }
 
 .visitHead a {
-  font-weight: 700;
+  font-weight: 600;
   color: var(--ink);
 }
 

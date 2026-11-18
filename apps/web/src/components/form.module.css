@@ -33,8 +33,7 @@
   padding: 0 0 12px;
   margin: 0 0 2px;
   border-bottom: 1px solid var(--card-border);
-  font-weight: 650;
-  font-stretch: 88%;
+  font-weight: 600;
   font-size: 1rem;
   color: var(--ink);
 }

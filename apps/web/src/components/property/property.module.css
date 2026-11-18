@@ -1,6 +1,6 @@
 /* Bloco de localização dentro do formulário da propriedade. */
 .optionalLocation { min-width: 0; }
-.optionalLocation > summary { padding: 12px 0; cursor: pointer; color: var(--chart-1); font-weight: 550; font-size: .88rem; min-height: 44px; }
+.optionalLocation > summary { padding: 12px 0; cursor: pointer; color: var(--chart-1); font-weight: 500; font-size: .88rem; min-height: 44px; }
 .location {
   display: grid;
   gap: 14px;

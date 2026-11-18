@@ -66,7 +66,7 @@
   background: var(--notification-bg);
   color: var(--notification-ink);
   font-size: 0.68rem;
-  font-weight: 800;
+  font-weight: 600;
   line-height: 1;
   box-shadow: 0 0 0 2px var(--nav-bg);
   animation: badgePop 460ms var(--ease-spring, cubic-bezier(0.34, 1.56, 0.64, 1));
@@ -190,7 +190,7 @@
   color: var(--chart-1);
   font: inherit;
   font-size: 0.84rem;
-  font-weight: 650;
+  font-weight: 600;
   cursor: pointer;
 }
 
@@ -280,12 +280,12 @@
 
 .text strong {
   font-size: 0.92rem;
-  font-weight: 650;
+  font-weight: 600;
   color: var(--ink);
 }
 
 .item:not([data-unread]) .text strong {
-  font-weight: 550;
+  font-weight: 500;
 }
 
 .text span {

@@ -10,12 +10,12 @@
 }
 
 .inner { display: flex; align-items: center; justify-content: space-between; gap: 20px; height: 100%; padding: 0 28px; }
-.brand { display: inline-flex; align-items: center; gap: 9px; color: var(--tinta); text-decoration: none; font-size: 19px; font-weight: 720; letter-spacing: -0.7px; flex-shrink: 0; }
+.brand { display: inline-flex; align-items: center; gap: 9px; color: var(--tinta); text-decoration: none; font-size: 19px; font-weight: 600; letter-spacing: -0.7px; flex-shrink: 0; }
 .brandMark { display: grid; place-items: center; color: var(--chart-1); transition: transform var(--dur-med, 300ms) var(--ease-spring, ease); }
 .brand:hover .brandMark { transform: rotate(-6deg) scale(1.06); }
-.brandAccent { font-weight: 480; }
+.brandAccent { font-weight: 500; }
 .nav { position: relative; display: flex; align-items: center; gap: 3px; isolation: isolate; min-width: 0; }
-.link { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 40px; padding: 0 10px; border-radius: 10px; text-decoration: none; color: var(--muted); font-size: 12px; font-weight: 560; white-space: nowrap; animation: navIn 460ms var(--ease-out, ease) backwards; animation-delay: calc(var(--i, 0) * 40ms + 60ms); transition: color var(--dur-fast, 150ms) var(--ease-out, ease), background-color var(--dur-fast, 150ms) var(--ease-out, ease), transform 180ms var(--ease-spring, ease); }
+.link { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 40px; padding: 0 10px; border-radius: 10px; text-decoration: none; color: var(--muted); font-size: 12px; font-weight: 500; white-space: nowrap; animation: navIn 460ms var(--ease-out, ease) backwards; animation-delay: calc(var(--i, 0) * 40ms + 60ms); transition: color var(--dur-fast, 150ms) var(--ease-out, ease), background-color var(--dur-fast, 150ms) var(--ease-out, ease), transform 180ms var(--ease-spring, ease); }
 .link > span { transition: transform var(--dur-med, 300ms) var(--ease-out, ease); }
 .link:hover:not([aria-current]) > span { transform: translateX(2px); }
 .link svg { width: 18px; height: 18px; flex-shrink: 0; }

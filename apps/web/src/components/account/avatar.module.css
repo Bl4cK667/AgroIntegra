@@ -8,7 +8,7 @@
   background: var(--card-2);
   border: 1px solid var(--card-border);
   color: var(--chart-1);
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: 0.02em;
   user-select: none;
 }

@@ -41,8 +41,7 @@ a.figure:hover .label {
 
 .figure strong {
   font-size: 2.25rem;
-  font-weight: 700;
-  font-stretch: 88%;
+  font-weight: 600;
   line-height: 1.1;
   letter-spacing: -0.02em;
   color: var(--chart-1);
