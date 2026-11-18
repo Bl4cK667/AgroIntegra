@@ -9,3 +9,5 @@ coverage/
 .pgdata/
 next-env.d.ts
 *.tsbuildinfo
+# Playwright CLI output (may contain credentials)
+.playwright-cli/
