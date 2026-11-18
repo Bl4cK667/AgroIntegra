@@ -13,7 +13,6 @@
   border: 1px solid var(--card-border);
   border-radius: var(--radius-lg);
   background: var(--card);
-  box-shadow: var(--shadow-card);
   min-width: 0;
   transition:
     border-color var(--dur-fast) var(--ease-out),
@@ -75,7 +74,6 @@
   border: 1px solid var(--card-border);
   border-radius: var(--radius-md);
   background: var(--card);
-  box-shadow: var(--shadow-card);
 }
 
 .results li + li {
@@ -91,7 +89,7 @@
   width: 100%;
   padding: 10px 12px;
   border: 0;
-  border-radius: 8px;
+  border-radius: var(--radius-lg);
   background: none;
   text-align: left;
   cursor: pointer;
@@ -147,7 +145,6 @@
 .segOn {
   background: var(--chart-1);
   color: var(--on-accent);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
 }
 
 :root[data-theme='dark'] .segOn {

@@ -6,7 +6,7 @@
 .kpiMain { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 .kpiValue { font-size: clamp(2rem, 3.2vw, 3.2rem); letter-spacing: -.055em; line-height: 1.05; font-weight: 600; }
 .kpiNote { display: flex; align-items: flex-start; flex-wrap: wrap; gap: 7px; color: var(--muted, #5b675f); font-size: .76rem; }
-.badge, .priority { display: inline-block; padding: 3px 8px; border-radius: var(--radius-pill, 999px); font-size: .72rem; font-weight: 500; background: var(--card-2, #f2f3ef); color: var(--chart-1, #3f6b55); }
+.badge, .priority { display: inline-block; padding: 3px 8px; border-radius: var(--radius-pill); font-size: .72rem; font-weight: 500; background: var(--card-2, #f2f3ef); color: var(--chart-1, #3f6b55); }
 .priority { color: var(--chart-4, #7a4b2a); background: color-mix(in srgb, var(--chart-2, #b08a2e) 13%, transparent); }
 .miniRing { flex: none; width: 48px; height: 48px; }
 .ring { width: min(100%, 180px); flex-shrink: 1; min-height: 95px; }
@@ -19,7 +19,7 @@
 .chartSummary { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 6px 12px; align-items: baseline; }
 .chartSummary strong { font-size: 1.65rem; font-weight: 600; letter-spacing: -.045em; }
 .chartSummary span { color: var(--muted, #5b675f); font-size: .78rem; }
-.chartReading { padding: 5px 9px; background: var(--card-2, #f2f3ef); border-radius: var(--radius-pill, 999px); }
+.chartReading { padding: 5px 9px; background: var(--card-2, #f2f3ef); border-radius: var(--radius-pill); }
 .chartReading b { color: var(--chart-1, #3f6b55); }
 .chart { width: 100%; flex: 1; min-height: 0; overflow: visible; }
 .gridLine { stroke: var(--chart-grid, #e4e8e0); stroke-width: 1; stroke-dasharray: 3 5; }
@@ -35,7 +35,7 @@
 .hitTarget:focus-visible { outline: 2px solid var(--chart-2, #b08a2e); outline-offset: -2px; rx: 4px; }
 .footnote { margin: auto 0 0; padding-top: 10px; color: var(--muted, #5b675f); font-size: .72rem; line-height: 1.5; }
 .short .footnote { display: none; }
-.segmented { display: inline-flex; padding: 3px; border-radius: var(--radius-pill, 999px); border: 1px solid var(--card-border, #d8dcd4); background: var(--card-2, #f2f3ef); }
+.segmented { display: inline-flex; padding: 3px; border-radius: var(--radius-pill); border: 1px solid var(--card-border, #d8dcd4); background: var(--card-2, #f2f3ef); }
 .segmented button { border: 0; background: transparent; color: var(--muted, #5b675f); cursor: pointer; font-size: .73rem; padding: 5px 10px; min-height: 30px; border-radius: inherit; transition: background var(--dur-fast, 150ms), color var(--dur-fast, 150ms); }
 .segmented button[aria-pressed='true'] { background: var(--card, #fff); color: var(--chart-1, #3f6b55); box-shadow: 0 1px 3px #0000000d; }
 .statusBody { gap: 20px; }
@@ -43,9 +43,9 @@
 .stacked > div { min-width: 0; position: relative; }
 .stacked span { display: block; font-size: .65rem; color: var(--muted, #5b675f); text-align: center; margin-bottom: 7px; overflow: hidden; }
 .stacked i { display: block; height: 32px; background: var(--segment); transform-origin: left; animation: growX var(--dur-slow, 600ms) var(--ease-out, ease-out) both; }
-.stacked > div:first-child i { border-radius: 7px 0 0 7px; }
-.stacked > div:last-child i { border-radius: 0 7px 7px 0; }
-.stacked > div:only-child i { border-radius: 7px; }
+.stacked > div:first-child i { border-radius: var(--radius-lg) 0 0 var(--radius-lg); }
+.stacked > div:last-child i { border-radius: 0 var(--radius-lg) var(--radius-lg) 0; }
+.stacked > div:only-child i { border-radius: var(--radius-lg); }
 .legend { display: grid; gap: 14px; }
 .legend > div { display: grid; grid-template-columns: 1fr auto 40px; gap: 10px; align-items: center; font-size: .8rem; }
 .legend span { display: flex; align-items: center; gap: 9px; }
@@ -62,7 +62,7 @@
 .community span { display: flex; gap: 18px; flex-shrink: 0; font-size: .82rem; }
 .community small { color: var(--muted, #5b675f); font-size: .7rem; }
 .community b { min-width: 24px; text-align: right; font-weight: 600; }
-.track { height: 5px; border-radius: 5px; background: var(--card-2, #f2f3ef); overflow: hidden; }
+.track { height: 5px; border-radius: var(--radius-lg); background: var(--card-2, #f2f3ef); overflow: hidden; }
 .track i { display: block; height: 100%; border-radius: inherit; background: var(--chart-1, #3f6b55); transform-origin: left; animation: growX var(--dur-slow, 600ms) var(--ease-out, ease-out) var(--delay, 0ms) both; }
 .ranking li:nth-child(2) .track i { background: var(--chart-2, #b08a2e); }
 .ranking li:nth-child(n+3) .track i { background: var(--chart-3, #9abf99); }

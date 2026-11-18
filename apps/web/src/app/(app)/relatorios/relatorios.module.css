@@ -17,7 +17,7 @@
   gap: 14px;
   min-width: 0;
   padding: 16px;
-  border-radius: var(--radius-md, 14px);
+  border-radius: var(--radius-md);
   background: var(--card-2);
   border: 1px solid var(--card-border);
 }
@@ -149,7 +149,7 @@
   top: 8px;
   bottom: 8px;
   width: 2px;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   background: linear-gradient(var(--chart-1), color-mix(in srgb, var(--chart-1) 10%, transparent));
 }
 
@@ -246,7 +246,7 @@
 .deliveries {
   margin-top: 4px;
   padding: 4px 12px;
-  border-radius: var(--radius-md, 12px);
+  border-radius: var(--radius-md);
   background: var(--card-2);
 }
 

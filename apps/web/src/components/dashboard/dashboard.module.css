@@ -118,7 +118,6 @@
   border: 1px dashed var(--chart-1);
   color: var(--ink);
   font-size: 0.86rem;
-  animation: fade-up var(--dur-fast) var(--ease-out) both;
 }
 
 /* Grade editável de 12 colunas */
@@ -145,7 +144,6 @@
   min-height: 0;
   grid-column: span min(var(--w, 4), 12);
   grid-row: span var(--h, 2);
-  animation: fade-up var(--dur-med) var(--ease-out) both;
   animation-delay: calc(var(--i, 0) * 40ms);
   transition:
     transform var(--dur-med) var(--ease-spring),
@@ -358,7 +356,7 @@
   cursor: nwse-resize;
   display: grid;
   place-items: center;
-  border-radius: 6px;
+  border-radius: var(--radius-lg);
   opacity: 0.7;
   transition:
     opacity var(--dur-fast) var(--ease-out),
@@ -391,7 +389,6 @@
   backdrop-filter: blur(4px);
   display: flex;
   justify-content: flex-end;
-  animation: fade-up var(--dur-fast) var(--ease-out) both;
 }
 
 .catalog {
@@ -527,7 +524,6 @@
     var(--card) 75%
   );
   background-size: 200% 100%;
-  animation: shimmer 1.5s infinite linear;
   min-height: calc(var(--h, 2) * var(--row-h, 84px));
 }
 
@@ -542,7 +538,6 @@
   flex-direction: column;
   align-items: center;
   gap: 10px;
-  animation: scale-in var(--dur-med) var(--ease-out) both;
 }
 
 .empty strong {

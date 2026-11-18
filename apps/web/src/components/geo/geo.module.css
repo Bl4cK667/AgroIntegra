@@ -21,7 +21,7 @@
 .mapBox {
   position: relative;
   width: 100%;
-  border-radius: var(--radius-md, 12px);
+  border-radius: var(--radius-md);
   overflow: hidden;
   border: 1px solid var(--linha, #d8dcd4);
   background: #0f1712;
@@ -31,7 +31,7 @@
   display: grid;
   place-items: center;
   min-height: 240px;
-  border-radius: var(--radius-md, 12px);
+  border-radius: var(--radius-md);
   border: 1px dashed var(--linha-forte, #b9c0b6);
   background: var(--card-2, #f6f7f3);
   color: var(--sutil, #5b675f);
@@ -58,7 +58,7 @@
 .note {
   margin: 0;
   padding: 10px 12px;
-  border-radius: var(--radius-md, 12px);
+  border-radius: var(--radius-md);
   background: var(--card-2, #f6f7f3);
   border: 1px solid var(--linha, #d8dcd4);
 }
@@ -123,7 +123,7 @@
   width: 12px;
   height: 12px;
   margin-right: 6px;
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
   vertical-align: -1px;
   border: 1px solid rgba(0, 0, 0, 0.35);
 }
@@ -175,7 +175,7 @@
   align-items: center;
   padding: 8px 10px;
   border: 1px solid var(--linha, #d8dcd4);
-  border-radius: var(--radius-md, 12px);
+  border-radius: var(--radius-md);
   background: var(--card, #fff);
 }
 
