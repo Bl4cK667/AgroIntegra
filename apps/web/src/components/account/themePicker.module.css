@@ -14,29 +14,26 @@
 .options {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 14px;
+  gap: 8px;
 }
 
 .option {
   all: unset;
   box-sizing: border-box;
   display: grid;
+  grid-template-columns: 88px minmax(0, 1fr);
+  align-items: center;
   gap: 12px;
   padding: 12px;
   border-radius: var(--radius-md);
   border: 1px solid var(--card-border);
-  background: var(--card-2);
+  background: var(--card);
   cursor: pointer;
-  transition:
-    border-color var(--dur-fast) var(--ease-out),
-    box-shadow var(--dur-med) var(--ease-out),
-    transform var(--dur-med) var(--ease-out);
+  transition: border-color var(--dur-fast) var(--ease-out);
 }
 
 .option:hover:not(:disabled) {
   border-color: var(--card-hover);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-card);
 }
 
 .option:focus-visible {
@@ -46,7 +43,7 @@
 
 .option[data-selected] {
   border-color: var(--chart-1);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--chart-1) 16%, transparent);
+  background: var(--card);
 }
 
 .option:disabled {
@@ -59,7 +56,7 @@
   display: grid;
   grid-template-rows: 22% 1fr;
   aspect-ratio: 16 / 10;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   overflow: hidden;
   background: var(--dash-bg);
   border: 1px solid var(--card-border);
@@ -124,7 +121,7 @@
   align-content: center;
   gap: 4px;
   padding: 6% 8%;
-  border-radius: 5px;
+  border-radius: 1px;
   background: var(--card);
   border: 1px solid var(--card-border);
 }
@@ -151,7 +148,7 @@
   align-items: flex-end;
   gap: 6%;
   padding: 7% 9%;
-  border-radius: 5px;
+  border-radius: 1px;
   background: var(--card);
   border: 1px solid var(--card-border);
 }
@@ -182,7 +179,7 @@
   display: flex;
   align-items: flex-start;
   gap: 10px;
-  padding: 0 2px 2px;
+  padding: 0;
 }
 
 .radio {
@@ -197,7 +194,7 @@
 
 .option[data-selected] .radio {
   border-color: var(--chart-1);
-  box-shadow: inset 0 0 0 3px var(--card-2), inset 0 0 0 9px var(--chart-1);
+  box-shadow: inset 0 0 0 3px var(--card), inset 0 0 0 9px var(--chart-1);
 }
 
 .text {
@@ -222,7 +219,7 @@
 }
 
 .badge {
-  padding: 2px 7px;
+  padding: 1px 6px;
   border-radius: var(--radius-pill);
   font-size: 0.68rem;
   font-weight: 600;
@@ -254,8 +251,5 @@
   .option,
   .radio {
     transition: none;
-  }
-  .option:hover:not(:disabled) {
-    transform: none;
   }
 }
