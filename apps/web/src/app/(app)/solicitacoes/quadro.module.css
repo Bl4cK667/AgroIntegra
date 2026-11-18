@@ -24,22 +24,18 @@
   border-radius: var(--radius-lg);
   background: var(--card-2);
   border: 1px solid var(--card-border);
-  transition:
-    background-color var(--dur-med, 300ms) var(--ease-out, ease),
-    border-color var(--dur-med, 300ms) var(--ease-out, ease),
-    box-shadow var(--dur-med, 300ms) var(--ease-out, ease);
+  transition: background-color var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out);
 }
 
 .column[data-status='NEW'] { --accent: var(--chart-1); }
 .column[data-status='IN_REVIEW'] { --accent: var(--chart-2); }
-.column[data-status='SCHEDULED'] { --accent: var(--chart-3); }
+.column[data-status='SCHEDULED'] { --accent: var(--chart-4); }
 .column[data-status='DONE'] { --accent: var(--muted); }
 
 .dropTarget {
   border-color: var(--accent);
   border-style: dashed;
   background: color-mix(in srgb, var(--accent) 9%, var(--card-2));
-  box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 14%, transparent);
 }
 
 .columnHead {
@@ -60,7 +56,6 @@
   height: 9px;
   border-radius: 50%;
   background: var(--accent);
-  box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 20%, transparent);
 }
 
 .total {
@@ -101,14 +96,8 @@
   background: var(--card);
   border: 1px solid var(--card-border);
   border-radius: var(--radius-md);
-  box-shadow: var(--shadow-card);
   cursor: grab;
-  animation: cardIn 420ms var(--ease-out, ease) both;
-  animation-delay: calc(var(--i, 0) * 35ms + 200ms);
-  transition:
-    transform var(--dur-fast, 150ms) var(--ease-out, ease),
-    box-shadow var(--dur-med, 300ms) var(--ease-out, ease),
-    border-color var(--dur-fast, 150ms) var(--ease-out, ease);
+  transition: border-color var(--dur-fast) var(--ease-out);
 }
 
 /* faixa de prioridade à esquerda */
@@ -116,31 +105,27 @@
   content: '';
   position: absolute;
   left: 0;
-  top: 10px;
-  bottom: 10px;
+  top: 0;
+  bottom: 0;
   width: 3px;
-  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  border-radius: 0;
   background: transparent;
 }
 
 .card[data-priority='HIGH']::before { background: var(--perigo, #b4412f); }
-.card[data-priority='MEDIUM']::before { background: var(--chart-2); }
+.card[data-priority='MEDIUM']::before { background: var(--warning); }
 
 .card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-lift);
-  border-color: color-mix(in srgb, var(--chart-1) 35%, var(--card-border));
+  border-color: var(--linha-forte);
 }
 
 .card[data-open] {
   cursor: default;
-  transform: none;
-  border-color: color-mix(in srgb, var(--chart-1) 45%, var(--card-border));
+  border-color: var(--accent);
 }
 
 .dragging {
   opacity: 0.4;
-  transform: rotate(-1.5deg) scale(0.98);
 }
 
 .cardMain {
@@ -186,7 +171,6 @@
   border-top: 1px solid var(--card-border);
   background: color-mix(in srgb, var(--card-2) 55%, var(--card));
   cursor: default;
-  animation: detailIn 280ms var(--ease-out, ease);
 }
 
 .description {
@@ -206,8 +190,6 @@
   color: var(--muted);
   font-size: 0.74rem;
   font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
 }
 
 .meta dd {
@@ -257,16 +239,6 @@
 .links .btn {
   min-height: 38px;
   font-size: 0.86rem;
-}
-
-@keyframes cardIn {
-  from { opacity: 0; transform: translateY(8px) scale(0.98); }
-  to { opacity: 1; transform: none; }
-}
-
-@keyframes detailIn {
-  from { opacity: 0; transform: translateY(-4px); }
-  to { opacity: 1; transform: none; }
 }
 
 @media (max-width: 1100px) {
