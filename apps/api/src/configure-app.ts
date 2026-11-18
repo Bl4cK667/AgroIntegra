@@ -10,6 +10,7 @@ import {
   resolveTrustProxy,
   securityHeaders,
 } from './common/http-security';
+import { setupOpenApi } from './common/openapi';
 
 // Configuração comum ao servidor e aos testes.
 export function configureApp(app: INestApplication, env: Record<string, string | undefined> = process.env) {
@@ -29,4 +30,6 @@ export function configureApp(app: INestApplication, env: Record<string, string |
   // Content-Disposition liberado para o painel saber o nome do PDF.
   const origins = resolveCorsOrigins(env);
   app.enableCors({ origin: origins.length === 1 ? origins[0] : origins, exposedHeaders: ['Content-Disposition'] });
+  // OpenAPI em /docs (desligado em produção, salvo API_DOCS_ENABLED=true).
+  setupOpenApi(app, env);
 }
