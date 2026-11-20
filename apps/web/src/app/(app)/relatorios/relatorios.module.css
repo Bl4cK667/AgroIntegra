@@ -1,3 +1,9 @@
+/* Abas da página (Relatório do produtor | Exportação em massa): faixa com borda inferior, conteúdo em cards abaixo. */
+.pageTabs {
+  margin-bottom: var(--space-4);
+  border-bottom: 1px solid var(--linha);
+}
+
 /* ---------- montar relatório ---------- */
 
 .builder {

@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useState } from 'react';
 import form from '@/components/form.module.css';
 import { ProducerSearch } from '@/components/ProducerSearch';
+import { BulkExport } from '@/components/reports/BulkExport';
 import { FieldEmpty, FieldHeading, FieldLoading, FieldIcon, FieldStats, SectionTitle } from '@/components/property/FieldUI';
 import {
   ApiError,
@@ -26,7 +27,47 @@ export default function RelatoriosPage() {
   );
 }
 
+type Tab = 'producer' | 'bulk';
+
 function Relatorios() {
+  const tab: Tab = useSearchParams().get('aba') === 'massa' ? 'bulk' : 'producer';
+  if (tab === 'bulk') {
+    return (
+      <>
+        <ReportsHeading tab="bulk" />
+        <BulkExport />
+      </>
+    );
+  }
+  return <ProducerReportTab />;
+}
+
+function ReportsHeading({ tab }: { tab: Tab }) {
+  return (
+    <>
+      <FieldHeading
+        icon="report"
+        eyebrow="Prestação de contas"
+        title="Relatórios"
+        description={
+          tab === 'bulk'
+            ? 'Planilha ou PDF com vários produtores, propriedades ou visitas de uma vez. Cada arquivo gerado fica registrado na auditoria.'
+            : 'Relatório de atendimento por produtor e período, em PDF. Cada PDF gerado fica registrado na auditoria.'
+        }
+      />
+      <nav className={`tabs ${styles.pageTabs}`} aria-label="Tipo de relatório">
+        <Link href="/relatorios" aria-current={tab === 'producer' ? 'page' : undefined}>
+          Relatório do produtor
+        </Link>
+        <Link href="/relatorios?aba=massa" aria-current={tab === 'bulk' ? 'page' : undefined}>
+          Exportação em massa
+        </Link>
+      </nav>
+    </>
+  );
+}
+
+function ProducerReportTab() {
   const fromProducer = useSearchParams().get('produtor');
   const [producerId, setProducerId] = useState<string | null>(fromProducer);
   const [from, setFrom] = useState(() => `${todayIso().slice(0, 4)}-01-01`);
@@ -86,12 +127,7 @@ function Relatorios() {
           {report?.producer.name ?? 'Produtor'}
         </Link>
       )}
-      <FieldHeading
-        icon="report"
-        eyebrow="Prestação de contas"
-        title="Relatórios"
-        description="Relatório de atendimento por produtor e período, em PDF. Cada PDF gerado fica registrado na auditoria."
-      />
+      <ReportsHeading tab="producer" />
 
       <section className={`card enter ${styles.builder}`} style={{ '--i': 1 } as React.CSSProperties} aria-label="Montar relatório">
         <SectionTitle

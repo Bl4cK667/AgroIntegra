@@ -388,3 +388,60 @@ export async function fetchProducerReportPdf(producerId: string, from: string, t
   const name = /filename="([^"]+)"/.exec(res.headers.get('Content-Disposition') ?? '')?.[1] ?? 'relatorio.pdf';
   return { blob: await res.blob(), name };
 }
+
+// ---------- Exportação em massa ----------
+
+export type BulkType = 'producers' | 'properties' | 'visits';
+export type BulkFormat = 'csv' | 'pdf';
+
+export const BULK_TYPE_LABEL: Record<BulkType, string> = {
+  producers: 'Produtores',
+  properties: 'Propriedades',
+  visits: 'Visitas',
+};
+
+export interface BulkFilters {
+  from?: string;
+  to?: string;
+  community?: string;
+  technicianId?: string;
+  programId?: string;
+}
+
+export interface BulkFilterOptions {
+  communities: string[];
+  technicians: { id: string; name: string }[];
+  programs: { id: string; name: string }[];
+  /** técnico: a API sempre filtra pelo próprio usuário */
+  technicianLocked: boolean;
+  limits: Record<BulkFormat, number>;
+}
+
+const bulkQs = (filters: BulkFilters & { format?: BulkFormat }) => {
+  const qs = new URLSearchParams();
+  for (const [key, value] of Object.entries(filters)) if (value) qs.set(key, value);
+  return qs.toString();
+};
+
+export const getBulkFilterOptions = () => request<BulkFilterOptions>('/reports/bulk/filters');
+
+export const countBulkReport = (type: BulkType, filters: BulkFilters) =>
+  request<{ total: number; limits: Record<BulkFormat, number> }>(`/reports/bulk/${type}/count?${bulkQs(filters)}`);
+
+export async function fetchBulkReport(type: BulkType, format: BulkFormat, filters: BulkFilters) {
+  const token = getToken();
+  let res: Response;
+  try {
+    res = await fetch(`${API_URL}/reports/bulk/${type}?${bulkQs({ ...filters, format })}`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
+  } catch {
+    throw new ApiError(0, 'Não foi possível conectar. Confira sua conexão e tente novamente.');
+  }
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new ApiError(res.status, (Array.isArray(body.message) ? body.message.join(' ') : body.message) ?? 'Erro ao gerar o arquivo.');
+  }
+  const name = /filename="([^"]+)"/.exec(res.headers.get('Content-Disposition') ?? '')?.[1] ?? `relatorio.${format}`;
+  return { blob: await res.blob(), name };
+}
