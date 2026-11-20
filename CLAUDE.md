@@ -18,7 +18,7 @@ Sistema de assistência técnica e extensão rural (ATER) para secretarias munic
 | --- | --- |
 | Produtor | `Producer` |
 | Propriedade | `Property` (e, no piloto, suas feições do mapa) |
-| Solicitação | `ServiceRequest` (quadro Nova, Em análise, Agendada, Concluída) |
+| Solicitação | `ServiceRequest` (situações Nova, Em análise, Agendada e Concluída; lista com filtros) |
 | Atendimento | `Visit` (pode concluir uma solicitação na mesma transação) |
 | Resultado | impacto e retorno da visita, recomendações técnicas, relatórios |
 
@@ -48,7 +48,8 @@ Na dúvida sobre quem é dono de um arquivo, use `git log`.
   - `geo-map.service.ts`: mapa territorial e busca por raio.
   - `geo-export.service.ts` + `formats/`: GeoJSON, KML/KMZ e Shapefile próprio, sem dependência externa.
   - `geo.controller.ts`: rotas.
-- `apps/api/src/clima`: previsão do tempo. INMET por município (principal) e Open-Meteo por coordenada (plano grátis só não comercial: em produção exige chave), cache e último valor válido em `WeatherForecast`. Web: `components/clima/WeatherCard` no mapa da propriedade. Fontes e licenças no `README.md`.
+- `apps/api/src/clima`: previsão do tempo. INMET por município (principal) e Open-Meteo por coordenada (plano grátis só não comercial: em produção exige chave), cache e último valor válido em `WeatherForecast`. Web: `components/clima/WeatherCard` no mapa da propriedade e `WeatherCompact` no painel da propriedade selecionada no mapa territorial. Fontes e licenças no `README.md`.
+- `apps/api/src/reports`: relatório do produtor (prévia e PDF) e exportação em massa (`/reports/bulk`: produtores, propriedades e visitas em CSV ou PDF; técnico exporta só os próprios registros; auditoria `REPORT_EXPORTED`).
 - `apps/api/src/cotacoes`: preço recebido pelo produtor (CONAB, semanal, importação diária com `@nestjs/schedule`) e preços locais lançados pela equipe. Produtos e conversão de unidades em `products.ts`. Web: `/cotacoes`. Fontes e licenças no `README.md`.
 - `apps/api/src/common/external-http.ts`: cliente das fontes externas (timeout, novas tentativas, log estruturado), usado por `clima` e `cotacoes`.
 - `apps/api/src/sync`: sync offline (`POST /sync/push`, `GET /sync/pull`). Grava só pelos serviços exportados de `producers`, `visits` e `geo`; o conflito vai para a auditoria (`SYNC_CONFLICT`). Contrato do app no `README.md`.
@@ -135,7 +136,14 @@ Checklist para cada modelo novo:
 - Textos da interface em **português do Brasil**.
 - Variáveis, funções, tabelas e arquivos em inglês. **Exceção:** os nomes dos módulos `geo`, `calculos`, `clima` e `cotacoes`, definidos pelo João Pedro.
 - Unidades brasileiras: ha, m, kg/ha, sc/ha, @ (arroba), UA, UA/ha, mm, °C, R$. Números com vírgula decimal (`toLocaleString('pt-BR')`). Área com 2 casas em ha.
-- Visual institucional e discreto (ver `docs/redesign-corporativo/`): fundo neutro claro, texto escuro, uma cor principal verde-escura (#1F5A3D) e cores só para status; fonte IBM Plex Sans; cantos de 2 a 4px, bordas finas, sem sombra decorativa, gradiente ou desfoque; animação só quando explica uma ação; contraste WCAG AA e foco visível. Mapa e gráficos mantêm as cores funcionais. Textos formais, sem emoji nem exclamação. Os 6 temas em Configurações → Aparência seguem esse padrão.
+- Visual institucional e discreto: fundo neutro claro, texto escuro, uma cor principal verde-escura (#1F5A3D) e cores só para status; fonte IBM Plex Sans; cantos de 2 a 4px, bordas finas, sem sombra decorativa, gradiente ou desfoque; animação só quando explica uma ação; contraste WCAG AA e foco visível. Mapa e gráficos mantêm as cores funcionais. Textos formais, sem emoji nem exclamação. Os 6 temas em Configurações → Aparência seguem esse padrão.
+- **Organização visual no padrão SGP** (decisão de 20/11/2026; referência em `docs/design-system.md`). Do SGP vem só a organização, não as cores nem a marca. As capturas ficam em `docs/referencia-sgp/`, só na máquina local (fora do git).
+  - Cabeçalho em duas faixas (marca, consulta de produtor e usuário; menu com submenus em `nav/menu.ts`). A Sidebar continua como opção.
+  - Título de página leve (peso 400). Painéis com faixa de título cinza: `.card` com `.card-head` como primeiro filho.
+  - Registros em **lista de linhas**, no padrão de Cadastros → Produtores: busca dentro do painel, linha clicável, badges e rodapé "Mostrando X de Y". Não use cards para listar registros.
+  - Badges com fundo sólido na cor de status (`.badge-soft` para a versão clara).
+  - Formulários horizontais (`.form-h`: rótulo à esquerda) com barra de ações no rodapé (`.form-bar`, botões à direita, "Cancelar" antes do principal). Fichas e telas longas em abas (`.tabs`).
+  - Tokens: tamanhos em `app/tokens.css`, cores por tema em `app/themes.css`, classes globais em `app/globals.css` (lista na seção 5.1 do design system).
 - **Nenhum número fixo no painel:** tudo que aparece é calculado do banco, com teste que confere contra uma contagem independente (padrão em `test/dashboard.e2e.spec.ts`).
 
 ## LGPD e dados
