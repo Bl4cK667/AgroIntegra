@@ -13,3 +13,5 @@ apps/web/public/maplibre/
 *.tsbuildinfo
 # Playwright CLI output (may contain credentials)
 .playwright-cli/
+# Capturas de tela de produto de terceiros (referência visual): só na máquina local, não publicar
+docs/referencia-sgp/

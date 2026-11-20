@@ -3,7 +3,7 @@
 Este documento registra a estética observada no SGP (sistema de gestão para provedores de internet) e como ela se traduz para o AgroIntegra. Do SGP aproveitamos **só a forma**: estrutura de layout, densidade e estilo dos componentes. Cores, marca, textos, telas e regras continuam sendo do AgroIntegra.
 
 - Referência principal: vídeo "SGP treinamento padrão" (YouTube, cerca de 1h52).
-- Capturas: [`docs/referencia-sgp/`](referencia-sgp/). Ficam fora de `apps/web` e não entram no build.
+- Capturas: `docs/referencia-sgp/`, **só na máquina local** (está no `.gitignore`). São telas de um produto de terceiros e não são publicadas no repositório. Quem não tiver a pasta pode consultar o vídeo nos minutos indicados abaixo.
 - Decisão de 20/11/2026: **mantemos a paleta do AgroIntegra** (verde #1F5A3D, IBM Plex Sans, cantos de 2 a 4px). A organização visual vem do SGP, e as cores dele aparecem aqui só como registro.
 
 ## Capturas de referência
