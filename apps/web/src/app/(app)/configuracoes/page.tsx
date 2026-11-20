@@ -49,8 +49,31 @@ function readAsDataUrl(file: File): Promise<string> {
   });
 }
 
+type Tab = 'perfil' | 'seguranca' | 'aparencia' | 'equipe';
+const TABS: { key: Tab; label: string }[] = [
+  { key: 'perfil', label: 'Perfil' },
+  { key: 'seguranca', label: 'Segurança' },
+  { key: 'aparencia', label: 'Aparência' },
+  { key: 'equipe', label: 'Equipe e convites' },
+];
+const isTab = (v: string | null): v is Tab => v === 'perfil' || v === 'seguranca' || v === 'aparencia' || v === 'equipe';
+
 export default function ConfiguracoesPage() {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [tab, setTab] = useState<Tab>('perfil');
+
+  // A aba fica no endereço (?aba=aparencia): o link para uma seção abre direto nela.
+  useEffect(() => {
+    const aba = new URL(window.location.href).searchParams.get('aba');
+    if (isTab(aba)) setTab(aba);
+  }, []);
+
+  function selectTab(next: Tab) {
+    setTab(next);
+    const url = new URL(window.location.href);
+    url.searchParams.set('aba', next);
+    window.history.replaceState(window.history.state, '', url.pathname + url.search);
+  }
   const [account, setAccount] = useState<AccountProfile | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
 
@@ -204,6 +227,19 @@ export default function ConfiguracoesPage() {
     }
   }
 
+  const tabs = TABS.filter((t) => t.key !== 'equipe' || account?.role === 'COORDINATION');
+  // Técnico com ?aba=equipe no endereço: a aba não existe para ele, volta para Perfil.
+  if (account && tab === 'equipe' && account.role !== 'COORDINATION') setTab('perfil');
+
+  function onTabKey(e: React.KeyboardEvent<HTMLDivElement>) {
+    if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+    e.preventDefault();
+    const i = tabs.findIndex((t) => t.key === tab);
+    const next = tabs[(i + (e.key === 'ArrowRight' ? 1 : tabs.length - 1)) % tabs.length].key;
+    selectTab(next);
+    requestAnimationFrame(() => document.getElementById(`cfg-tab-${next}`)?.focus());
+  }
+
   return (
     <>
       <header className="page-head enter">
@@ -228,7 +264,26 @@ export default function ConfiguracoesPage() {
       )}
 
       {account && (
-        <div className={styles.grid}>
+        <div className={`tabs ${styles.tabs}`} role="tablist" aria-label="Seções das configurações" onKeyDown={onTabKey}>
+          {tabs.map((t) => (
+            <button
+              key={t.key}
+              type="button"
+              role="tab"
+              id={`cfg-tab-${t.key}`}
+              aria-selected={tab === t.key}
+              aria-controls={`cfg-panel-${t.key}`}
+              tabIndex={tab === t.key ? 0 : -1}
+              onClick={() => selectTab(t.key)}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {account && tab === 'perfil' && (
+        <div className={styles.grid} role="tabpanel" id="cfg-panel-perfil" aria-labelledby="cfg-tab-perfil">
           <div className={styles.stack}>
             {/* Seção 1: Foto de perfil */}
             <section className="card enter" style={{ '--i': 1 } as CSSProperties} aria-labelledby="sec-foto">
@@ -306,7 +361,7 @@ export default function ConfiguracoesPage() {
                 </h2>
               </div>
 
-              <form onSubmit={onSaveProfile} className={styles.form} noValidate>
+              <form onSubmit={onSaveProfile} className={`${styles.form} form-h`} noValidate>
                 <label className="field">
                   <span>
                     Nome completo
@@ -359,7 +414,7 @@ export default function ConfiguracoesPage() {
                   </p>
                 )}
 
-                <div className="form-actions">
+                <div className="form-bar">
                   <button type="submit" className="btn btn-primary" disabled={savingProfile}>
                     {savingProfile ? 'Salvando…' : 'Salvar alterações'}
                   </button>
@@ -369,8 +424,42 @@ export default function ConfiguracoesPage() {
           </div>
 
           <div className={styles.stack}>
+            {/* Seção 4: Sobre a conta */}
+            <section className="card enter" style={{ '--i': 3 } as CSSProperties} aria-labelledby="sec-sobre">
+              <div className="card-head">
+                <span className="card-icon">
+                  <Icon path="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zm0-14v4m0 4h.01" />
+                </span>
+                <h2 id="sec-sobre" className="card-title">
+                  Sobre a conta
+                </h2>
+              </div>
+
+              <dl className={styles.infoList}>
+                <div className={styles.infoItem}>
+                  <dt>E-mail de acesso</dt>
+                  <dd>{account.email}</dd>
+                </div>
+                <div className={styles.infoItem}>
+                  <dt>Perfil no sistema</dt>
+                  <dd>
+                    <span className="badge badge-success">{ROLE_LABEL[account.role]}</span>
+                  </dd>
+                </div>
+                <div className={styles.infoItem}>
+                  <dt>Membro desde</dt>
+                  <dd>{formatDate(account.createdAt)}</dd>
+                </div>
+              </dl>
+            </section>
+          </div>
+        </div>
+      )}
+
+      {account && tab === 'seguranca' && (
+        <div className={styles.single} role="tabpanel" id="cfg-panel-seguranca" aria-labelledby="cfg-tab-seguranca">
             {/* Seção 3: Segurança da conta */}
-            <section className="card enter" style={{ '--i': 3 } as CSSProperties} aria-labelledby="sec-senha">
+            <section className="card enter" style={{ '--i': 1 } as CSSProperties} aria-labelledby="sec-senha">
               <div className="card-head">
                 <span className="card-icon">
                   <Icon path="M19 11H5a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7a2 2 0 0 0-2-2zM7 11V7a5 5 0 0 1 10 0v4" />
@@ -380,7 +469,7 @@ export default function ConfiguracoesPage() {
                 </h2>
               </div>
 
-              <form onSubmit={onChangePassword} className={styles.form} noValidate>
+              <form onSubmit={onChangePassword} className={`${styles.form} form-h`} noValidate>
                 <label className="field">
                   <span>
                     Senha atual
@@ -444,46 +533,20 @@ export default function ConfiguracoesPage() {
                   </p>
                 )}
 
-                <div className="form-actions">
+                <div className="form-bar">
                   <button type="submit" className="btn btn-primary" disabled={savingPassword}>
                     {savingPassword ? 'Atualizando…' : 'Atualizar senha'}
                   </button>
                 </div>
               </form>
             </section>
+        </div>
+      )}
 
-            {/* Seção 4: Sobre a conta */}
-            <section className="card enter" style={{ '--i': 4 } as CSSProperties} aria-labelledby="sec-sobre">
-              <div className="card-head">
-                <span className="card-icon">
-                  <Icon path="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zm0-14v4m0 4h.01" />
-                </span>
-                <h2 id="sec-sobre" className="card-title">
-                  Sobre a conta
-                </h2>
-              </div>
-
-              <dl className={styles.infoList}>
-                <div className={styles.infoItem}>
-                  <dt>E-mail de acesso</dt>
-                  <dd>{account.email}</dd>
-                </div>
-                <div className={styles.infoItem}>
-                  <dt>Perfil no sistema</dt>
-                  <dd>
-                    <span className="badge badge-success">{ROLE_LABEL[account.role]}</span>
-                  </dd>
-                </div>
-                <div className={styles.infoItem}>
-                  <dt>Membro desde</dt>
-                  <dd>{formatDate(account.createdAt)}</dd>
-                </div>
-              </dl>
-            </section>
-
-            {/* Administração de convites: exibida apenas para Coordenação */}
-            {account.role === 'COORDINATION' && (
-              <section className="card enter" style={{ '--i': 5 } as CSSProperties} aria-labelledby="sec-convites">
+      {/* Administração de convites: aba exibida apenas para Coordenação (a API também restringe). */}
+      {account && tab === 'equipe' && account.role === 'COORDINATION' && (
+        <div className={styles.single} role="tabpanel" id="cfg-panel-equipe" aria-labelledby="cfg-tab-equipe">
+              <section className="card enter" style={{ '--i': 1 } as CSSProperties} aria-labelledby="sec-convites">
                 <div className="card-head">
                   <span className="card-icon">
                     <Icon path="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 7a4 4 0 1 0 0-8 4 4 0 0 0 0 8M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
@@ -496,19 +559,22 @@ export default function ConfiguracoesPage() {
                   Gere e gerencie links de convite individuais para novos membros da organização.
                 </p>
                 <div className="form-actions">
-                  <Link href="/configuracoes/usuarios" className="btn btn-secondary">
+                  <Link href="/configuracoes/usuarios" className="btn btn-primary">
                     Gerenciar convites e usuários
                   </Link>
                 </div>
               </section>
-            )}
-          </div>
         </div>
       )}
-      {/* Seção 5: Aparência (escolha do tema visual) */}
-      {account && <ThemePicker index={5} />}
-      {/* Seção 6: Personalização da interface (escolha da navegação) */}
-      {account && <NavStylePicker index={6} />}
+
+      {account && tab === 'aparencia' && (
+        <div className={styles.appearance} role="tabpanel" id="cfg-panel-aparencia" aria-labelledby="cfg-tab-aparencia">
+          {/* Seção 5: Aparência (escolha do tema visual) */}
+          <ThemePicker index={1} />
+          {/* Seção 6: Personalização da interface (escolha da navegação) */}
+          <NavStylePicker index={2} />
+        </div>
+      )}
       <Toast message={toast} onClose={() => setToast(null)} />
     </>
   );

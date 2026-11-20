@@ -1,3 +1,26 @@
+/* Abas da página (Perfil | Segurança | Aparência | Equipe): faixa com borda inferior, cards abaixo. */
+.tabs {
+  margin-bottom: var(--space-4);
+  border-bottom: 1px solid var(--linha);
+}
+
+/* Aba com um único card (Segurança, Equipe): largura de leitura confortável. */
+.single {
+  display: grid;
+  gap: 20px;
+  max-width: 760px;
+}
+
+.appearance {
+  display: grid;
+  gap: 20px;
+}
+
+/* ThemePicker e NavStylePicker têm margem própria para quando ficavam empilhados na página. */
+.appearance > section {
+  margin-top: 0;
+}
+
 .grid {
   display: grid;
   grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
