@@ -132,20 +132,97 @@
   border-radius: 50%;
 }
 
-.popup {
-  display: grid;
-  gap: 2px;
-  min-width: 200px;
+/* Balão no mapa: só o nome da propriedade selecionada (o resumo e o clima ficam no painel lateral). */
+.popupName {
   font-family: var(--fonte, system-ui, sans-serif);
+  font-size: 0.9rem;
   color: #18211c;
 }
 
-.popup strong {
-  font-size: 0.98rem;
+/* Mapa territorial + painel "Propriedade selecionada" à direita (abaixo do mapa no celular). */
+.territory {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
 }
 
-.popup a {
-  font-weight: 600;
+.territory[data-selected] {
+  grid-template-columns: minmax(0, 1fr) 360px;
+}
+
+.selPanel {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.selPanel > :global(.card-head) {
+  flex-wrap: nowrap;
+}
+
+.selPanel :global(.card-title) {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.selClose {
+  margin-left: auto;
+  flex: none;
+}
+
+.selBody {
+  display: grid;
+  gap: 12px;
+  padding: var(--panel-pad);
+  overflow-y: auto;
+}
+
+.selBody > :global(.section-bar) {
+  margin: 4px calc(-1 * var(--panel-pad)) 0;
+}
+
+.selFacts {
+  display: grid;
+  margin: 0;
+  font-size: var(--text-sm);
+}
+
+.selFacts > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 5px 0;
+  border-bottom: 1px solid var(--linha);
+}
+
+.selFacts dt {
+  color: var(--muted);
+  flex: none;
+}
+
+.selFacts dd {
+  margin: 0;
+  text-align: right;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.selLink {
+  justify-self: start;
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--accent);
+}
+
+@media (max-width: 1100px) {
+  .territory[data-selected] {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .selPanel {
+    max-height: none !important;
+  }
 }
 
 .split {

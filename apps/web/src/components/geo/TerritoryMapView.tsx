@@ -8,6 +8,7 @@ import { TERRITORY_COLORS } from '@agrointegra/map-styles';
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import MapGL, { AttributionControl, Layer, NavigationControl, Popup, ScaleControl, Source, type MapLayerMouseEvent, type MapRef } from 'react-map-gl/maplibre';
+import { WeatherCompact } from '@/components/clima/WeatherCompact';
 import { formatDay } from '@/lib/format';
 import type { TerritoryFeature, TerritoryMap } from '@/lib/geo';
 import { bounds, formatHa } from '@/lib/geoMeasure';
@@ -36,11 +37,22 @@ export default function TerritoryMapView({ data, height = 560 }: { data: Territo
     if (feature) setSelected({ feature, lng: e.lngLat.lng, lat: e.lngLat.lat });
   }
 
+  // O painel lateral muda a largura do mapa: avisa a MapLibre para redesenhar no tamanho novo.
+  const hasSelection = selected !== null;
+  useEffect(() => {
+    const id = requestAnimationFrame(() => mapRef.current?.resize());
+    return () => cancelAnimationFrame(id);
+  }, [hasSelection]);
+
   const initial = bounds(data.features.map((f) => f.geometry));
   // O id vai também em properties: a MapLibre só aceita ids numéricos na raiz da feature.
   const source = { ...data, features: data.features.map((f) => ({ ...f, properties: { ...f.properties, id: f.id } })) };
+  const selectedId = selected?.feature.id ?? '';
+  const isSelected = ['==', ['get', 'id'], selectedId];
+  const p = selected?.feature.properties;
 
   return (
+    <div className={styles.territory} data-selected={hasSelection || undefined}>
     <div className={styles.mapBox} style={{ height }}>
       <MapGL
         ref={mapRef}
@@ -83,28 +95,53 @@ export default function TerritoryMapView({ data, height = 560 }: { data: Territo
               'circle-stroke-width': 1.5,
             }}
           />
+          {/* Destaque da propriedade selecionada (contorno claro por cima). */}
+          <Layer
+            id="territory-selected-outline"
+            type="line"
+            filter={['all', POLY, isSelected] as never}
+            paint={{ 'line-color': '#ffffff', 'line-width': 4 }}
+          />
+          <Layer
+            id="territory-selected-point"
+            type="circle"
+            filter={['all', POINT, isSelected] as never}
+            paint={{ 'circle-radius': 11, 'circle-color': 'rgba(0,0,0,0)', 'circle-stroke-color': '#ffffff', 'circle-stroke-width': 3 }}
+          />
         </Source>
         {selected && (
-          <Popup longitude={selected.lng} latitude={selected.lat} onClose={() => setSelected(null)} closeOnClick={false} maxWidth="300px">
-            <div className={styles.popup}>
-              <strong>{selected.feature.properties.name}</strong>
-              <Link href={`/produtores/${selected.feature.properties.producerId}`}>{selected.feature.properties.producerName}</Link>
-              <span>{selected.feature.properties.community} · {selected.feature.properties.locality}</span>
-              {selected.feature.properties.mainActivity && <span>{selected.feature.properties.mainActivity}</span>}
-              <span>
-                Área declarada: <span className="num">{formatHa(selected.feature.properties.declaredAreaHa)}</span>
-              </span>
-              <span>
-                Área demarcada:{' '}
-                {selected.feature.properties.calculatedAreaHa !== null ? <span className="num">{formatHa(selected.feature.properties.calculatedAreaHa)}</span> : 'não demarcada'}
-              </span>
-              <span>Solicitações abertas: <span className="num">{selected.feature.properties.openRequests}</span></span>
-              <span>Última visita: {selected.feature.properties.lastVisitOn ? formatDay(selected.feature.properties.lastVisitOn) : 'nenhuma'}</span>
-              <Link href={`/propriedades/${selected.feature.id}/mapa`}>Abrir o mapa da propriedade</Link>
-            </div>
+          <Popup longitude={selected.lng} latitude={selected.lat} closeButton={false} closeOnClick={false} maxWidth="240px">
+            <strong className={styles.popupName}>{selected.feature.properties.name}</strong>
           </Popup>
         )}
       </MapGL>
+    </div>
+
+      {selected && p && (
+        <aside className={`card card-flush ${styles.selPanel}`} style={{ maxHeight: height }} aria-labelledby="sel-title">
+          <div className="card-head">
+            <h2 id="sel-title" className="card-title">{p.name}</h2>
+            <button type="button" className={`btn btn-icon ${styles.selClose}`} onClick={() => setSelected(null)} aria-label="Fechar o painel da propriedade">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>
+            </button>
+          </div>
+          <div className={styles.selBody}>
+            <dl className={styles.selFacts}>
+              <div><dt>Produtor</dt><dd><Link href={`/produtores/${p.producerId}`}>{p.producerName}</Link></dd></div>
+              <div><dt>Comunidade</dt><dd>{p.community} · {p.locality}</dd></div>
+              {p.mainActivity && <div><dt>Produção</dt><dd>{p.mainActivity}</dd></div>}
+              <div><dt>Área declarada</dt><dd className="num">{formatHa(p.declaredAreaHa)}</dd></div>
+              <div><dt>Área demarcada</dt><dd>{p.calculatedAreaHa !== null ? <span className="num">{formatHa(p.calculatedAreaHa)}</span> : 'não demarcada'}</dd></div>
+              <div><dt>Solicitações abertas</dt><dd className="num">{p.openRequests}</dd></div>
+              <div><dt>Última visita</dt><dd>{p.lastVisitOn ? formatDay(p.lastVisitOn) : 'nenhuma'}</dd></div>
+            </dl>
+            <Link href={`/propriedades/${selected.feature.id}/mapa`} className={styles.selLink}>Abrir o mapa da propriedade</Link>
+
+            <h3 className="section-bar">Previsão do tempo</h3>
+            <WeatherCompact propertyId={selected.feature.id} />
+          </div>
+        </aside>
+      )}
     </div>
   );
 }

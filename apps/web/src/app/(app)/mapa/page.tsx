@@ -43,7 +43,7 @@ export default function MapaTerritorialPage() {
 
   return (
     <>
-      <FieldHeading icon="land" eyebrow="Mapa territorial" title="Propriedades no mapa" description="Onde estão as propriedades atendidas, com a demarcação feita pelos técnicos. Clique numa propriedade para ver o resumo." />
+      <FieldHeading icon="land" eyebrow="Mapa territorial" title="Propriedades no mapa" description="Onde estão as propriedades atendidas, com a demarcação feita pelos técnicos. Clique numa propriedade para ver o resumo e a previsão do tempo." />
 
       <div className={styles.mapPage}>
         <div className={`card ${styles.filters}`}>
