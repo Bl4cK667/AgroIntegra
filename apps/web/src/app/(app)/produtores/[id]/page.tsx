@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { FormFeedback } from '@/components/property/FormFeedback';
 import { Toast } from '@/components/feedback/Toast';
 import { checkRequiredFields, clearFieldError, propertyArea, reportFieldError } from '@/components/property/formValidation';
-import { FieldHeading, FieldIcon, FieldLoading, FieldStats, SectionTitle, fieldStyles as ui } from '@/components/property/FieldUI';
+import { FieldHeading, FieldIcon, FieldLoading, SectionTitle, fieldStyles as ui } from '@/components/property/FieldUI';
 import { useParams } from 'next/navigation';
 import { FormEvent, useCallback, useEffect, useState } from 'react';
 import { LocationDraft, locationDraft, LocationFields, locationInput, LocationSummary } from '@/components/property/LocationFields';
@@ -27,8 +27,26 @@ import {
 import { formatArea, formatDate, formatDay } from '@/lib/format';
 import styles from './produtor.module.css';
 
+type Tab = 'propriedades' | 'solicitacoes' | 'visitas';
+const TABS: { key: Tab; label: string }[] = [
+  { key: 'propriedades', label: 'Propriedades' },
+  { key: 'solicitacoes', label: 'Solicitações' },
+  { key: 'visitas', label: 'Visitas' },
+];
+
 export default function ProdutorPage() {
   const { id } = useParams<{ id: string }>();
+  const [tab, setTab] = useState<Tab>('propriedades');
+
+  // Abas no padrão ARIA: setas esquerda/direita trocam a aba e levam o foco junto.
+  function onTabKey(e: React.KeyboardEvent<HTMLDivElement>) {
+    if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+    e.preventDefault();
+    const i = TABS.findIndex((t) => t.key === tab);
+    const next = TABS[(i + (e.key === 'ArrowRight' ? 1 : TABS.length - 1)) % TABS.length].key;
+    setTab(next);
+    requestAnimationFrame(() => document.getElementById(`tab-${next}`)?.focus());
+  }
   const [producer, setProducer] = useState<ProducerDetail | null>(null);
   const [requests, setRequests] = useState<ServiceRequest[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -43,7 +61,10 @@ export default function ProdutorPage() {
 
   useEffect(() => {
     const url = new URL(window.location.href);
+    const aba = url.searchParams.get('aba');
+    if (aba === 'solicitacoes' || aba === 'visitas' || aba === 'propriedades') setTab(aba);
     if (url.searchParams.get('solicitacao') === 'criada') {
+      setTab('solicitacoes');
       setSuccess('Solicitação registrada com sucesso.');
       url.searchParams.delete('solicitacao');
       window.history.replaceState(null, '', url.pathname + url.search);
@@ -61,6 +82,7 @@ export default function ProdutorPage() {
       window.history.replaceState(null, '', url.pathname + url.search);
     }
     if (url.searchParams.has('visita')) {
+      setTab('visitas');
       setSavedVisit(true);
       url.searchParams.delete('visita');
       window.history.replaceState(null, '', url.pathname + url.search);
@@ -106,11 +128,6 @@ export default function ProdutorPage() {
         Produtores
       </Link>
       <FieldHeading icon="people" eyebrow="Ficha do produtor" title={producer.name} description={producer.community} actions={<><Link href={`/relatorios?produtor=${id}`} className="btn btn-secondary"><FieldIcon name="report" /> Relatório em PDF</Link><Link href={`/produtores/${id}/editar`} className="btn btn-secondary">Editar dados</Link></>} />
-      <FieldStats items={[
-        { label: 'Propriedades', value: producer.properties.length, icon: 'land', note: 'Vinculadas a este cadastro' },
-        { label: 'Visitas registradas', value: producer.visits.length, icon: 'visit', note: 'Histórico do produtor' },
-        { label: 'Demandas abertas', value: requests.length, icon: 'note', note: 'Acompanhamento em andamento' },
-      ]} />
 
       {error && <p className="alert">{error}</p>}
       {warning && (
@@ -122,21 +139,20 @@ export default function ProdutorPage() {
       <Toast message={success} onClose={() => setSuccess(null)} />
       {savedVisit && (
         <p className="notice" role="status">
-          Visita salva. Ela já aparece na lista de visitas abaixo.
+          Visita salva. Ela já aparece na aba Visitas abaixo.
         </p>
       )}
 
-      <div className={styles.layout}>
-        <dl className={`card enter ${styles.facts}`} style={{ '--i': 3 } as React.CSSProperties}>
-          <div className="card-head"><span className="card-icon"><FieldIcon name="people" /></span><h2 className="card-title">Dados do produtor</h2></div>
-          <div>
-            <dt>CPF</dt>
-            <dd className="num">{producer.cpf}</dd>
-          </div>
-          <div>
-            <dt>Telefone</dt>
-            <dd>{producer.phone || <span className="muted">Não informado</span>}</dd>
-          </div>
+      {/* Bloco de identificação (padrão de ficha): dados à esquerda, cadastro e LGPD à direita. */}
+      <section className={`card ${styles.ident}`} aria-label="Identificação do produtor">
+        <dl className={styles.identMain}>
+          <div><dt>Nome</dt><dd><strong>{producer.name}</strong></dd></div>
+          <div><dt>CPF</dt><dd className="num">{producer.cpf}</dd></div>
+          <div><dt>Comunidade</dt><dd>{producer.community}</dd></div>
+          <div><dt>Telefone</dt><dd>{producer.phone || <span className="muted">Não informado</span>}</dd></div>
+        </dl>
+        <dl className={styles.identSide}>
+          <div><dt>Cadastro</dt><dd><span className="num">{formatDate(producer.createdAt)}</span>, por {producer.createdBy.name}</dd></div>
           <div>
             <dt>Consentimento LGPD</dt>
             <dd>
@@ -144,8 +160,7 @@ export default function ProdutorPage() {
                 <span className="badge badge-success">Registrado em <span className="num">{formatDate(producer.consentAt)}</span></span>
               ) : (
                 <>
-                  <span className="badge badge-warning">Pendente</span>
-                  <br />
+                  <span className="badge badge-warning">Pendente</span>{' '}
                   <button type="button" className="btn-link" onClick={onConsent} disabled={consentSaving}>
                     {consentSaving ? 'Registrando…' : 'Registrar consentimento'}
                   </button>
@@ -153,21 +168,39 @@ export default function ProdutorPage() {
               )}
             </dd>
           </div>
-          <div>
-            <dt>Cadastro</dt>
-            <dd>
-              <span className="num">{formatDate(producer.createdAt)}</span>, por {producer.createdBy.name}
-            </dd>
-          </div>
         </dl>
+        <p className={`counters ${styles.identCounters}`}>
+          <span>Propriedades: <strong className="num">{producer.properties.length}</strong></span>
+          <span>Visitas: <strong className="num">{producer.visits.length}</strong></span>
+          <span className={requests.length ? styles.counterWarn : undefined}>Solicitações abertas: <strong className="num">{requests.length}</strong></span>
+        </p>
+      </section>
 
-        <section className={styles.sections}>
-          <div className="card enter" style={{ '--i': 4 } as React.CSSProperties}>
+      <div className={`tabs ${styles.tabs}`} role="tablist" aria-label="Seções da ficha" onKeyDown={onTabKey}>
+        {TABS.map((t) => (
+          <button
+            key={t.key}
+            type="button"
+            role="tab"
+            id={`tab-${t.key}`}
+            aria-selected={tab === t.key}
+            aria-controls={`panel-${t.key}`}
+            tabIndex={tab === t.key ? 0 : -1}
+            onClick={() => setTab(t.key)}
+          >
+            {t.label} <span className={styles.tabCount}>{t.key === 'propriedades' ? producer.properties.length : t.key === 'solicitacoes' ? requests.length : producer.visits.length}</span>
+          </button>
+        ))}
+      </div>
+
+      <div className={`tab-panel ${styles.panel}`}>
+        {tab === 'propriedades' && (
+          <div role="tabpanel" id="panel-propriedades" aria-labelledby="tab-propriedades">
           <div className={styles.sectionHead}>
-            <SectionTitle icon="land">Propriedades</SectionTitle>
+            <h2 className={styles.panelTitle}>Propriedades</h2>
             {!adding && (
-              <button type="button" className="btn btn-secondary" onClick={() => (setAdding(true), setEditingId(null))}>
-                Adicionar propriedade
+              <button type="button" className="btn btn-primary" onClick={() => (setAdding(true), setEditingId(null))}>
+                <FieldIcon name="plus" /> Adicionar propriedade
               </button>
             )}
           </div>
@@ -250,11 +283,13 @@ export default function ProdutorPage() {
           </div>
 
           </div>
-          <div className="card enter" style={{ '--i': 5 } as React.CSSProperties}>
+        )}
+        {tab === 'solicitacoes' && (
+          <div role="tabpanel" id="panel-solicitacoes" aria-labelledby="tab-solicitacoes">
           <div className={styles.sectionHead}>
-            <SectionTitle icon="note">Solicitações abertas <span className="badge badge-neutral">{requests.length}</span></SectionTitle>
-            <Link href={`/solicitacoes/nova?produtor=${id}`} className="btn btn-secondary">
-              Nova solicitação
+            <h2 className={styles.panelTitle}>Solicitações abertas</h2>
+            <Link href={`/solicitacoes/nova?produtor=${id}`} className="btn btn-primary">
+              <FieldIcon name="plus" /> Nova solicitação
             </Link>
           </div>
           <div className="table-wrap">
@@ -281,9 +316,11 @@ export default function ProdutorPage() {
                         <PriorityTag priority={r.priority} />
                       </td>
                       <td className="nowrap" data-label="Situação">
-                        {STATUS_LABEL[r.status]}
+                        <span className={r.status === 'SCHEDULED' ? 'badge badge-info' : r.status === 'IN_REVIEW' ? 'badge badge-warning' : 'badge badge-neutral'}>
+                          {STATUS_LABEL[r.status]}
+                        </span>
                         {r.status === 'SCHEDULED' && r.scheduledFor && (
-                          <span className="muted num"> · {formatDay(r.scheduledFor)}</span>
+                          <span className="muted num"> {formatDay(r.scheduledFor)}</span>
                         )}
                       </td>
                       <td className="right" data-label="Ação">
@@ -299,11 +336,13 @@ export default function ProdutorPage() {
           </div>
 
           </div>
-          <div className="card enter" style={{ '--i': 6 } as React.CSSProperties}>
+        )}
+        {tab === 'visitas' && (
+          <div role="tabpanel" id="panel-visitas" aria-labelledby="tab-visitas">
           <div className={styles.sectionHead}>
-            <SectionTitle icon="visit">Visitas <span className="badge badge-neutral">{producer.visits.length}</span></SectionTitle>
+            <h2 className={styles.panelTitle}>Visitas</h2>
             <Link href={`/visitas/nova?produtor=${id}`} className="btn btn-primary">
-              Registrar visita
+              <FieldIcon name="plus" /> Registrar visita
             </Link>
           </div>
           <div className="table-wrap">
@@ -317,7 +356,7 @@ export default function ProdutorPage() {
             )}
           </div>
           </div>
-        </section>
+        )}
       </div>
     </>
   );

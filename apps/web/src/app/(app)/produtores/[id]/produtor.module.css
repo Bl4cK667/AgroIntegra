@@ -1,39 +1,91 @@
-.layout {
+/* Ficha do produtor no padrão de referência: bloco de identificação + abas (docs/design-system.md). */
+
+.ident {
   display: grid;
-  grid-template-columns: 280px minmax(0, 1fr);
-  gap: 24px;
-  align-items: start;
+  grid-template-columns: minmax(0, 1fr) minmax(220px, auto);
+  gap: var(--space-2) var(--space-6);
+  margin-bottom: var(--space-4);
+  font-size: var(--text-sm);
 }
 
-/* Ficha do produtor: rótulo pequeno acima do valor, separados por linhas finas. */
-.facts {
-  margin: 0;
+.identMain,
+.identSide {
   display: grid;
-}
-
-.sections { display: grid; gap: 24px; min-width: 0; }
-.sections > div { min-width: 0; }
-.facts dd { overflow-wrap: anywhere; }
-.facts > :global(.card-head) { padding-bottom: 16px; }
-
-.facts > div {
-  padding: 12px 0;
-  border-bottom: 1px solid var(--linha);
-}
-
-.facts > div:first-child {
-  padding-top: 0;
-}
-
-.facts dt {
-  font-size: 0.85rem;
-  color: var(--sutil);
-  margin-bottom: 2px;
-}
-
-.facts dd {
+  gap: 2px;
   margin: 0;
-  font-weight: 500;
+  align-content: start;
+}
+
+.identMain > div,
+.identSide > div {
+  display: flex;
+  gap: 6px;
+  align-items: baseline;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.identMain dt::after,
+.identSide dt::after {
+  content: ':';
+}
+
+.identMain dt,
+.identSide dt {
+  color: var(--muted);
+}
+
+.identMain dd,
+.identSide dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.identSide {
+  text-align: right;
+}
+
+.identSide > div {
+  justify-content: flex-end;
+}
+
+.identCounters {
+  grid-column: 1 / -1;
+  margin: var(--space-1) 0 0;
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--linha);
+}
+
+.counterWarn {
+  color: var(--warning);
+}
+
+.tabs {
+  margin: 0;
+}
+
+.tabCount {
+  display: inline-block;
+  min-width: 20px;
+  margin-left: 4px;
+  padding: 0 5px;
+  border-radius: var(--radius-sm);
+  background: var(--card-2);
+  border: 1px solid var(--linha);
+  color: var(--muted);
+  font-size: var(--text-xs);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+.panel {
+  min-width: 0;
+}
+
+.panelTitle {
+  margin: 0;
+  font-size: var(--text-md);
+  font-weight: var(--weight-panel-title);
 }
 
 .sectionHead {
@@ -45,33 +97,55 @@
   flex-wrap: wrap;
 }
 
-.sectionHead > :global(.card-head) { margin-bottom: 0; }
-
-.sectionGap {
-  margin-top: 32px;
+.sectionHead > :global(.card-head) {
+  margin-bottom: 0;
 }
 
 .propertyForm {
   display: grid;
   gap: 14px;
-  padding: 20px;
+  padding: 16px;
   margin-bottom: 14px;
   background: var(--card-2);
-  border: 1px solid var(--card-border);
+  border: 1px solid var(--linha);
   border-radius: var(--radius-md);
 }
 
-.propertyFields { display: grid; gap: 16px; min-width: 0; border: 0; padding: 0; margin: 0; }
-
-@media (max-width: 640px) {
-  .facts { padding: 18px; }
-  .propertyForm { padding: 14px; }
-  .sectionHead > button, .sectionHead > a { width: 100%; }
+.propertyFields {
+  display: grid;
+  gap: 16px;
+  min-width: 0;
+  border: 0;
+  padding: 0;
+  margin: 0;
 }
 
-@media (max-width: 860px) {
-  .layout {
-    grid-template-columns: 1fr;
-    gap: 24px;
+@media (max-width: 760px) {
+  .ident {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .identSide {
+    text-align: left;
+  }
+
+  .identSide > div {
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 640px) {
+  .propertyForm {
+    padding: 14px;
+  }
+
+  /* As três abas cabem numa tela de 360 px sem rolar. */
+  .tabs > button[role='tab'] {
+    padding: 7px 8px;
+  }
+
+  .sectionHead > button,
+  .sectionHead > a {
+    width: 100%;
   }
 }
