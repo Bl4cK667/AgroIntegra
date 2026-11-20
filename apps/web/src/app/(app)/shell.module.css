@@ -26,15 +26,15 @@
   grid-template-columns: 80px minmax(0, 1fr);
 }
 
+/* Topbar em duas faixas: conteúdo em largura total, como no padrão de referência (docs/design-system.md). */
 .shell[data-nav='topbar'] {
   grid-template-columns: minmax(0, 1fr);
-  grid-template-rows: auto 1fr;
-  align-content: start;
+  grid-template-rows: auto 1fr auto;
 }
 
 .shell[data-nav='topbar'] .content {
-  margin-inline: auto;
-  padding-top: 28px;
+  max-width: none;
+  padding: 20px 24px 32px;
 }
 
 .content {
@@ -44,9 +44,21 @@
   padding: 32px 40px 56px;
 }
 
+/* Rodapé discreto, uma linha centralizada. Só no estilo Topbar (a Sidebar tem a marca no menu). */
+.footer {
+  display: none;
+}
+
+.shell[data-nav='topbar'] .footer {
+  display: block;
+  padding: 12px 16px 20px;
+  text-align: center;
+  color: var(--muted);
+  font-size: var(--text-xs);
+}
+
 @media (max-width: 1100px) {
-  .content,
-  .shell[data-nav='topbar'] .content {
+  .content {
     padding: 28px 24px 48px;
   }
 }
@@ -65,7 +77,11 @@
 
   /* Topbar no celular não tem abas inferiores: só o respiro da área segura */
   .shell[data-nav='topbar'] .content {
-    padding: 18px 16px calc(32px + env(safe-area-inset-bottom));
+    padding: 16px 16px 16px;
+  }
+
+  .shell[data-nav='topbar'] .footer {
+    padding-bottom: calc(20px + env(safe-area-inset-bottom));
   }
 }
 

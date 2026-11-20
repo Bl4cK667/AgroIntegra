@@ -1,0 +1,53 @@
+/* Tokens de design que não dependem do tema: raios, espaçamento, tipografia, tamanhos e movimento.
+   As cores ficam em themes.css (uma paleta por tema). Referência visual: docs/design-system.md. */
+
+:root {
+  /* Raios: discretos. Avatar e pontos de status continuam redondos (50%). */
+  --radius-sm: 2px;
+  --radius-md: 3px;
+  --radius-lg: 4px;
+  --radius-pill: 2px; /* nome mantido por compatibilidade; não há mais formato de pílula */
+  --radius: 4px;
+
+  /* Espaçamento em passos de 4px */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+
+  /* Tipografia */
+  --fonte: var(--font-sans), 'Segoe UI', system-ui, sans-serif;
+  --text-xs: 0.8rem;    /* 12px: ajuda sob campo, paginação, badge */
+  --text-sm: 0.8667rem; /* 13px: rótulo, menu, cabeçalho de tabela */
+  --text-md: 0.9333rem; /* 14px: corpo, células, título de painel */
+  --text-base: 1rem;    /* 15px */
+  --text-lg: 1.1333rem; /* 17px: título de seção */
+  --text-xl: 1.4667rem; /* 22px: título de página */
+  --weight-page-title: 400; /* título de página grande e leve (padrão SGP) */
+  --weight-panel-title: 600;
+
+  /* Controles (botões, campos) */
+  --control-h: 34px;
+  --control-h-sm: 28px;
+  --control-h-touch: 44px; /* alvo mínimo no celular */
+
+  /* Moldura: cabeçalho em duas faixas, painéis e formulário horizontal */
+  --header-top-h: 44px;
+  --header-menu-h: 38px;
+  --panel-head-pad: 8px 12px;
+  --panel-pad: 12px;
+  --cell-pad: 7px 10px;
+  --label-col: 160px; /* coluna do rótulo no formulário horizontal */
+
+  /* Movimento: só quando responde a uma ação, curto e sem efeito de mola. */
+  --ease-out: cubic-bezier(0.2, 0, 0, 1);
+  --ease-spring: var(--ease-out);
+  --dur-fast: 120ms;
+  --dur-med: 160ms;
+  --dur-slow: 200ms;
+  --row-h: 84px;
+
+  --focus: var(--accent);
+}

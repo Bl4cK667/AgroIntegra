@@ -68,6 +68,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           <Sidebar user={user} onLogout={logout} collapsed={collapsed} onCollapsedChange={setCollapsed} />
         )}
         <main className={styles.content}>{children}</main>
+        <footer className={styles.footer}>AgroIntegra · Integra Tech</footer>
       </div>
     </SessionContext.Provider>
   );

@@ -354,6 +354,64 @@
   --signature-muted: #5b675f;
 }
 
+/* Cabeçalho em duas faixas, faixa de título de painel, seção escura e texto sobre cor de status.
+   Mesma ordem dos blocos acima, para que cada paleta sobrescreva o :root. Ver docs/design-system.md. */
+
+:root, [data-palette="pure-light"], [data-palette="sand-earth"] {
+  --header-top-bg: #17472f;
+  --header-menu-bg: #1f5a3d;
+  --header-ink: #ffffff;
+  --header-ink-muted: #cfe0d6;
+  --header-hover: rgba(255, 255, 255, 0.1);
+  --header-active: rgba(255, 255, 255, 0.18);
+  --header-line: rgba(255, 255, 255, 0.14);
+  --panel-head-bg: #f0f2f1;
+  --section-dark-bg: #3f4a44;
+  --section-dark-ink: #ffffff;
+  --on-status: #ffffff; /* texto de badge sólido */
+  --row-alert-bg: var(--perigo-fundo);
+  --row-warning-bg: var(--warning-bg);
+}
+
+[data-palette="sand-earth"] {
+  --panel-head-bg: #efede7;
+}
+
+[data-palette="midnight-black"] {
+  --header-top-bg: #111516;
+  --header-menu-bg: #191d1f;
+}
+
+[data-palette="forest-dark"] {
+  --header-top-bg: #0f1612;
+  --header-menu-bg: #161e1a;
+}
+
+[data-palette="ocean-blue"] {
+  --header-top-bg: #10161b;
+  --header-menu-bg: #171e25;
+}
+
+[data-palette="graphite"] {
+  --header-top-bg: #131416;
+  --header-menu-bg: #1b1c1e;
+}
+
+/* Comum aos quatro temas escuros: cabeçalho neutro com borda, sem verde chapado. */
+[data-palette="midnight-black"], [data-palette="forest-dark"], [data-palette="ocean-blue"], [data-palette="graphite"] {
+  --header-ink: var(--ink);
+  --header-ink-muted: var(--muted);
+  --header-hover: color-mix(in srgb, var(--ink) 7%, transparent);
+  --header-active: var(--nav-active-bg);
+  --header-line: var(--nav-line);
+  --panel-head-bg: var(--card-2);
+  --section-dark-bg: var(--linha);
+  --section-dark-ink: var(--ink);
+  --on-status: #10140f; /* as cores de status do escuro são claras: texto escuro */
+  --row-alert-bg: var(--perigo-fundo);
+  --row-warning-bg: var(--warning-bg);
+}
+
 /* Temporário durante a troca: não interfere nas microinterações usuais. */
 html[data-theme-switching] body,
 html[data-theme-switching] :is(header, aside, main, section, article, nav, dialog, button, a, input, select, textarea, th, td, label, [role="dialog"]) {
