@@ -15,7 +15,15 @@ const MONTHS = [
 ];
 
 // Esqueleto com o mesmo desenho do layout padrão, para a página não "pular" ao carregar.
-const SKELETON = [3, 3, 3, 3, 8, 4, 8, 4].map((w, i) => ({ w, h: i < 4 ? 2 : 4 }));
+const SKELETON = [
+  { w: 4, h: 8 },
+  { w: 8, h: 4 },
+  { w: 8, h: 4 },
+  { w: 8, h: 4 },
+  { w: 4, h: 4 },
+  { w: 8, h: 4 },
+  { w: 4, h: 4 },
+];
 
 // Todos os números vêm da API, calculados do banco a cada carregamento.
 // A disposição dos widgets é do usuário e fica salva neste navegador.

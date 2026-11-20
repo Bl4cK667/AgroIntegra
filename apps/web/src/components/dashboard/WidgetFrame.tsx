@@ -59,7 +59,7 @@ export function WidgetFrame({ def, item, data, editing, dragHandle, onRemove, on
       </header>
 
       {/* Em edição o corpo fica inerte: nada navega nem rouba o arraste. */}
-      <div className={styles.frameBody} inert={editing || undefined}>
+      <div className={`${styles.frameBody} ${def.flush ? styles.frameBodyFlush : ''}`} inert={editing || undefined}>
         {def.render(props)}
       </div>
 

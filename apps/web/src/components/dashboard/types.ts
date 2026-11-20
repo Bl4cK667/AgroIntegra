@@ -24,6 +24,7 @@ export interface WidgetDef {
   minSize: WidgetSize;
   maxSize: WidgetSize;
   href?: string; // link "ver tudo" no cabeçalho (opcional)
+  flush?: boolean; // corpo sem margem interna (tabela de borda a borda)
   headerExtra?: (props: WidgetProps) => ReactNode; // ex.: pílulas de alternância, legenda
   render: (props: WidgetProps) => ReactNode; // apenas o corpo; o card/cabeçalho é do WidgetFrame
 }
