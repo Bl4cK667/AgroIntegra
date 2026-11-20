@@ -1,181 +1,50 @@
-/* Quadro de solicitações: quatro colunas; no celular, colunas deslizáveis lado a lado. */
+/* Solicitações em lista (mesmo padrão de Cadastros > Produtores). A linha abre os detalhes logo abaixo. */
 
 .filters {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
   flex-wrap: wrap;
-  margin: 4px 0 16px;
+  gap: var(--space-2) var(--space-3);
+  margin-bottom: var(--space-3);
 }
 
-.board {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 16px;
-  align-items: start;
-}
-
-.column {
-  --accent: var(--chart-1);
-  min-width: 0;
-  min-height: 260px;
-  padding: 12px;
-  border-radius: var(--radius-lg);
-  background: var(--card-2);
-  border: 1px solid var(--card-border);
-  transition: background-color var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out);
-}
-
-.column[data-status='NEW'] { --accent: var(--chart-1); }
-.column[data-status='IN_REVIEW'] { --accent: var(--chart-2); }
-.column[data-status='SCHEDULED'] { --accent: var(--chart-4); }
-.column[data-status='DONE'] { --accent: var(--muted); }
-
-.dropTarget {
-  border-color: var(--accent);
-  border-style: dashed;
-  background: color-mix(in srgb, var(--accent) 9%, var(--card-2));
-}
-
-.columnHead {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  padding: 4px 6px 12px;
-}
-
-.columnHead h2 {
-  font-size: 0.92rem;
-  font-weight: 600;
-  color: var(--ink);
-}
-
-.dot {
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  background: var(--accent);
-}
-
-.total {
-  margin-left: auto;
-  min-width: 26px;
-  padding: 1px 8px;
-  border-radius: var(--radius-pill);
-  background: var(--card);
-  border: 1px solid var(--card-border);
-  color: var(--muted);
-  font-size: 0.8rem;
-  font-weight: 600;
-  text-align: center;
-}
-
-.columnEmpty {
-  margin: 6px;
-  padding: 22px 10px;
-  border: 1px dashed var(--card-border);
-  border-radius: var(--radius-md);
-  color: var(--muted);
-  font-size: 0.86rem;
-  text-align: center;
-}
-
-.cards {
-  list-style: none;
-  margin: 0;
+/* O assunto é um botão (teclado e leitor de tela), com a aparência do link de nome em Produtores. */
+.rowButton {
   padding: 0;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: 10px;
-}
-
-.card {
-  position: relative;
-  overflow: hidden;
-  background: var(--card);
-  border: 1px solid var(--card-border);
-  border-radius: var(--radius-md);
-  cursor: grab;
-  transition: border-color var(--dur-fast) var(--ease-out);
-}
-
-/* faixa de prioridade à esquerda */
-.card::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 3px;
-  border-radius: 0;
-  background: transparent;
-}
-
-.card[data-priority='HIGH']::before { background: var(--perigo, #b4412f); }
-.card[data-priority='MEDIUM']::before { background: var(--warning); }
-
-.card:hover {
-  border-color: var(--linha-forte);
-}
-
-.card[data-open] {
-  cursor: default;
-  border-color: var(--accent);
-}
-
-.dragging {
-  opacity: 0.4;
-}
-
-.cardMain {
-  display: grid;
-  gap: 6px;
-  width: 100%;
-  padding: 12px 14px;
   border: 0;
   background: none;
-  color: inherit;
+  color: var(--ink);
+  font-weight: 500;
   text-align: left;
   cursor: pointer;
 }
 
-.cardTop {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 8px;
+.rowButton:hover {
+  color: var(--accent);
+  text-decoration: underline;
 }
 
-.when {
-  color: var(--muted);
-  font-size: 0.8rem;
-  font-weight: 600;
+:global(.table) tbody tr.rowOpen td {
+  background: var(--card-2);
 }
 
-.subject {
-  font-weight: 600;
-  line-height: 1.32;
-  color: var(--ink);
-}
-
-.who {
-  color: var(--muted);
-  font-size: 0.84rem;
-}
-
-.detail {
-  display: grid;
-  gap: 12px;
-  padding: 12px 14px 14px;
-  border-top: 1px solid var(--card-border);
+:global(.table) tbody tr.detailRow > td {
+  padding: 0;
   background: color-mix(in srgb, var(--card-2) 55%, var(--card));
   cursor: default;
 }
 
+.detail {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+  gap: var(--space-3) var(--space-5);
+  padding: var(--space-3) var(--space-4) var(--space-4);
+  border-left: 3px solid var(--accent);
+}
+
 .description {
+  grid-column: 1 / -1;
   margin: 0;
-  font-size: 0.9rem;
+  font-size: var(--text-md);
   white-space: pre-wrap;
 }
 
@@ -183,12 +52,13 @@
   margin: 0;
   display: grid;
   gap: 8px;
-  font-size: 0.84rem;
+  align-content: start;
+  font-size: var(--text-sm);
 }
 
 .meta dt {
   color: var(--muted);
-  font-size: 0.74rem;
+  font-size: var(--text-xs);
   font-weight: 600;
 }
 
@@ -198,95 +68,66 @@
 
 .controls {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
-  gap: 8px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-2) var(--space-3);
+  align-content: start;
 }
 
-.controls .input,
-.schedule .input {
+.controls .input {
   min-width: 0;
-  min-height: 38px;
-  padding: 4px 10px;
-  font-size: 0.88rem;
-}
-
-.controls .field > span,
-.schedule .field > span {
-  font-size: 0.78rem;
 }
 
 .schedule {
+  grid-column: 1 / -1;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-  gap: 8px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--space-2);
   align-items: end;
 }
 
-.schedule .btn {
-  min-height: 38px;
-  padding: 0 12px;
-  font-size: 0.86rem;
-}
-
 .links {
+  grid-column: 1 / -1;
   display: flex;
   align-items: center;
   gap: 14px;
   flex-wrap: wrap;
-  font-size: 0.88rem;
+  font-size: var(--text-sm);
 }
 
-.links .btn {
-  min-height: 38px;
-  font-size: 0.86rem;
-}
-
-@media (max-width: 1100px) {
-  .board {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+@media (max-width: 760px) {
+  .detail {
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
-/* celular: colunas lado a lado com rolagem por "encaixe", como um quadro de verdade */
 @media (max-width: 640px) {
-  .board {
-    display: flex;
-    gap: 12px;
-    margin: 0 -16px;
-    padding: 0 16px 8px;
-    overflow-x: auto;
-    scroll-snap-type: x mandatory;
-    scroll-padding: 0 16px;
-    scrollbar-width: none;
-  }
-
-  .board::-webkit-scrollbar {
-    display: none;
-  }
-
-  .column {
-    flex: 0 0 86%;
-    scroll-snap-align: start;
-    min-height: 0;
-  }
-
-  .filters :global(.count) {
-    display: none;
-  }
-
   .filters :global(.segmented) {
     width: 100%;
     overflow-x: auto;
   }
-}
 
-@media (prefers-reduced-motion: reduce) {
-  .card,
-  .detail {
-    animation: none;
+  .filters :global(.segmented) button {
+    flex: none;
   }
 
-  .card:hover {
-    transform: none;
+  /* No celular a tabela vira linhas empilhadas (responsiveTable); o detalhe ocupa a largura toda. */
+  :global(.table) tbody tr.detailRow {
+    display: block;
+    padding: 0;
+    margin-top: -6px;
+    border-top: 0;
+    border-radius: 0 0 var(--radius-md) var(--radius-md);
+  }
+
+  :global(.table) tbody tr.detailRow > td {
+    display: block;
+  }
+
+  :global(.table) tbody tr.detailRow > td::before {
+    display: none;
+  }
+
+  .schedule {
+    grid-template-columns: minmax(0, 1fr);
   }
 }

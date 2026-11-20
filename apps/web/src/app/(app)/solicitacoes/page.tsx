@@ -1,9 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import { useCallback, useEffect, useState } from 'react';
+import { Fragment, useCallback, useEffect, useState } from 'react';
 import { Toast } from '@/components/feedback/Toast';
-import { FieldHeading, FieldIcon, FieldLoading, FieldStats } from '@/components/property/FieldUI';
+import { FieldHeading, FieldIcon, FieldLoading, FieldStats, fieldStyles as ui } from '@/components/property/FieldUI';
 import { PriorityTag } from '@/components/request/PriorityTag';
 import {
   ApiError,
@@ -19,25 +19,44 @@ import {
   STATUS_ORDER,
 } from '@/lib/api';
 import { formatDate, formatDay, todayIso } from '@/lib/format';
+import { useDebounced } from '@/lib/useDebounced';
 import styles from './quadro.module.css';
 
-// Concluídas mostram só as mais recentes, para o quadro não crescer sem fim.
-const DONE_LIMIT = 8;
+const PAGE_SIZE = 20;
+
+type StatusFilter = 'OPEN' | RequestStatus | 'ALL';
+const STATUS_FILTERS: { key: StatusFilter; label: string }[] = [
+  { key: 'OPEN', label: 'Em aberto' },
+  ...STATUS_ORDER.map((s) => ({ key: s as StatusFilter, label: s === 'DONE' ? 'Concluídas' : STATUS_LABEL[s] })),
+  { key: 'ALL', label: 'Todas' },
+];
+
+// Cor do badge de situação: concluída = sucesso, agendada = destaque, as demais neutras.
+const STATUS_BADGE: Record<RequestStatus, string> = {
+  NEW: 'badge badge-neutral',
+  IN_REVIEW: 'badge badge-warning',
+  SCHEDULED: 'badge badge-info',
+  DONE: 'badge badge-success',
+};
+
+const normalize = (value: string) => value.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
 
 export default function SolicitacoesPage() {
   const [items, setItems] = useState<ServiceRequest[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [open, setOpen] = useState<string | null>(null);
-  const [dragging, setDragging] = useState<string | null>(null);
-  const [over, setOver] = useState<RequestStatus | null>(null);
+  const [status, setStatus] = useState<StatusFilter>('OPEN');
   const [filter, setFilter] = useState<RequestPriority | 'ALL'>('ALL');
+  const [search, setSearch] = useState('');
+  const term = normalize(useDebounced(search.trim()));
+  const [page, setPage] = useState(1);
   const [saved, setSaved] = useState<string | null>(null);
 
   // Volta de "Nova solicitação" com ?salvo=1: confirma e limpa o endereço.
   useEffect(() => {
     const url = new URL(window.location.href);
     if (url.searchParams.get('salvo') !== '1') return;
-    setSaved('Solicitação registrada com sucesso. Ela já está na coluna Nova.');
+    setSaved('Solicitação registrada com sucesso. Ela já está na lista, com a situação Nova.');
     url.searchParams.delete('salvo');
     window.history.replaceState(window.history.state, '', url.pathname + url.search);
   }, []);
@@ -49,6 +68,9 @@ export default function SolicitacoesPage() {
   }, []);
 
   useEffect(load, [load]);
+
+  // Filtro mudou: volta para a primeira página.
+  useEffect(() => setPage(1), [status, filter, term]);
 
   // Troca a solicitação na tela na hora e confirma com a API; se falhar, recarrega.
   async function apply(id: string, change: () => Promise<ServiceRequest>, optimistic: Partial<ServiceRequest>) {
@@ -63,27 +85,33 @@ export default function SolicitacoesPage() {
     }
   }
 
-  const move = (r: ServiceRequest, status: RequestStatus, scheduledFor?: string) =>
-    r.status === status && !scheduledFor
+  const move = (r: ServiceRequest, next: RequestStatus, scheduledFor?: string) =>
+    r.status === next && !scheduledFor
       ? undefined
-      : apply(r.id, () => moveRequest(r.id, status, scheduledFor), { status, ...(scheduledFor ? { scheduledFor } : {}) });
+      : apply(r.id, () => moveRequest(r.id, next, scheduledFor), { status: next, ...(scheduledFor ? { scheduledFor } : {}) });
 
   const prioritize = (r: ServiceRequest, priority: RequestPriority) =>
     apply(r.id, () => setRequestPriority(r.id, priority), { priority });
 
-  const columns = STATUS_ORDER.map((status) => {
-    let list = (items ?? []).filter((r) => r.status === status && (filter === 'ALL' || r.priority === filter));
-    if (status === 'DONE') {
-      list = list.sort((a, b) => (b.completedAt ?? '').localeCompare(a.completedAt ?? ''));
-    } else {
-      list = list.sort(
-        (a, b) => PRIORITY_ORDER.indexOf(a.priority) - PRIORITY_ORDER.indexOf(b.priority) || a.createdAt.localeCompare(b.createdAt),
-      );
-    }
-    return { status, total: list.length, list: status === 'DONE' ? list.slice(0, DONE_LIMIT) : list };
-  });
-
   const openItems = (items ?? []).filter((r) => r.status !== 'DONE');
+
+  // Em aberto: prioridade e depois a mais antiga. Concluídas: a mais recente primeiro. Todas: pela ordem do fluxo.
+  const byPriority = (a: ServiceRequest, b: ServiceRequest) =>
+    PRIORITY_ORDER.indexOf(a.priority) - PRIORITY_ORDER.indexOf(b.priority) || a.createdAt.localeCompare(b.createdAt);
+  const byDone = (a: ServiceRequest, b: ServiceRequest) => (b.completedAt ?? '').localeCompare(a.completedAt ?? '');
+  const rows = (items ?? [])
+    .filter((r) => (status === 'ALL' ? true : status === 'OPEN' ? r.status !== 'DONE' : r.status === status))
+    .filter((r) => filter === 'ALL' || r.priority === filter)
+    .filter((r) => !term || normalize(`${r.subject} ${r.producer.name} ${r.producer.community}`).includes(term))
+    .sort((a, b) =>
+      a.status === 'DONE' && b.status === 'DONE'
+        ? byDone(a, b)
+        : STATUS_ORDER.indexOf(a.status) - STATUS_ORDER.indexOf(b.status) || byPriority(a, b),
+    );
+  const pages = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
+  const current = Math.min(page, pages);
+  const visible = rows.slice((current - 1) * PAGE_SIZE, current * PAGE_SIZE);
+  const first = rows.length === 0 ? 0 : (current - 1) * PAGE_SIZE + 1;
 
   return (
     <>
@@ -91,7 +119,7 @@ export default function SolicitacoesPage() {
         icon="inbox"
         eyebrow="Fluxo de atendimento"
         title="Solicitações"
-        description="Pedidos de atendimento dos produtores, da chegada à visita. Arraste os cartões entre as colunas."
+        description="Pedidos de atendimento dos produtores, da chegada à visita. Selecione uma linha para ver os detalhes e mudar a situação."
         actions={
           <Link href="/solicitacoes/nova" className="btn btn-primary">
             <FieldIcon name="plus" /> Nova solicitação
@@ -110,109 +138,147 @@ export default function SolicitacoesPage() {
       )}
 
       <Toast message={saved} onClose={() => setSaved(null)} />
-      {error && <p className="alert" role="alert">{error}</p>}
-      {!items && !error && <FieldLoading />}
 
-      {items && (
-        <div className={`${styles.filters} enter`} style={{ '--i': 4 } as React.CSSProperties}>
-          <div className="segmented" role="group" aria-label="Filtrar por prioridade">
-            {(['ALL', ...PRIORITY_ORDER] as const).map((p) => (
-              <button key={p} type="button" aria-pressed={filter === p} onClick={() => setFilter(p)}>
-                {p === 'ALL' ? 'Todas' : PRIORITY_LABEL[p]}
+      <section className={`card enter ${ui.listCard}`} style={{ '--i': 4 } as React.CSSProperties}>
+        <div className="toolbar">
+          <div className={ui.search}>
+            <FieldIcon name="search" />
+            <input
+              className="input"
+              type="search"
+              placeholder="Buscar por assunto, produtor ou comunidade"
+              aria-label="Buscar por assunto, produtor ou comunidade"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+          {items && (
+            <span className="count num">
+              {rows.length} {rows.length === 1 ? 'solicitação' : 'solicitações'}
+            </span>
+          )}
+        </div>
+
+        <div className={styles.filters}>
+          <div className="segmented" role="group" aria-label="Filtrar por situação">
+            {STATUS_FILTERS.map((f) => (
+              <button key={f.key} type="button" aria-pressed={status === f.key} onClick={() => setStatus(f.key)}>
+                {f.label}
               </button>
             ))}
           </div>
-          <span className="count">Selecione um cartão para ver os detalhes.</span>
+          <div className="segmented" role="group" aria-label="Filtrar por prioridade">
+            {(['ALL', ...PRIORITY_ORDER] as const).map((p) => (
+              <button key={p} type="button" aria-pressed={filter === p} onClick={() => setFilter(p)}>
+                {p === 'ALL' ? 'Todas as prioridades' : PRIORITY_LABEL[p]}
+              </button>
+            ))}
+          </div>
         </div>
-      )}
 
-      {items && (
-        <div className={styles.board}>
-          {columns.map((col, ci) => (
-            <section
-              key={col.status}
-              className={`${styles.column} ${over === col.status ? styles.dropTarget : ''} enter`}
-              style={{ '--i': ci + 5 } as React.CSSProperties}
-              data-status={col.status}
-              aria-label={STATUS_LABEL[col.status]}
-              onDragOver={(e) => {
-                if (!dragging) return;
-                e.preventDefault();
-                setOver(col.status);
-              }}
-              onDragLeave={() => setOver((o) => (o === col.status ? null : o))}
-              onDrop={(e) => {
-                e.preventDefault();
-                const r = items.find((x) => x.id === dragging);
-                if (r) move(r, col.status);
-                setDragging(null);
-                setOver(null);
-              }}
-            >
-              <header className={styles.columnHead}>
-                <span className={styles.dot} aria-hidden="true" />
-                <h2>{STATUS_LABEL[col.status]}</h2>
-                <span className={`${styles.total} num`}>{col.total}</span>
-              </header>
+        {error && <p className="alert" role="alert">{error}</p>}
+        {!items && !error && <FieldLoading />}
 
-              {col.list.length === 0 ? (
-                <p className={styles.columnEmpty}>{filter === 'ALL' ? 'Nada por aqui.' : 'Nenhuma com essa prioridade.'}</p>
-              ) : (
-                <ul className={styles.cards}>
-                  {col.list.map((r, i) => (
-                    <li
-                      key={r.id}
-                      className={`${styles.card} ${dragging === r.id ? styles.dragging : ''}`}
-                      data-priority={r.priority}
-                      data-open={open === r.id || undefined}
-                      style={{ '--i': Math.min(i, 8) } as React.CSSProperties}
-                      draggable
-                      onDragStart={(e) => {
-                        e.dataTransfer.effectAllowed = 'move';
-                        setDragging(r.id);
-                      }}
-                      onDragEnd={() => (setDragging(null), setOver(null))}
-                    >
-                      <button
-                        type="button"
-                        className={styles.cardMain}
-                        aria-expanded={open === r.id}
-                        onClick={() => setOpen((o) => (o === r.id ? null : r.id))}
-                      >
-                        <span className={styles.cardTop}>
-                          <PriorityTag priority={r.priority} />
-                          {r.status === 'SCHEDULED' && r.scheduledFor && (
-                            <span className={`${styles.when} num`}>{formatDay(r.scheduledFor)}</span>
-                          )}
-                          {r.status === 'DONE' && r.completedAt && (
-                            <span className={`${styles.when} num`}>{formatDate(r.completedAt)}</span>
-                          )}
-                        </span>
-                        <strong className={styles.subject}>{r.subject}</strong>
-                        <span className={styles.who}>
-                          {r.producer.name} · {r.producer.community}
-                        </span>
-                      </button>
-
-                      {open === r.id && <CardDetail r={r} onMove={move} onPriority={prioritize} />}
-                    </li>
-                  ))}
-                </ul>
-              )}
-              {col.total > col.list.length && (
-                <p className={styles.columnEmpty}>
-                  Mostrando as {col.list.length} mais recentes de {col.total}.
-                </p>
-              )}
-            </section>
-          ))}
-        </div>
-      )}
+        {items && (
+          <div className="table-wrap">
+            {rows.length === 0 ? (
+              <div className="empty">
+                <span className={`card-icon ${ui.emptyIcon}`}><FieldIcon name="inbox" /></span>
+                <strong>Nenhuma solicitação encontrada</strong>
+                {term || filter !== 'ALL' || status !== 'OPEN' ? 'Ajuste a busca ou os filtros.' : <Link href="/solicitacoes/nova">Registrar uma solicitação</Link>}
+              </div>
+            ) : (
+              <table className={`table ${ui.responsiveTable}`}>
+                <thead>
+                  <tr>
+                    <th>Assunto</th>
+                    <th>Produtor</th>
+                    <th>Prioridade</th>
+                    <th>Situação</th>
+                    <th className="hide-sm">Data</th>
+                    <th className="hide-sm">Aberta em</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {visible.map((r) => {
+                    const expanded = open === r.id;
+                    const toggle = () => setOpen((o) => (o === r.id ? null : r.id));
+                    return (
+                      <Fragment key={r.id}>
+                        <tr className={`clickable ${expanded ? styles.rowOpen : ''}`} onClick={toggle}>
+                          <td data-label="Assunto">
+                            <button
+                              type="button"
+                              className={styles.rowButton}
+                              aria-expanded={expanded}
+                              aria-controls={`req-${r.id}`}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                toggle();
+                              }}
+                            >
+                              {r.subject}
+                            </button>
+                          </td>
+                          <td data-label="Produtor">
+                            <span className={ui.person}>
+                              <span className={ui.avatar} aria-hidden="true">
+                                {r.producer.name.split(' ').filter(Boolean).slice(0, 2).map((n) => n[0]).join('')}
+                              </span>
+                              <span>
+                                {r.producer.name}
+                                <small>{r.producer.community}</small>
+                              </span>
+                            </span>
+                          </td>
+                          <td data-label="Prioridade"><PriorityTag priority={r.priority} /></td>
+                          <td data-label="Situação"><span className={STATUS_BADGE[r.status]}>{STATUS_LABEL[r.status]}</span></td>
+                          <td className="hide-sm num nowrap" data-label="Data">
+                            {r.status === 'SCHEDULED' && r.scheduledFor
+                              ? `Visita ${formatDay(r.scheduledFor)}`
+                              : r.status === 'DONE' && r.completedAt
+                                ? `Concluída ${formatDate(r.completedAt)}`
+                                : <span className="muted">—</span>}
+                          </td>
+                          <td className="hide-sm num nowrap muted" data-label="Aberta em">{formatDate(r.createdAt)}</td>
+                        </tr>
+                        {expanded && (
+                          <tr className={styles.detailRow}>
+                            <td colSpan={6} id={`req-${r.id}`}>
+                              <RequestDetail r={r} onMove={move} onPriority={prioritize} />
+                            </td>
+                          </tr>
+                        )}
+                      </Fragment>
+                    );
+                  })}
+                </tbody>
+              </table>
+            )}
+            {rows.length > 0 && (
+              <div className="table-foot">
+                <span>
+                  Mostrando {first} a {first + visible.length - 1} de {rows.length}
+                </span>
+                {pages > 1 && (
+                  <nav className="pager" aria-label="Páginas">
+                    <button type="button" onClick={() => setPage(1)} disabled={current === 1}>Primeira</button>
+                    <button type="button" onClick={() => setPage(current - 1)} disabled={current === 1}>Anterior</button>
+                    <button type="button" aria-current="page">{current} de {pages}</button>
+                    <button type="button" onClick={() => setPage(current + 1)} disabled={current === pages}>Seguinte</button>
+                    <button type="button" onClick={() => setPage(pages)} disabled={current === pages}>Última</button>
+                  </nav>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+      </section>
     </>
   );
 }
 
-function CardDetail({
+function RequestDetail({
   r,
   onMove,
   onPriority,
@@ -268,25 +334,24 @@ function CardDetail({
             ))}
           </select>
         </label>
+        {r.status === 'SCHEDULED' && (
+          <form
+            className={styles.schedule}
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (date) onMove(r, 'SCHEDULED', date);
+            }}
+          >
+            <label className="field">
+              <span>Data da visita</span>
+              <input className="input num" type="date" min={todayIso()} value={date} onChange={(e) => setDate(e.target.value)} />
+            </label>
+            <button type="submit" className="btn btn-secondary" disabled={!date || date === r.scheduledFor}>
+              Salvar data
+            </button>
+          </form>
+        )}
       </div>
-
-      {r.status === 'SCHEDULED' && (
-        <form
-          className={styles.schedule}
-          onSubmit={(e) => {
-            e.preventDefault();
-            if (date) onMove(r, 'SCHEDULED', date);
-          }}
-        >
-          <label className="field">
-            <span>Data da visita</span>
-            <input className="input num" type="date" min={todayIso()} value={date} onChange={(e) => setDate(e.target.value)} />
-          </label>
-          <button type="submit" className="btn btn-secondary" disabled={!date || date === r.scheduledFor}>
-            Salvar data
-          </button>
-        </form>
-      )}
 
       <div className={styles.links}>
         {r.status !== 'DONE' && (

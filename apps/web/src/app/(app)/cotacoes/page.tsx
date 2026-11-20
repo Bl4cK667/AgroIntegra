@@ -3,8 +3,8 @@
 // Cotações (módulo cotacoes): preço recebido pelo produtor da CONAB (semanal, UF e praças municipais
 // com dado recente) e preços locais lançados pela equipe. Sempre com fonte, praça e data.
 
-import { useCallback, useEffect, useState } from 'react';
-import { FieldHeading, FieldLoading } from '@/components/property/FieldUI';
+import { Fragment, useCallback, useEffect, useState } from 'react';
+import { FieldHeading, FieldLoading, fieldStyles as ui } from '@/components/property/FieldUI';
 import { Toast } from '@/components/feedback/Toast';
 import styles from '@/components/cotacoes/cotacoes.module.css';
 import { ApiError } from '@/lib/api';
@@ -19,7 +19,6 @@ import {
   parsePrice,
   type CotacoesOverview,
   type LocalQuote,
-  type MarketQuote,
   type ProductHistory,
   type ProductQuotes,
 } from '@/lib/cotacoes';
@@ -39,61 +38,80 @@ function Change({ pct }: { pct: number | null }) {
   );
 }
 
-function QuoteLine({ q }: { q: MarketQuote }) {
-  return (
-    <div className={styles.quoteLine}>
-      <span>{q.place}</span>
-      <span className="num">{formatPrice(q.value, q.unit)}</span>
-      <span className={styles.meta}>semana até {formatDay(q.weekEnd)}</span>
-    </div>
-  );
-}
-
-function ProductCard({ p, onHistory, selected }: { p: ProductQuotes; onHistory: () => void; selected: boolean }) {
+// Uma linha por produto (mesmo padrão de Cadastros > Produtores). A linha abre o histórico logo abaixo.
+function ProductRow({ p, onHistory, selected }: { p: ProductQuotes; onHistory: () => void; selected: boolean }) {
   const main = p.state[0] ?? null;
   return (
-    <article className={`card ${styles.product} ${selected ? styles.selected : ''}`}>
-      <header className={styles.productHead}>
-        <h3>{p.label}</h3>
-        {main?.stale && <span className="badge badge-warning">Desatualizada</span>}
-      </header>
-      {main ? (
-        <>
-          <div className={styles.value}>
+    <tr className={`clickable ${selected ? styles.rowOpen : ''}`} onClick={onHistory}>
+      <td data-label="Produto">
+        <button
+          type="button"
+          className={styles.rowButton}
+          aria-expanded={selected}
+          aria-controls={`hist-${p.key}`}
+          onClick={(e) => {
+            e.stopPropagation();
+            onHistory();
+          }}
+        >
+          {p.label}
+        </button>
+        {p.note && <small className={styles.cellNote}>{p.note}</small>}
+      </td>
+      <td className="right" data-label="Preço no estado (CONAB)">
+        {main ? (
+          <>
             <strong className="num">{formatPrice(main.value, main.unit)}</strong>
-            <Change pct={main.changePct} />
-          </div>
-          <p className={styles.meta}>
-            {main.place} · semana de {formatDay(main.weekStart)} a {formatDay(main.weekEnd)} · CONAB
-          </p>
-          {main.warning && <p className={styles.staleNote}>{main.warning}</p>}
-        </>
-      ) : (
-        <p className="muted">Sem cotação da CONAB para este produto.</p>
-      )}
-      {p.municipalities.length > 0 && (
-        <div className={styles.places}>
-          {p.municipalities.map((m) => <QuoteLine key={m.place} q={m} />)}
-        </div>
-      )}
-      {p.local && (
-        <p className={styles.local}>
-          Preço local: <span className="num">{formatPrice(p.local.price, p.local.unit)}</span> em {p.local.place}, {formatDay(p.local.observedOn)}{' '}
-          <span className={styles.meta}>(lançado por {p.local.createdBy.name})</span>
-        </p>
-      )}
-      {p.note && <p className={styles.meta}>{p.note}</p>}
-      <button type="button" className="btn-link" onClick={onHistory} aria-expanded={selected}>
-        {selected ? 'Fechar histórico' : 'Ver histórico'}
-      </button>
-    </article>
+            {main.stale && <> <span className="badge badge-warning">Desatualizada</span></>}
+            {main.warning && <small className={styles.cellNote}>{main.warning}</small>}
+          </>
+        ) : (
+          <span className="muted">Sem cotação</span>
+        )}
+      </td>
+      <td className="right nowrap" data-label="Variação">{main ? <Change pct={main.changePct} /> : null}</td>
+      <td className="hide-sm nowrap num" data-label="Semana">
+        {main ? (
+          <>
+            {formatDay(main.weekStart)} a {formatDay(main.weekEnd)}
+            <small className={styles.cellNote}>{main.place} · CONAB</small>
+          </>
+        ) : '—'}
+      </td>
+      <td className="hide-sm" data-label="Praças municipais">
+        {p.municipalities.length === 0 ? (
+          <span className="muted">—</span>
+        ) : (
+          <ul className={styles.placeList}>
+            {p.municipalities.map((m) => (
+              <li key={m.place}>
+                {m.place}: <span className="num">{formatPrice(m.value, m.unit)}</span>{' '}
+                <span className={styles.meta}>até {formatDay(m.weekEnd)}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </td>
+      <td data-label="Preço local">
+        {p.local ? (
+          <>
+            <span className="num">{formatPrice(p.local.price, p.local.unit)}</span>
+            <small className={styles.cellNote}>
+              {p.local.place}, {formatDay(p.local.observedOn)} · {p.local.createdBy.name}
+            </small>
+          </>
+        ) : (
+          <span className="muted">—</span>
+        )}
+      </td>
+    </tr>
   );
 }
 
 function History({ data }: { data: ProductHistory }) {
   const weeks = [...new Set(data.series.flatMap((s) => s.points.map((pt) => pt.weekEnd)))].sort().reverse();
   return (
-    <section className={`card ${styles.history}`} aria-label={`Histórico de ${data.product.label}`}>
+    <section className={styles.history} aria-label={`Histórico de ${data.product.label}`}>
       <h3 className={styles.sectionTitle}>Histórico: {data.product.label} ({data.product.unit})</h3>
       {weeks.length === 0 ? (
         <p className="muted">Sem histórico no período.</p>
@@ -260,12 +278,41 @@ export default function CotacoesPage() {
             {data.imports.lastError && <> Última tentativa falhou: {data.imports.lastError} Mostrando os últimos dados válidos.</>}
           </p>
 
-          <div className={styles.grid}>
-            {data.products.map((p) => (
-              <ProductCard key={p.key} p={p} selected={historyKey === p.key} onHistory={() => toggleHistory(p.key)} />
-            ))}
-          </div>
-          {historyKey && (history ? <History data={history} /> : <p className="muted">Carregando histórico…</p>)}
+          <section className={`card ${ui.listCard}`}>
+            <div className="toolbar">
+              <span className="count num">
+                {data.products.length} {data.products.length === 1 ? 'produto' : 'produtos'} · selecione uma linha para ver o histórico de 26 semanas
+              </span>
+            </div>
+            <div className="table-wrap">
+              <table className={`table ${ui.responsiveTable}`}>
+                <thead>
+                  <tr>
+                    <th>Produto</th>
+                    <th className="right">Preço no estado (CONAB)</th>
+                    <th className="right">Variação</th>
+                    <th className="hide-sm">Semana</th>
+                    <th className="hide-sm">Praças municipais</th>
+                    <th>Preço local</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.products.map((p) => (
+                    <Fragment key={p.key}>
+                      <ProductRow p={p} selected={historyKey === p.key} onHistory={() => toggleHistory(p.key)} />
+                      {historyKey === p.key && (
+                        <tr className={styles.detailRow}>
+                          <td colSpan={6} id={`hist-${p.key}`}>
+                            {history ? <History data={history} /> : <p className={`muted ${styles.loadingNote}`}>Carregando histórico…</p>}
+                          </td>
+                        </tr>
+                      )}
+                    </Fragment>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
           <p className={styles.meta}>
             {data.sources.conab} Valores convertidos para a unidade usada no campo. Praças municipais aparecem quando o dado tem até {data.staleDays} dias.
           </p>

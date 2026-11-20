@@ -1,16 +1,22 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { Meter } from '@/components/Meter';
-import { FieldEmpty, FieldHeading, FieldIcon, FieldLoading, FieldStats } from '@/components/property/FieldUI';
+import { FieldEmpty, FieldHeading, FieldIcon, FieldLoading, FieldStats, fieldStyles as ui } from '@/components/property/FieldUI';
 import { ApiError, listPrograms, ProgramSummary } from '@/lib/api';
 import { formatDay, formatInt, todayIso } from '@/lib/format';
+import { useDebounced } from '@/lib/useDebounced';
 import styles from './programas.module.css';
 
+const normalize = (value: string) => value.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+
 export default function ProgramasPage() {
+  const router = useRouter();
   const [data, setData] = useState<{ items: ProgramSummary[]; total: number } | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [search, setSearch] = useState('');
+  const term = normalize(useDebounced(search.trim()));
 
   useEffect(() => {
     listPrograms()
@@ -24,6 +30,8 @@ export default function ProgramasPage() {
     : p.startsOn > today ? { label: 'Em breve', cls: 'badge badge-info' }
     : { label: 'Em andamento', cls: 'badge badge-success' };
 
+  const rows = (data?.items ?? []).filter((p) => !term || normalize(p.name).includes(term));
+
   return (
     <>
       <FieldHeading
@@ -32,9 +40,6 @@ export default function ProgramasPage() {
         title="Programas"
         description="Programas de fomento da secretaria. Consulta: os números vêm das inscrições e entregas registradas."
       />
-
-      {error && <p className="alert" role="alert">{error}</p>}
-      {!data && !error && <FieldLoading />}
 
       {data && data.items.length > 0 && (
         <FieldStats
@@ -52,59 +57,96 @@ export default function ProgramasPage() {
         </FieldEmpty>
       )}
 
-      {data && data.items.length > 0 && (
-        <ul className={styles.grid}>
-          {data.items.map((p, i) => {
-            const ph = phase(p);
-            const fill = p.slots > 0 ? Math.min(100, (p.approved / p.slots) * 100) : 0;
-            return (
-              <li key={p.id} className="enter" style={{ '--i': i + 4 } as React.CSSProperties}>
-                <Link href={`/programas/${p.id}`} className={`card ${styles.program}`}>
-                  <div className={styles.head}>
-                    <span className="card-icon">
-                      <FieldIcon name="sprout" />
-                    </span>
-                    <span className={ph.cls}>{ph.label}</span>
-                    <span className={styles.arrow} aria-hidden="true">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M7 17 17 7M8 7h9v9" />
-                      </svg>
-                    </span>
-                  </div>
-                  <h2 className={styles.name}>{p.name}</h2>
-                  <p className={`${styles.period} num`}>
-                    <FieldIcon name="calendar" /> {formatDay(p.startsOn)} a {formatDay(p.endsOn)}
-                  </p>
+      {(!data || data.items.length > 0) && (
+        <section className={`card enter ${ui.listCard}`} style={{ '--i': 4 } as React.CSSProperties}>
+          <div className="toolbar">
+            <div className={ui.search}>
+              <FieldIcon name="search" />
+              <input
+                className="input"
+                type="search"
+                placeholder="Buscar programa"
+                aria-label="Buscar programa pelo nome"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
+            {data && (
+              <span className="count num">
+                {rows.length} {rows.length === 1 ? 'programa' : 'programas'}
+              </span>
+            )}
+          </div>
 
-                  <div className={styles.slots}>
-                    <div>
-                      <strong className="num">{formatInt(p.approved)}</strong>
-                      <span>beneficiários</span>
-                    </div>
-                    <div>
-                      <strong className="num">{formatInt(p.enrolled)}</strong>
-                      <span>inscritos</span>
-                    </div>
-                    <div>
-                      <strong className="num">{formatInt(p.openSlots)}</strong>
-                      <span>vagas livres</span>
-                    </div>
-                  </div>
-                  <span className={styles.slotBar} aria-label={`${formatInt(p.approved)} de ${formatInt(p.slots)} vagas ocupadas`} role="img">
-                    <span style={{ width: `${fill}%` }} />
-                  </span>
+          {error && <p className="alert" role="alert">{error}</p>}
+          {!data && !error && <FieldLoading />}
 
-                  <div className={styles.meters}>
-                    <span className={styles.metersTitle}>Execução</span>
-                    <Meter percent={p.physicalPercent} label="Física" compact />
-                    <Meter percent={p.financialPercent} label="Financeira" compact />
-                  </div>
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
+          {data && (
+            <div className="table-wrap">
+              {rows.length === 0 ? (
+                <div className="empty">
+                  <span className={`card-icon ${ui.emptyIcon}`}><FieldIcon name="sprout" /></span>
+                  <strong>Nenhum programa encontrado</strong>
+                  Confira a grafia do nome.
+                </div>
+              ) : (
+                <table className={`table ${ui.responsiveTable}`}>
+                  <thead>
+                    <tr>
+                      <th>Programa</th>
+                      <th>Situação</th>
+                      <th className="right">Beneficiários</th>
+                      <th className="right hide-sm">Inscritos</th>
+                      <th className="right hide-sm">Vagas livres</th>
+                      <th className="right">Execução física</th>
+                      <th className="right">Execução financeira</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {rows.map((p) => {
+                      const ph = phase(p);
+                      return (
+                        <tr key={p.id} className="clickable" onClick={() => router.push(`/programas/${p.id}`)}>
+                          <td data-label="Programa">
+                            <Link href={`/programas/${p.id}`} onClick={(e) => e.stopPropagation()}>
+                              <span className={ui.person}>
+                                <span className={ui.avatar} aria-hidden="true"><FieldIcon name="sprout" /></span>
+                                <span>
+                                  {p.name}
+                                  <small className="num">{formatDay(p.startsOn)} a {formatDay(p.endsOn)}</small>
+                                </span>
+                              </span>
+                            </Link>
+                          </td>
+                          <td data-label="Situação"><span className={ph.cls}>{ph.label}</span></td>
+                          <td className="right num" data-label="Beneficiários">
+                            {formatInt(p.approved)} <span className="muted">de {formatInt(p.slots)}</span>
+                          </td>
+                          <td className="right num hide-sm" data-label="Inscritos">{formatInt(p.enrolled)}</td>
+                          <td className="right num hide-sm" data-label="Vagas livres">{formatInt(p.openSlots)}</td>
+                          <td className="right num" data-label="Execução física"><Percent value={p.physicalPercent} /></td>
+                          <td className="right num" data-label="Execução financeira"><Percent value={p.financialPercent} /></td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          )}
+        </section>
       )}
     </>
+  );
+}
+
+// Percentual com barra fina ao lado; o número é a informação, a barra só reforça.
+function Percent({ value }: { value: number }) {
+  const pct = Math.max(0, Math.min(100, Math.round(value)));
+  return (
+    <span className={styles.percent}>
+      <span className={styles.bar} aria-hidden="true"><span style={{ width: `${pct}%` }} /></span>
+      {pct}%
+    </span>
   );
 }

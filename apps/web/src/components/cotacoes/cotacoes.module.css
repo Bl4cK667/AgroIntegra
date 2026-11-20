@@ -6,51 +6,51 @@
   font-size: 0.9rem;
 }
 
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 14px;
-  margin-bottom: 14px;
-}
+/* Produtos em lista (mesmo padrão de Cadastros > Produtores); a linha abre o histórico logo abaixo. */
 
-.product {
-  display: grid;
-  align-content: start;
-  justify-items: start;
-  gap: 6px;
-}
-
-.product > * {
-  max-width: 100%;
-}
-
-.selected {
-  outline: 2px solid var(--chart-1);
-  outline-offset: -2px;
-}
-
-.productHead {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 8px;
-}
-
-.productHead h3 {
-  margin: 0;
-  font-size: 1rem;
-}
-
-.value {
-  display: flex;
-  align-items: baseline;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.value strong {
-  font-size: 1.45rem;
+.rowButton {
+  padding: 0;
+  border: 0;
+  background: none;
   color: var(--ink);
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+}
+
+.rowButton:hover {
+  color: var(--accent);
+  text-decoration: underline;
+}
+
+:global(.table) tbody tr.rowOpen td {
+  background: var(--card-2);
+}
+
+:global(.table) tbody tr.detailRow > td {
+  padding: var(--space-3) var(--space-4) var(--space-4);
+  background: color-mix(in srgb, var(--card-2) 55%, var(--card));
+  border-left: 3px solid var(--accent);
+  cursor: default;
+}
+
+.cellNote {
+  display: block;
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: var(--text-xs);
+  white-space: normal;
+}
+
+.placeList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--text-sm);
+}
+
+.loadingNote {
+  margin: 0;
 }
 
 .change {
@@ -77,41 +77,55 @@
   color: var(--muted);
 }
 
-.staleNote {
-  margin: 0;
-  padding: 6px 10px;
-  border-radius: var(--radius-md);
-  border-left: 3px solid var(--warning);
-  background: var(--warning-bg);
-  color: var(--ink);
-  font-size: 0.84rem;
-}
-
-.places {
-  display: grid;
-  gap: 2px;
-  padding-top: 6px;
-  border-top: 1px solid var(--card-border);
-}
-
-.quoteLine {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px 10px;
-  font-size: 0.88rem;
-}
-
-.local {
-  margin: 0;
-  padding-top: 6px;
-  border-top: 1px solid var(--card-border);
-  font-size: 0.88rem;
-}
-
 .history {
   display: grid;
   gap: 10px;
-  margin-bottom: 14px;
+}
+
+@media (max-width: 640px) {
+  :global(.table) tbody tr.detailRow {
+    display: block;
+    padding: 0;
+  }
+
+  :global(.table) tbody tr.detailRow > td {
+    display: block;
+  }
+
+  :global(.table) tbody tr.detailRow > td::before {
+    display: none;
+  }
+
+  /* O histórico fica dentro da linha de detalhe: continua tabela comum, sem virar linhas empilhadas. */
+  .history table thead {
+    display: table-header-group;
+  }
+
+  .history table tbody {
+    display: table-row-group;
+    padding: 0;
+  }
+
+  .history tbody tr {
+    display: table-row;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: none;
+  }
+
+  .history tbody td,
+  .history tbody td:first-child {
+    display: table-cell;
+    padding: 6px 8px;
+    border-bottom: 1px solid var(--linha);
+    font-size: var(--text-sm);
+    white-space: nowrap;
+  }
+
+  .history tbody td::before {
+    display: none;
+  }
 }
 
 .sectionTitle {
