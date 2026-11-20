@@ -29,11 +29,20 @@ export function VisitTable({ visits, showProducer = true }: { visits: VisitRow[]
                 {formatDay(v.visitedOn)}
               </Link>
             </td>
-            {showProducer && <td className="nowrap" data-label="Produtor">{v.producer.name}</td>}
+            {showProducer && (
+              <td className="nowrap" data-label="Produtor">
+                <span className={ui.person}>
+                  <span className={ui.avatar} aria-hidden="true">{v.producer.name.split(' ').filter(Boolean).slice(0, 2).map((n) => n[0]).join('')}</span>
+                  <span>{v.producer.name}</span>
+                </span>
+              </td>
+            )}
             <td className="hide-sm nowrap" data-label="Propriedade">{v.property?.name ?? <span className="muted">Não informada</span>}</td>
             <td className="clip" data-label="Diagnóstico">{v.diagnosis}</td>
             <td className="hide-sm nowrap" data-label="Técnico">{v.technician.name}</td>
-            <td className="hide-sm num" data-label="Retorno">{v.returnOn ? formatDay(v.returnOn) : <span className="muted">Sem retorno</span>}</td>
+            <td className="hide-sm num nowrap" data-label="Retorno">
+              {v.returnOn ? <span className="badge badge-soft badge-info">{formatDay(v.returnOn)}</span> : <span className="muted">Sem retorno</span>}
+            </td>
           </tr>
         ))}
       </tbody>

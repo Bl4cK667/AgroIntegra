@@ -52,6 +52,15 @@ export default function VisitasPage() {
             ) : (
               <VisitTable visits={visible} />
             )}
+            {visible.length > 0 && (
+              <div className="table-foot">
+                <span>
+                  Mostrando {visible.length.toLocaleString('pt-BR')} de {(term ? data.items.length : data.total).toLocaleString('pt-BR')}
+                  {term ? ' carregadas' : ''}
+                </span>
+                <span>Selecione uma linha para abrir a visita.</span>
+              </div>
+            )}
           </div>
           </section>
         </>

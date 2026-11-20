@@ -3,12 +3,14 @@
 import Link from 'next/link';
 import { FieldHeading, FieldIcon, FieldLoading, FieldStats, fieldStyles as ui } from '@/components/property/FieldUI';
 
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { ApiError, listProperties, PropertyRow } from '@/lib/api';
 import { formatArea, formatPlace } from '@/lib/format';
 import { useDebounced } from '@/lib/useDebounced';
 
 export default function PropriedadesPage() {
+  const router = useRouter();
   const [search, setSearch] = useState('');
   const term = useDebounced(search.trim());
   const [data, setData] = useState<{ items: PropertyRow[]; total: number } | null>(null);
@@ -86,10 +88,17 @@ export default function PropriedadesPage() {
               </thead>
               <tbody>
                 {data.items.map((p) => (
-                  <tr key={p.id}>
-                    <td data-label="Propriedade">{p.name}</td>
+                  <tr key={p.id} className="clickable" onClick={() => router.push(`/propriedades/${p.id}/mapa`)}>
+                    <td data-label="Propriedade">
+                      <Link href={`/propriedades/${p.id}/mapa`} onClick={(e) => e.stopPropagation()}>
+                        <span className={ui.person}>
+                          <span className={ui.avatar} aria-hidden="true"><FieldIcon name="land" /></span>
+                          <span>{p.name}<small>{p.locality}</small></span>
+                        </span>
+                      </Link>
+                    </td>
                     <td data-label="Produtor">
-                      <Link href={`/produtores/${p.producer.id}`}>{p.producer.name}</Link>
+                      <Link href={`/produtores/${p.producer.id}`} onClick={(e) => e.stopPropagation()}>{p.producer.name}</Link>
                     </td>
                     <td className="hide-sm" data-label="Localidade">{p.locality}</td>
                     <td className="hide-sm" data-label="Município">{formatPlace(p.city, p.state) || <span className="muted">Não informado</span>}</td>
@@ -97,15 +106,21 @@ export default function PropriedadesPage() {
                     <td className="right area" data-label="Área declarada">{formatArea(p.areaHa)}</td>
                     <td className="right area" data-label="Área demarcada">
                       {p.calculatedAreaHa != null ? (
-                        <Link href={`/propriedades/${p.id}/mapa`}>{formatArea(p.calculatedAreaHa)}</Link>
+                        formatArea(p.calculatedAreaHa)
                       ) : (
-                        <Link href={`/propriedades/${p.id}/mapa`} className="muted">Demarcar</Link>
+                        <span className="badge badge-soft badge-warning">Não demarcada</span>
                       )}
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
+          )}
+          {data.items.length > 0 && (
+            <div className="table-foot">
+              <span>Mostrando {data.items.length.toLocaleString('pt-BR')} de {data.total.toLocaleString('pt-BR')}</span>
+              <span>Selecione uma linha para abrir o mapa da propriedade.</span>
+            </div>
           )}
         </div>
       )}

@@ -109,6 +109,12 @@ export default function ProdutoresPage() {
               </tbody>
             </table>
           )}
+          {data.items.length > 0 && (
+            <div className="table-foot">
+              <span>Mostrando {data.items.length.toLocaleString('pt-BR')} de {data.total.toLocaleString('pt-BR')}</span>
+              <span>Selecione uma linha para abrir a ficha do produtor.</span>
+            </div>
+          )}
         </div>
       )}
       </section>
