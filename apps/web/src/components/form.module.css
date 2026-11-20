@@ -1,45 +1,40 @@
 .form {
   display: grid;
-  gap: 20px;
-  max-width: 740px;
+  gap: 16px;
+  max-width: 880px;
 }
 
-/* Cada bloco do formulário: card moderno no padrão AgroIntegra / AbacatePay. */
+/* Cada bloco do formulário = painel com faixa de título (docs/design-system.md, seção 5). */
 .group {
   display: grid;
-  gap: 16px;
+  gap: 14px;
   margin: 0;
-  padding: 20px 24px 22px;
-  border: 1px solid var(--card-border);
+  padding: 0 var(--space-4) var(--space-4);
+  border: 1px solid var(--linha);
   border-radius: var(--radius-lg);
   background: var(--card);
   min-width: 0;
-  transition:
-    border-color var(--dur-fast) var(--ease-out),
-    background-color var(--dur-med) var(--ease-out);
-}
-
-.group:hover {
-  border-color: var(--card-hover);
 }
 
 .group legend {
   float: left;
-  width: 100%;
+  width: calc(100% + 2 * var(--space-4));
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 0 0 12px;
-  margin: 0 0 2px;
-  border-bottom: 1px solid var(--card-border);
-  font-weight: 600;
-  font-size: 1rem;
+  padding: var(--panel-head-pad);
+  margin: 0 calc(-1 * var(--space-4)) 2px;
+  background: var(--panel-head-bg);
+  border-bottom: 1px solid var(--linha);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  font-weight: var(--weight-panel-title);
+  font-size: var(--text-md);
   color: var(--ink);
 }
 
+/* Ícone decorativo do título: escondido, como nos demais painéis. */
 .group legend svg {
-  flex: none;
-  color: var(--chart-1);
+  display: none;
 }
 
 .group:disabled {
@@ -102,10 +97,6 @@
 }
 
 @media (max-width: 640px) {
-  .group {
-    padding: 16px;
-  }
-
   .results button {
     min-height: 44px;
   }

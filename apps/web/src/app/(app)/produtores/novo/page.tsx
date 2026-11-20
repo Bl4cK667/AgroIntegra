@@ -83,7 +83,7 @@ export default function NovoProdutorPage() {
       </Link>
       <FieldHeading icon="people" eyebrow="Cadastro de produtores" title="Novo produtor" description="Comece pela identificação. Se quiser, já cadastre a primeira propriedade e demarque o perímetro no mapa." />
 
-      <form className={ui.form} onSubmit={onSubmit} onInput={clearFieldError} noValidate>
+      <form className={`${ui.form} form-h`} onSubmit={onSubmit} onInput={clearFieldError} noValidate>
           <FormFeedback />
           <fieldset disabled={saving} className={`card enter ${ui.formSection}`}><legend><FieldIcon name="people" /> Identificação e contato</legend>
         <p className="muted">Os campos com * são obrigatórios.</p>
@@ -170,13 +170,13 @@ export default function NovoProdutorPage() {
           </p>
         )}
 
-        <div className="form-actions">
-          <button type="submit" className="btn btn-primary" disabled={saving}>
-            {saving ? 'Cadastrando…' : 'Cadastrar produtor'}
-          </button>
+        <div className="form-bar">
           <Link href="/produtores" className="btn btn-secondary">
             Cancelar
           </Link>
+          <button type="submit" className="btn btn-primary" disabled={saving}>
+            {saving ? 'Cadastrando…' : 'Cadastrar produtor'}
+          </button>
         </div>
       </form>
     </>

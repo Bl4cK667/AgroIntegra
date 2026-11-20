@@ -426,7 +426,7 @@ function PropertyForm({
   }
 
   return (
-    <form className={`enter ${styles.propertyForm}`} onSubmit={onSubmit} onInput={clearFieldError} noValidate>
+    <form className={`enter form-h ${styles.propertyForm}`} onSubmit={onSubmit} onInput={clearFieldError} noValidate>
           <FormFeedback />
       <SectionTitle icon="land">{property ? 'Editar propriedade' : 'Nova propriedade'}</SectionTitle>
       <p className="muted">Os campos com * são obrigatórios.</p>
@@ -466,12 +466,12 @@ function PropertyForm({
           {error}
         </p>
       )}
-      <div className="form-actions">
-        <button type="submit" className="btn btn-primary" disabled={saving}>
-          {saving ? 'Salvando…' : 'Salvar propriedade'}
-        </button>
+      <div className="form-bar">
         <button type="button" className="btn btn-secondary" onClick={onCancel} disabled={saving}>
           Cancelar
+        </button>
+        <button type="submit" className="btn btn-primary" disabled={saving}>
+          {saving ? 'Salvando…' : 'Salvar propriedade'}
         </button>
       </div>
     </form>

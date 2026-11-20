@@ -656,6 +656,17 @@ textarea {
   grid-column: 2;
 }
 
+/* Com o rótulo à esquerda, dois campos lado a lado ficariam apertados: cada campo ocupa a sua linha. */
+.form-h .form-row {
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-3);
+}
+
+/* Caixas de marcação alinhadas com a coluna dos campos. */
+.form-h .check {
+  margin-left: calc(var(--label-col) + var(--space-4));
+}
+
 /* Rótulo de campo obrigatório */
 .req > span:first-child,
 .form-h .req > span:first-child {
@@ -925,6 +936,10 @@ textarea {
 
   .form-h .field > :not(:first-child) {
     grid-column: 1;
+  }
+
+  .form-h .check {
+    margin-left: 0;
   }
 
   .table-tools .input {

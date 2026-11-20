@@ -117,7 +117,7 @@ function NovaVisita() {
       <FieldHeading icon="visit" eyebrow="Novo atendimento" title="Registrar visita" description="Da avaliação ao registro em campo, reúna as informações do atendimento. Após salva, a visita fica como registro definitivo." />
 
       <p className="muted">Os campos com * são obrigatórios. Fotos, localização e assinatura são opcionais.</p>
-      <form className={styles.form} onSubmit={onSubmit} onInput={clearFieldError} noValidate>
+      <form className={`${styles.form} form-h`} onSubmit={onSubmit} onInput={clearFieldError} noValidate>
           <FormFeedback />
         <fieldset className={`${styles.group} enter`} style={{ '--i': 0 } as React.CSSProperties} disabled={saving || choosing}>
           <legend><FieldIcon name="people" /> 01 · Atendimento</legend>
@@ -242,9 +242,10 @@ function NovaVisita() {
         <fieldset className={`${styles.group} enter`} style={{ '--i': 2 } as React.CSSProperties} disabled={!producer || saving || choosing}>
           <legend><FieldIcon name="pin" /> 03 · Registro em campo</legend>
           <p className="muted" style={{ margin: 0 }}>Complete o atendimento com fotos, localização e assinatura. Estes registros são opcionais.</p>
-          <PhotoPicker key={producer?.id ?? 'none'} value={photos} onChange={setPhotos} onBusyChange={setPhotoBusy} />
-          <LocationField key={producer?.id ?? 'none'} value={location} onChange={setLocation} />
-          <SignaturePad key={producer?.id ?? 'none'} ref={signature} />
+          {/* A key reinicia cada campo ao trocar de produtor; precisa ser única entre irmãos, senão o React duplica componentes. */}
+          <PhotoPicker key={`photos-${producer?.id ?? 'none'}`} value={photos} onChange={setPhotos} onBusyChange={setPhotoBusy} />
+          <LocationField key={`location-${producer?.id ?? 'none'}`} value={location} onChange={setLocation} />
+          <SignaturePad key={`signature-${producer?.id ?? 'none'}`} ref={signature} />
         </fieldset>
 
         {error && (
@@ -253,13 +254,13 @@ function NovaVisita() {
           </p>
         )}
 
-        <div className="form-actions">
-          <button type="submit" className="btn btn-primary" disabled={saving || !producer || choosing || photoBusy}>
-            {saving ? 'Salvando…' : photoBusy ? 'Preparando fotos…' : 'Salvar visita'}
-          </button>
+        <div className="form-bar">
           <Link href={back} className="btn btn-secondary">
             Cancelar
           </Link>
+          <button type="submit" className="btn btn-primary" disabled={saving || !producer || choosing || photoBusy}>
+            {saving ? 'Salvando…' : photoBusy ? 'Preparando fotos…' : 'Salvar visita'}
+          </button>
         </div>
       </form>
     </>

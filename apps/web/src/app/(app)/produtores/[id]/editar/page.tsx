@@ -53,7 +53,7 @@ export default function EditarProdutorPage() {
       {!producer && !error && <FieldLoading />}
 
       {producer && (
-        <form className={ui.form} onSubmit={onSubmit} onInput={clearFieldError} noValidate>
+        <form className={`${ui.form} form-h`} onSubmit={onSubmit} onInput={clearFieldError} noValidate>
           <FormFeedback />
           <fieldset disabled={saving} className={`card enter ${ui.formSection}`}><legend><FieldIcon name="people" /> Identificação e contato</legend>
           <label className="field">
@@ -81,13 +81,13 @@ export default function EditarProdutorPage() {
               {error}
             </p>
           )}
-          <div className="form-actions">
-            <button type="submit" className="btn btn-primary" disabled={saving}>
-              {saving ? 'Salvando…' : 'Salvar alterações'}
-            </button>
+          <div className="form-bar">
             <Link href={`/produtores/${id}`} className="btn btn-secondary">
               Cancelar
             </Link>
+            <button type="submit" className="btn btn-primary" disabled={saving}>
+              {saving ? 'Salvando…' : 'Salvar alterações'}
+            </button>
           </div>
         </form>
       )}

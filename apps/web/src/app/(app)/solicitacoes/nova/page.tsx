@@ -85,10 +85,10 @@ function NovaSolicitacao() {
       <Link href={back} className="back">
         {fromProducer ? (producer?.name ?? 'Produtor') : 'Solicitações'}
       </Link>
-      <FieldHeading icon="inbox" eyebrow="Fluxo de atendimento" title="Nova solicitação" description="Registre o pedido do produtor. Ele entra no quadro na coluna Nova." />
+      <FieldHeading icon="inbox" eyebrow="Fluxo de atendimento" title="Nova solicitação" description="Registre o pedido do produtor. Ele entra na lista de solicitações com a situação Nova." />
 
       <p className="muted">Os campos com * são obrigatórios. Você pode completar o pedido com uma descrição.</p>
-      <form className={`${styles.form} enter`} style={{ '--i': 1 } as React.CSSProperties} onSubmit={onSubmit} onInput={clearFieldError} noValidate>
+      <form className={`${styles.form} form-h enter`} style={{ '--i': 1 } as React.CSSProperties} onSubmit={onSubmit} onInput={clearFieldError} noValidate>
           <FormFeedback />
         <fieldset className={styles.group} disabled={saving || choosing}>
           <legend>01 · Quem precisa de atendimento?</legend>
@@ -169,13 +169,13 @@ function NovaSolicitacao() {
           </p>
         )}
 
-        <div className="form-actions">
-          <button type="submit" className="btn btn-primary" disabled={saving || !producer || choosing}>
-            {saving ? 'Salvando…' : 'Abrir solicitação'}
-          </button>
+        <div className="form-bar">
           <Link href={back} className="btn btn-secondary">
             Cancelar
           </Link>
+          <button type="submit" className="btn btn-primary" disabled={saving || !producer || choosing}>
+            {saving ? 'Salvando…' : 'Abrir solicitação'}
+          </button>
         </div>
       </form>
     </>
