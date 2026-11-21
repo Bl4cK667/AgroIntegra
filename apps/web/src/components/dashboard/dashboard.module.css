@@ -37,8 +37,7 @@
 }
 
 .toolBtn,
-.toolBtnPrimary,
-.themeToggle {
+.toolBtnPrimary {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -57,8 +56,7 @@
     border-color var(--dur-fast) var(--ease-out);
 }
 
-.toolBtn:hover:not(:disabled),
-.themeToggle:hover {
+.toolBtn:hover:not(:disabled) {
   background: var(--card-2);
 }
 
@@ -541,7 +539,6 @@
 
   .toolBtn,
   .toolBtnPrimary,
-  .themeToggle,
   .catalogAdd {
     min-height: 44px;
   }

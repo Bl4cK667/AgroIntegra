@@ -332,8 +332,7 @@
   .badge,
   .panel,
   .backdrop,
-  .items li,
-  .emptyIcon {
+  .items li {
     animation: none !important;
   }
 }

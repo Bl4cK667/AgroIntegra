@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { FormFeedback } from '@/components/property/FormFeedback';
-import { checkRequiredFields, clearFieldError, reportFieldError } from '@/components/property/formValidation';
+import { checkRequiredFields, clearFieldError } from '@/components/property/formValidation';
 import { FieldHeading, FieldLoading, fieldStyles as ui } from '@/components/property/FieldUI';
 import { useParams, useRouter } from 'next/navigation';
 import { FormEvent, useEffect, useState } from 'react';

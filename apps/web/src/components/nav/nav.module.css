@@ -160,20 +160,6 @@
   min-width: 0;
 }
 
-.avatar {
-  flex: none;
-  display: grid;
-  place-items: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: var(--card-2);
-  color: var(--nav-ink-strong);
-  border: 1px solid var(--nav-line);
-  font-size: 0.8rem;
-  font-weight: 600;
-}
-
 .userText {
   display: grid;
   min-width: 0;
@@ -523,9 +509,4 @@
   border-radius: var(--radius-lg);
   background: var(--card-2);
   border: 1px solid var(--card-border);
-}
-
-.avatarRing {
-  flex: none;
-  box-shadow: 0 0 0 1px var(--nav-line);
 }

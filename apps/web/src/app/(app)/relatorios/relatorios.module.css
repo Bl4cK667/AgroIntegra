@@ -78,15 +78,6 @@
   gap: 10px;
 }
 
-.spinner {
-  width: 15px;
-  height: 15px;
-  border-radius: 50%;
-  border: 2px solid currentColor;
-  border-right-color: transparent;
-  animation: spin 700ms linear infinite;
-}
-
 /* ---------- prévia ---------- */
 
 .preview {
@@ -253,10 +244,6 @@
   padding-top: 10px;
 }
 
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
 @media (max-width: 1000px) {
   .controls,
   .sections {
@@ -276,11 +263,5 @@
 
   .period :global(.segmented) {
     overflow-x: auto;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .spinner {
-    animation-duration: 2s;
   }
 }

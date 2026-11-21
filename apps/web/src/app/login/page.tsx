@@ -52,7 +52,8 @@ export default function LoginPage() {
           <span className="eyebrow">Acesso ao sistema</span>
           <h1 className={styles.title}>Entrar</h1>
 
-          <form onSubmit={onSubmit} className={styles.form} onInput={clearFieldError} noValidate>
+          {/* method="post": se a pessoa apertar Enter antes do JavaScript carregar, o navegador não põe e-mail e senha na barra de endereço. */}
+          <form method="post" onSubmit={onSubmit} className={styles.form} onInput={clearFieldError} noValidate>
             <p className={styles.legend}>Campos marcados com <span className={styles.star}>*</span> são obrigatórios.</p>
             <FormFeedback />
             <label className="field req">
