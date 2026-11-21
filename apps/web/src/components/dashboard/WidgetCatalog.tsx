@@ -37,10 +37,8 @@ export function WidgetCatalog({ layout, onAdd, onReset, onClose }: Props) {
             <h2 id="catalog-title">Adicionar widget</h2>
             <p className="muted">Escolha o que acompanhar no seu painel.</p>
           </div>
-          <button type="button" className={styles.iconBtn} onClick={onClose} aria-label="Fechar catálogo">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">
-              <path d="M6 6l12 12M18 6 6 18" />
-            </svg>
+          <button type="button" className={styles.iconBtn} onClick={onClose}>
+            Fechar
           </button>
         </div>
 
@@ -49,16 +47,13 @@ export function WidgetCatalog({ layout, onAdd, onReset, onClose }: Props) {
             const n = count(w.type);
             return (
               <li key={w.type} className={styles.catalogItem}>
-                <span className={styles.catalogIcon}>{w.icon}</span>
                 <div className={styles.catalogMeta}>
                   <strong>{w.title}</strong>
                   <span>{w.description}</span>
                   {n > 0 && <small>{n === 1 ? 'Já está no painel' : `${n} no painel`}</small>}
                 </div>
                 <button type="button" className={styles.catalogAdd} onClick={() => onAdd(w.type)} aria-label={`Adicionar ${w.title}`}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-                    <path d="M12 5v14M5 12h14" />
-                  </svg>
+                  Adicionar
                 </button>
               </li>
             );

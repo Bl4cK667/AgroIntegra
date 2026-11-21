@@ -19,7 +19,6 @@ export interface WidgetDef {
   type: string; // identificador estável, salvo no layout do usuário (ex.: 'kpi-open-requests')
   title: string; // título do cabeçalho do card
   description: string; // aparece no catálogo "Adicionar widget"
-  icon: ReactNode; // ícone SVG 18×18, stroke currentColor
   defaultSize: WidgetSize;
   minSize: WidgetSize;
   maxSize: WidgetSize;

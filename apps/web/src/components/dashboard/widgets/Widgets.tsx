@@ -11,7 +11,7 @@ const fullMonths = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 
 const ratio = (value: number, total: number) => total > 0 ? Math.min(100, Math.max(0, value / total * 100)) : 0;
 const pct = (value: number) => `${number.format(Math.round(value))}%`;
 export function Empty({ children }: { children: React.ReactNode }) {
-  return <div className={s.empty}><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.3" aria-hidden="true"><path d="M4 19h16M7 15v-4m5 4V5m5 10V8" /></svg><strong>Sem dados no período</strong><span>{children}</span></div>;
+  return <div className={s.empty}><strong>Sem dados no período</strong><span>{children}</span></div>;
 }
 
 export function Ring({ value, label, small = false }: { value: number; label: string; small?: boolean }) {
