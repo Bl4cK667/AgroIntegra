@@ -143,6 +143,10 @@ Checklist para cada modelo novo:
   - Registros em **lista de linhas**, no padrão de Cadastros → Produtores: busca dentro do painel, linha clicável, badges e rodapé "Mostrando X de Y". Não use cards para listar registros.
   - Badges com fundo sólido na cor de status (`.badge-soft` para a versão clara).
   - Formulários horizontais (`.form-h`: rótulo à esquerda) com barra de ações no rodapé (`.form-bar`, botões à direita, "Cancelar" antes do principal). Fichas e telas longas em abas (`.tabs`).
+  - **Sem ícones, só texto** (decisão de 21/11/2026), em todas as telas, inclusive login e menu. Botões e links dizem o que fazem ("Avisos (3)", "Fechar", "Tema escuro", "Mover"). Ficam de fora só os gráficos, o mapa e os controles próprios do MapLibre. A logo do AgroIntegra aparece em destaque no login, no cadastro e no cabeçalho.
+  - Visitas não é item do menu: ficam na aba Visitas da ficha do produtor, que leva à lista geral (`/visitas`, também aberta pela busca de páginas, Ctrl+K).
+  - Listas: busca com rótulo "Buscar:", paginação com `components/Pager.tsx` e botões de ação **abaixo** da tabela (`.table-actions`).
+  - Primeiro item do teclado: link "Pular para o conteúdo" (`main#conteudo`).
   - Tokens: tamanhos em `app/tokens.css`, cores por tema em `app/themes.css`, classes globais em `app/globals.css` (lista na seção 5.1 do design system).
 - **Nenhum número fixo no painel:** tudo que aparece é calculado do banco, com teste que confere contra uma contagem independente (padrão em `test/dashboard.e2e.spec.ts`).
 
