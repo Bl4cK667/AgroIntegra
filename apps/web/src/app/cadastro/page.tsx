@@ -3,7 +3,6 @@
 import Link from 'next/link';
 import { FormEvent, useEffect, useRef, useState } from 'react';
 import { BrandLogo } from '@/components/Brand';
-import { contourPaths } from '@/components/contours';
 import { ApiError } from '@/lib/api';
 import { formatDate } from '@/lib/format';
 import { RegistrationInviteInfo, registerWithInvitation, validateRegistrationToken } from '@/lib/invitations';
@@ -16,8 +15,6 @@ import {
 } from '@/lib/invite-token';
 import styles from './cadastro.module.css';
 
-const HILL_A = contourPaths({ cx: 180, cy: 620, rings: 16, baseRadius: 26, step: 30, seed: 11 });
-const HILL_B = contourPaths({ cx: 560, cy: 170, rings: 11, baseRadius: 18, step: 28, seed: 23, wobble: 0.22 });
 
 type PagePhase = 'validating' | 'invalid' | 'ready' | 'success';
 
@@ -139,28 +136,11 @@ export default function CadastroPage() {
 
   return (
     <main className={styles.page}>
-      <section className={styles.land} aria-hidden="true">
-        <svg className={styles.contours} viewBox="0 0 720 800" preserveAspectRatio="xMidYMid slice">
-          {HILL_A.map((d, i) => (
-            <path key={`a${i}`} d={d} className={i % 5 === 4 ? styles.index : styles.line} />
-          ))}
-          {HILL_B.map((d, i) => (
-            <path key={`b${i}`} d={d} className={i % 5 === 4 ? styles.index : styles.line} />
-          ))}
-        </svg>
-        <div className={`${styles.landText} enter`}>
-          <p className={styles.org}>Secretaria Municipal de Agricultura</p>
-          <p className={styles.tagline}>
-            Cadastro exclusivo para membros convidados da equipe técnica e coordenação.
-          </p>
-        </div>
-      </section>
-
       <section className={styles.formSide}>
-        <div className={`${styles.formBox} enter`} style={{ '--i': 1 } as React.CSSProperties}>
-          <div className={styles.brand}>
-            <BrandLogo width={220} />
-          </div>
+        <div className={styles.brand}>
+          <BrandLogo width={260} />
+        </div>
+        <div className={styles.formBox}>
 
           {phase === 'validating' && (
             <div className={styles.stateBox} role="status" aria-label="Validando convite">
@@ -200,17 +180,18 @@ export default function CadastroPage() {
 
               <div className={styles.steps} aria-label="Etapas do cadastro">
                 <div className={`${styles.step} ${step === 1 ? styles.stepActive : styles.stepDone}`}>
-                  <span className={styles.stepNum}>{step === 2 ? '✓' : '1'}</span>
-                  <span>Seus dados</span>
+                  <span className={styles.stepNum}>Etapa 1</span>
+                  <span>Seus dados{step === 2 ? ' (concluída)' : ''}</span>
                 </div>
                 <div className={`${styles.step} ${step === 2 ? styles.stepActive : ''}`}>
-                  <span className={styles.stepNum}>2</span>
+                  <span className={styles.stepNum}>Etapa 2</span>
                   <span>Senha de acesso</span>
                 </div>
               </div>
 
               {step === 1 ? (
                 <form onSubmit={onNextStep} className={styles.form} noValidate>
+                  <p className={styles.hint}>Campos marcados com <span className={styles.star}>*</span> são obrigatórios.</p>
                   <label className="field">
                     <span>E-mail autorizado</span>
                     <input
@@ -223,7 +204,7 @@ export default function CadastroPage() {
                     <span className={styles.hint}>Definido pelo convite da coordenação.</span>
                   </label>
 
-                  <label className="field">
+                  <label className="field req">
                     <span>Nome completo</span>
                     <input
                       className="input"
@@ -237,7 +218,7 @@ export default function CadastroPage() {
                     />
                   </label>
 
-                  <label className="field">
+                  <label className="field req">
                     <span>Telefone (WhatsApp)</span>
                     <input
                       className="input"
@@ -249,6 +230,7 @@ export default function CadastroPage() {
                       value={phone}
                       onChange={(e) => setPhone(phoneInput(e.target.value))}
                     />
+                    <span className={styles.hint}>Usado pela coordenação para combinar visitas.</span>
                   </label>
 
                   {formError && (
@@ -265,7 +247,7 @@ export default function CadastroPage() {
                 </form>
               ) : (
                 <form onSubmit={onSubmit} className={styles.form} noValidate>
-                  <label className="field">
+                  <label className="field req">
                     <span>Crie uma senha</span>
                     <div className={styles.passwordWrap}>
                       <input
@@ -283,7 +265,7 @@ export default function CadastroPage() {
                         type="button"
                         className={styles.togglePass}
                         onClick={() => setShowPassword((v) => !v)}
-                        aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
+                        aria-pressed={showPassword}
                       >
                         {showPassword ? 'Ocultar' : 'Mostrar'}
                       </button>
@@ -291,7 +273,7 @@ export default function CadastroPage() {
                     <span className={styles.hint}>De 8 a 72 caracteres, com letras e números.</span>
                   </label>
 
-                  <label className="field">
+                  <label className="field req">
                     <span>Confirmar senha</span>
                     <input
                       className="input"
