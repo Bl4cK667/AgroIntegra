@@ -5,8 +5,9 @@ import type { Layout, LayoutItem, WidgetDef } from './types';
 import { DEFAULT_LAYOUT, WIDGETS } from './widgets';
 
 // Layout salvo por usuário neste navegador. Versão no nome da chave: se o formato mudar, cada um volta ao padrão.
-// v2 (20/11/2026): novo padrão com "Situação geral" e listas; quem tinha um layout salvo recebe o padrão novo uma vez.
-const KEY = (userId: string) => `agrointegra.painel.layout.v2.${userId}`;
+// v2 (20/11/2026): novo padrão com "Situação geral" e listas.
+// v3 (21/11/2026): padrão enxuto com 3 quadros; quem tinha um layout salvo recebe o padrão novo uma vez.
+const KEY = (userId: string) => `agrointegra.painel.layout.v3.${userId}`;
 
 export const widgetByType = new Map<string, WidgetDef>(WIDGETS.map((w) => [w.type, w]));
 

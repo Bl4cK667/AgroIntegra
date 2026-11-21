@@ -21,16 +21,13 @@ export const WIDGETS: WidgetDef[] = [
   { type: 'coverage', title: 'Cobertura de produtores', description: 'Participação dos produtores com atendimento no ano.', defaultSize: { w: 4, h: 4 }, minSize: { w: 3, h: 3 }, maxSize: { w: 8, h: 6 }, href: '/produtores', render: props => h(Coverage, props) },
 ];
 
-// Layout padrão no estilo de referência: "Situação geral" à esquerda (1/3) e painéis de tabela à direita (2/3).
-// A grade usa fluxo denso, então a ordem abaixo monta as duas colunas.
+// Layout padrão enxuto (21/11/2026): só o essencial para o dia a dia.
+// "Situação geral" à esquerda (1/3) e as duas listas de ação à direita (2/3).
+// Os outros quadros (gráficos, últimas visitas, comunidades, indicadores) seguem no catálogo "Adicionar quadro".
 const DEFAULT_TYPES = [
   'overview', // colunas 1–4, linhas 1–8
   'list-high-priority', // colunas 5–12, linhas 1–4
   'list-upcoming', // colunas 5–12, linhas 5–8
-  'visits-area', // colunas 1–8, linhas 9–12
-  'requests-status', // colunas 9–12, linhas 9–12
-  'list-recent-visits', // colunas 1–8, linhas 13–16
-  'communities-ranking', // colunas 9–12, linhas 13–16
 ];
 
 const byType = new Map(WIDGETS.map(widget => [widget.type, widget]));

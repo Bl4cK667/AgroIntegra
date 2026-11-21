@@ -6,7 +6,6 @@ import { WidgetCatalog } from '@/components/dashboard/WidgetCatalog';
 import { useDashboardLayout } from '@/components/dashboard/useDashboardLayout';
 import { ApiError, Dashboard, getDashboard } from '@/lib/api';
 import { useSession } from '@/lib/session';
-import { useTheme } from '@/lib/theme';
 import styles from '@/components/dashboard/dashboard.module.css';
 
 const MONTHS = [
@@ -29,7 +28,6 @@ const SKELETON = [
 // A disposição dos widgets é do usuário e fica salva neste navegador.
 export default function PainelPage() {
   const user = useSession();
-  const { theme, toggle } = useTheme();
   const [data, setData] = useState<Dashboard | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [editing, setEditing] = useState(false);
@@ -72,14 +70,6 @@ export default function PainelPage() {
         </div>
 
         <div className={styles.toolbarActions}>
-          <button
-            type="button"
-            className={styles.themeToggle}
-            onClick={toggle}
-          >
-            {theme === 'dark' ? 'Tema claro' : 'Tema escuro'}
-          </button>
-
           {editing ? (
             <>
               <button type="button" className={styles.toolBtn} onClick={() => setCatalog(true)}>
