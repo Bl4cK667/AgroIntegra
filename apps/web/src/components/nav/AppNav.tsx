@@ -125,6 +125,7 @@ export function Sidebar({ user, onLogout, collapsed, onCollapsedChange }: Props)
           <div className={s.user}>
             <Link
               href="/configuracoes"
+              prefetch={false}
               className={s.profile}
               data-active={pathname.startsWith('/configuracoes') || undefined}
               aria-label={`${user.name} — configurações da conta`}
@@ -174,7 +175,7 @@ export function Sidebar({ user, onLogout, collapsed, onCollapsedChange }: Props)
           <div className={s.backdrop} onClick={() => setSheet(false)} aria-hidden="true" />
           <div className={s.sheet} role="dialog" aria-modal="true" aria-label="Mais opções">
             <span className={s.grabber} aria-hidden="true" />
-            <Link href="/configuracoes" className={s.sheetUser}>
+            <Link href="/configuracoes" prefetch={false} className={s.sheetUser}>
               <span className={s.userText}>
                 <strong>{user.name}</strong>
                 <small>{ROLE_LABEL[user.role]} · Configurações da conta</small>

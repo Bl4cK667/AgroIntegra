@@ -110,7 +110,7 @@ export function Topbar({ user, onLogout }: { user: SessionUser; onLogout: () => 
             </summary>
             <div className={s.profileMenu}>
               <div className={s.user}><strong>{user.name}</strong><small>{ROLE_LABEL[user.role]}</small></div>
-              <Link href="/configuracoes">Configurações da conta</Link>
+              <Link href="/configuracoes" prefetch={false}>Configurações da conta</Link>
               <button type="button" className={s.mobileTheme} onClick={openSearch}>Ir para página</button>
               <button type="button" className={s.mobileTheme} onClick={toggle}>{theme === 'dark' ? 'Usar tema claro' : 'Usar tema escuro'}</button>
               <button type="button" onClick={onLogout}>Sair da conta</button>
@@ -177,7 +177,8 @@ export function Topbar({ user, onLogout }: { user: SessionUser; onLogout: () => 
             );
           })}
         </ul>
-        <Link href="/configuracoes" className={`${s.item} ${s.settings}`} aria-current={pathname.startsWith('/configuracoes') ? 'page' : undefined}>
+        {/* Sem pré-carregamento: o estilo dessa tela não seria usado nas outras e o navegador avisaria. */}
+        <Link href="/configuracoes" prefetch={false} className={`${s.item} ${s.settings}`} aria-current={pathname.startsWith('/configuracoes') ? 'page' : undefined}>
           Configurações
         </Link>
       </nav>
