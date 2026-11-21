@@ -22,23 +22,6 @@ import styles from './configuracoes.module.css';
 const MAX_AVATAR_BYTES = 2 * 1024 * 1024;
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 
-function Icon({ path }: { path: string }) {
-  return (
-    <svg
-      width="18"
-      height="18"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.7"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <path d={path} />
-    </svg>
-  );
-}
 
 function readAsDataUrl(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -288,9 +271,6 @@ export default function ConfiguracoesPage() {
             {/* Seção 1: Foto de perfil */}
             <section className="card enter" style={{ '--i': 1 } as CSSProperties} aria-labelledby="sec-foto">
               <div className="card-head">
-                <span className="card-icon">
-                  <Icon path="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2zM12 17a4 4 0 1 0 0-8 4 4 0 0 0 0 8" />
-                </span>
                 <h2 id="sec-foto" className="card-title">
                   Foto de perfil
                 </h2>
@@ -353,9 +333,6 @@ export default function ConfiguracoesPage() {
             {/* Seção 2: Dados pessoais */}
             <section className="card enter" style={{ '--i': 2 } as CSSProperties} aria-labelledby="sec-dados">
               <div className="card-head">
-                <span className="card-icon">
-                  <Icon path="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8" />
-                </span>
                 <h2 id="sec-dados" className="card-title">
                   Dados pessoais
                 </h2>
@@ -427,9 +404,6 @@ export default function ConfiguracoesPage() {
             {/* Seção 4: Sobre a conta */}
             <section className="card enter" style={{ '--i': 3 } as CSSProperties} aria-labelledby="sec-sobre">
               <div className="card-head">
-                <span className="card-icon">
-                  <Icon path="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zm0-14v4m0 4h.01" />
-                </span>
                 <h2 id="sec-sobre" className="card-title">
                   Sobre a conta
                 </h2>
@@ -461,9 +435,6 @@ export default function ConfiguracoesPage() {
             {/* Seção 3: Segurança da conta */}
             <section className="card enter" style={{ '--i': 1 } as CSSProperties} aria-labelledby="sec-senha">
               <div className="card-head">
-                <span className="card-icon">
-                  <Icon path="M19 11H5a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7a2 2 0 0 0-2-2zM7 11V7a5 5 0 0 1 10 0v4" />
-                </span>
                 <h2 id="sec-senha" className="card-title">
                   Segurança e senha
                 </h2>
@@ -548,9 +519,6 @@ export default function ConfiguracoesPage() {
         <div className={styles.single} role="tabpanel" id="cfg-panel-equipe" aria-labelledby="cfg-tab-equipe">
               <section className="card enter" style={{ '--i': 1 } as CSSProperties} aria-labelledby="sec-convites">
                 <div className="card-head">
-                  <span className="card-icon">
-                    <Icon path="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 7a4 4 0 1 0 0-8 4 4 0 0 0 0 8M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
-                  </span>
                   <h2 id="sec-convites" className="card-title">
                     Equipe e convites
                   </h2>

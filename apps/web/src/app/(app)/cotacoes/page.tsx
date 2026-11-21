@@ -30,10 +30,10 @@ const OTHER = '__outro__';
 function Change({ pct }: { pct: number | null }) {
   if (pct === null) return null;
   const cls = pct > 0 ? styles.up : pct < 0 ? styles.down : styles.flat;
-  const arrow = pct > 0 ? '▲' : pct < 0 ? '▼' : '=';
+  const word = pct > 0 ? 'Alta de' : pct < 0 ? 'Queda de' : 'Estável:';
   return (
     <span className={`${styles.change} ${cls}`} title="Variação para a semana anterior">
-      {arrow} {formatPercent(Math.abs(pct))}
+      {word} {formatPercent(Math.abs(pct))}
     </span>
   );
 }

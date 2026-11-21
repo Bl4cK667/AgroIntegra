@@ -65,12 +65,6 @@ export function NavStylePicker({ index = 5 }: { index?: number }) {
   return (
     <section className={`card enter ${s.section}`} style={{ '--i': index } as CSSProperties} aria-labelledby="sec-interface">
       <div className="card-head">
-        <span className="card-icon">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <rect x="3" y="4" width="18" height="16" rx="2.5" />
-            <path d="M3 9h18M8 9v11" />
-          </svg>
-        </span>
         <h2 id="sec-interface" className="card-title">
           Personalização da interface
         </h2>

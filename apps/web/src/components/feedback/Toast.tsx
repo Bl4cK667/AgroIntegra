@@ -22,9 +22,8 @@ export function Toast({ message, onClose, duration = 6000, tone = 'success' }: T
   }, [message, duration]);
   if (!message || message === dismissed) return null;
   return <div className={styles.toast} data-tone={tone} role={tone === 'error' ? 'alert' : 'status'}>
-    <span className={styles.symbol} aria-hidden="true">{tone === 'success' ? '✓' : '!'}</span>
     <span>{message}</span>
-    <button type="button" aria-label="Fechar aviso" onClick={() => { setDismissed(message); onClose?.(); }}>×</button>
+    <button type="button" onClick={() => { setDismissed(message); onClose?.(); }}>Fechar</button>
   </div>;
 }
 

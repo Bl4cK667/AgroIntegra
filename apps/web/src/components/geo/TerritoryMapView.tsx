@@ -121,8 +121,8 @@ export default function TerritoryMapView({ data, height = 560 }: { data: Territo
         <aside className={`card card-flush ${styles.selPanel}`} style={{ maxHeight: height }} aria-labelledby="sel-title">
           <div className="card-head">
             <h2 id="sel-title" className="card-title">{p.name}</h2>
-            <button type="button" className={`btn btn-icon ${styles.selClose}`} onClick={() => setSelected(null)} aria-label="Fechar o painel da propriedade">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>
+            <button type="button" className={`btn btn-secondary btn-sm ${styles.selClose}`} onClick={() => setSelected(null)}>
+              Fechar
             </button>
           </div>
           <div className={styles.selBody}>
