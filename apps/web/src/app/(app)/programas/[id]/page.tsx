@@ -44,7 +44,6 @@ export default function ProgramaPage() {
         Programas
       </Link>
       <FieldHeading
-        icon="sprout"
         eyebrow={`Vigência ${formatDay(p.startsOn)} a ${formatDay(p.endsOn)}`}
         title={p.name}
         description={p.description}
@@ -52,16 +51,16 @@ export default function ProgramaPage() {
 
       <FieldStats
         items={[
-          { label: 'Vagas', value: formatInt(p.slots), icon: 'flag', note: `${formatInt(p.openSlots)} ainda livres` },
-          { label: 'Inscritos', value: formatInt(p.enrolled), icon: 'note', note: `${p.pending} em análise, ${p.rejected} não aprovados` },
-          { label: 'Beneficiários', value: formatInt(p.approved), icon: 'people', note: 'inscrições aprovadas' },
-          { label: 'Entregas', value: formatInt(p.deliveryCount), icon: 'check', note: 'registros de entrega' },
+          { label: 'Vagas', value: formatInt(p.slots), note: `${formatInt(p.openSlots)} ainda livres` },
+          { label: 'Inscritos', value: formatInt(p.enrolled), note: `${p.pending} em análise, ${p.rejected} não aprovados` },
+          { label: 'Beneficiários', value: formatInt(p.approved), note: 'inscrições aprovadas' },
+          { label: 'Entregas', value: formatInt(p.deliveryCount), note: 'registros de entrega' },
         ]}
       />
 
       <section className={own.execution} aria-label="Execução">
         <div className="card enter" style={{ '--i': 5 } as React.CSSProperties}>
-          <SectionTitle icon="land">Execução física</SectionTitle>
+          <SectionTitle>Execução física</SectionTitle>
           <p className={own.big}>
             <strong className="num">{formatInt(p.deliveredQuantity)}</strong>
             <span className="num">
@@ -71,7 +70,7 @@ export default function ProgramaPage() {
           <Meter percent={p.physicalPercent} />
         </div>
         <div className="card enter" style={{ '--i': 6 } as React.CSSProperties}>
-          <SectionTitle icon="report">Execução financeira</SectionTitle>
+          <SectionTitle>Execução financeira</SectionTitle>
           <p className={own.big}>
             <strong className="num">{formatMoney(p.spentCents)}</strong>
             <span className="num">de {formatMoney(p.budgetCents)} do orçamento</span>
@@ -82,11 +81,11 @@ export default function ProgramaPage() {
 
       <div className={own.tables}>
         <section className="card enter" style={{ '--i': 7 } as React.CSSProperties}>
-          <SectionTitle icon="people" actions={<span className="badge badge-neutral num">{p.enrollments.length}</span>}>
+          <SectionTitle actions={<span className="badge badge-neutral num">{p.enrollments.length}</span>}>
             Inscrições
           </SectionTitle>
           {p.enrollments.length === 0 ? (
-            <FieldEmpty icon="people" title="Nenhuma inscrição">
+            <FieldEmpty title="Nenhuma inscrição">
               As inscrições aparecem aqui assim que forem registradas.
             </FieldEmpty>
           ) : (
@@ -120,11 +119,11 @@ export default function ProgramaPage() {
         </section>
 
         <section className="card enter" style={{ '--i': 8 } as React.CSSProperties}>
-          <SectionTitle icon="check" actions={<span className="badge badge-neutral num">{p.deliveries.length}</span>}>
+          <SectionTitle actions={<span className="badge badge-neutral num">{p.deliveries.length}</span>}>
             Entregas
           </SectionTitle>
           {p.deliveries.length === 0 ? (
-            <FieldEmpty icon="check" title="Nenhuma entrega registrada">
+            <FieldEmpty title="Nenhuma entrega registrada">
               Cada entrega registrada soma na execução física e financeira.
             </FieldEmpty>
           ) : (

@@ -3,7 +3,8 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { FieldEmpty, FieldHeading, FieldIcon, FieldLoading, FieldStats, fieldStyles as ui } from '@/components/property/FieldUI';
+import { Pager, usePager } from '@/components/Pager';
+import { FieldEmpty, FieldHeading, FieldLoading, FieldStats, fieldStyles as ui } from '@/components/property/FieldUI';
 import { ApiError, listPrograms, ProgramSummary } from '@/lib/api';
 import { formatDay, formatInt, todayIso } from '@/lib/format';
 import { useDebounced } from '@/lib/useDebounced';
@@ -31,11 +32,11 @@ export default function ProgramasPage() {
     : { label: 'Em andamento', cls: 'badge badge-success' };
 
   const rows = (data?.items ?? []).filter((p) => !term || normalize(p.name).includes(term));
+  const pager = usePager(rows, term);
 
   return (
     <>
       <FieldHeading
-        icon="sprout"
         eyebrow="Fomento"
         title="Programas"
         description="Programas de fomento da secretaria. Consulta: os números vêm das inscrições e entregas registradas."
@@ -44,15 +45,15 @@ export default function ProgramasPage() {
       {data && data.items.length > 0 && (
         <FieldStats
           items={[
-            { label: 'Programas', value: formatInt(data.items.length), icon: 'sprout', note: `${data.items.filter((p) => phase(p).label === 'Em andamento').length} em andamento` },
-            { label: 'Beneficiários', value: formatInt(data.items.reduce((a, p) => a + p.approved, 0)), icon: 'people', note: `de ${formatInt(data.items.reduce((a, p) => a + p.slots, 0))} vagas` },
-            { label: 'Entregas', value: formatInt(data.items.reduce((a, p) => a + p.deliveryCount, 0)), icon: 'check', note: 'registradas nos programas' },
+            { label: 'Programas', value: formatInt(data.items.length), note: `${data.items.filter((p) => phase(p).label === 'Em andamento').length} em andamento` },
+            { label: 'Beneficiários', value: formatInt(data.items.reduce((a, p) => a + p.approved, 0)), note: `de ${formatInt(data.items.reduce((a, p) => a + p.slots, 0))} vagas` },
+            { label: 'Entregas', value: formatInt(data.items.reduce((a, p) => a + p.deliveryCount, 0)), note: 'registradas nos programas' },
           ]}
         />
       )}
 
       {data && data.items.length === 0 && (
-        <FieldEmpty icon="sprout" title="Nenhum programa cadastrado">
+        <FieldEmpty title="Nenhum programa cadastrado">
           Os programas entram pela carga de dados da secretaria.
         </FieldEmpty>
       )}
@@ -61,7 +62,7 @@ export default function ProgramasPage() {
         <section className={`card enter ${ui.listCard}`} style={{ '--i': 4 } as React.CSSProperties}>
           <div className="toolbar">
             <div className={ui.search}>
-              <FieldIcon name="search" />
+              <span className={ui.searchLabel} aria-hidden="true">Buscar:</span>
               <input
                 className="input"
                 type="search"
@@ -85,7 +86,6 @@ export default function ProgramasPage() {
             <div className="table-wrap">
               {rows.length === 0 ? (
                 <div className="empty">
-                  <span className={`card-icon ${ui.emptyIcon}`}><FieldIcon name="sprout" /></span>
                   <strong>Nenhum programa encontrado</strong>
                   Confira a grafia do nome.
                 </div>
@@ -103,14 +103,13 @@ export default function ProgramasPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {rows.map((p) => {
+                    {pager.pageItems.map((p) => {
                       const ph = phase(p);
                       return (
                         <tr key={p.id} className="clickable" onClick={() => router.push(`/programas/${p.id}`)}>
                           <td data-label="Programa">
                             <Link href={`/programas/${p.id}`} onClick={(e) => e.stopPropagation()}>
                               <span className={ui.person}>
-                                <span className={ui.avatar} aria-hidden="true"><FieldIcon name="sprout" /></span>
                                 <span>
                                   {p.name}
                                   <small className="num">{formatDay(p.startsOn)} a {formatDay(p.endsOn)}</small>
@@ -131,6 +130,11 @@ export default function ProgramasPage() {
                     })}
                   </tbody>
                 </table>
+              )}
+              {rows.length > 0 && (
+                <div className="table-foot">
+                  <Pager {...pager} shown={pager.pageItems.length} total={rows.length} />
+                </div>
               )}
             </div>
           )}

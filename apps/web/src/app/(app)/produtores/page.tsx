@@ -1,7 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { FieldHeading, FieldIcon, FieldLoading, FieldStats, fieldStyles as ui } from '@/components/property/FieldUI';
+import { Pager, usePager } from '@/components/Pager';
+import { FieldHeading, FieldLoading, FieldStats, fieldStyles as ui } from '@/components/property/FieldUI';
 
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -25,19 +26,20 @@ export default function ProdutoresPage() {
       alive = false;
     };
   }, [term]);
+  const pager = usePager(data?.items ?? [], term);
 
   return (
     <>
-      <FieldHeading icon="people" eyebrow="Cadastro" title="Produtores" description="Produtores rurais cadastrados, com suas propriedades e atendimentos." actions={<Link href="/produtores/novo" className="btn btn-primary"><FieldIcon name="plus" /> Novo produtor</Link>} />
+      <FieldHeading eyebrow="Cadastro" title="Produtores" description="Produtores rurais cadastrados, com suas propriedades e atendimentos." />
       {data && !term && <FieldStats items={[
-        { label: 'Produtores cadastrados', value: data.total.toLocaleString('pt-BR'), icon: 'people', note: 'Base de assistência técnica' },
-        { label: 'Comunidades na lista', value: new Set(data.items.map(p => p.community)).size, icon: 'pin', note: 'Representadas nesta consulta' },
-        { label: 'Consentimentos na lista', value: data.items.filter(p => p.consentAt).length, icon: 'check', note: 'Uso de dados autorizado' },
+        { label: 'Produtores cadastrados', value: data.total.toLocaleString('pt-BR'), note: 'Base de assistência técnica' },
+        { label: 'Comunidades na lista', value: new Set(data.items.map(p => p.community)).size, note: 'Representadas nesta consulta' },
+        { label: 'Consentimentos na lista', value: data.items.filter(p => p.consentAt).length, note: 'Uso de dados autorizado' },
       ]} /> }
 
       <section className={`card enter ${ui.listCard}`} style={{ '--i': 4 } as React.CSSProperties}>
       <div className="toolbar">
-        <div className={ui.search}><FieldIcon name="search" />
+        <div className={ui.search}><span className={ui.searchLabel} aria-hidden="true">Buscar:</span>
         <input
           className="input"
           type="search"
@@ -62,7 +64,7 @@ export default function ProdutoresPage() {
       {data && (
         <div className="table-wrap">
           {data.items.length === 0 ? (
-            <div className="empty"><span className={`card-icon ${ui.emptyIcon}`}><FieldIcon name="people" /></span>
+            <div className="empty">
               {term ? (
                 <>
                   <strong>Nenhum produtor encontrado</strong>
@@ -87,11 +89,11 @@ export default function ProdutoresPage() {
                 </tr>
               </thead>
               <tbody>
-                {data.items.map((p) => (
+                {pager.pageItems.map((p) => (
                   <tr key={p.id} className="clickable" onClick={() => router.push(`/produtores/${p.id}`)}>
                     <td data-label="Nome">
                       <Link href={`/produtores/${p.id}`} onClick={(e) => e.stopPropagation()}>
-                        <span className={ui.person}><span className={ui.avatar} aria-hidden="true">{p.name.split(' ').filter(Boolean).slice(0, 2).map(n => n[0]).join('')}</span><span>{p.name}<small>{p.community}</small></span></span>
+                        <span className={ui.person}><span>{p.name}<small>{p.community}</small></span></span>
                       </Link>
                     </td>
                     <td className="num muted" data-label="CPF">{p.cpf}</td>
@@ -111,12 +113,18 @@ export default function ProdutoresPage() {
           )}
           {data.items.length > 0 && (
             <div className="table-foot">
-              <span>Mostrando {data.items.length.toLocaleString('pt-BR')} de {data.total.toLocaleString('pt-BR')}</span>
-              <span>Selecione uma linha para abrir a ficha do produtor.</span>
+              <Pager {...pager} shown={pager.pageItems.length} total={data.items.length} />
             </div>
           )}
         </div>
       )}
+      {data && data.total > data.items.length && (
+        <p className="muted">A lista mostra os {data.items.length.toLocaleString('pt-BR')} primeiros de {data.total.toLocaleString('pt-BR')} produtores. Use a busca para encontrar os demais.</p>
+      )}
+      {data && data.items.length > 0 && <p className="muted">Selecione uma linha para abrir a ficha do produtor.</p>}
+      <div className="table-actions">
+        <Link href="/produtores/novo" className="btn btn-primary">Novo produtor</Link>
+      </div>
       </section>
     </>
   );

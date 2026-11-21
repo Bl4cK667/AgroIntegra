@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { FieldIcon } from '@/components/property/FieldUI';
 import {
   ApiError,
   BULK_TYPE_LABEL,
@@ -199,11 +198,9 @@ export function BulkExport() {
 
       <div className="form-bar">
         <button type="button" className="btn btn-secondary" onClick={() => download('pdf')} disabled={!!busy || periodInvalid || total === 0 || overPdf}>
-          <FieldIcon name="download" />
           {busy === 'pdf' ? 'Gerando PDF…' : 'Baixar PDF'}
         </button>
         <button type="button" className="btn btn-primary" onClick={() => download('csv')} disabled={!!busy || periodInvalid || total === 0 || overCsv}>
-          <FieldIcon name="download" />
           {busy === 'csv' ? 'Gerando planilha…' : 'Baixar planilha (CSV)'}
         </button>
       </div>

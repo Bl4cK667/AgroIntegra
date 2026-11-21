@@ -6,7 +6,7 @@ import { Suspense, useEffect, useState } from 'react';
 import form from '@/components/form.module.css';
 import { ProducerSearch } from '@/components/ProducerSearch';
 import { BulkExport } from '@/components/reports/BulkExport';
-import { FieldEmpty, FieldHeading, FieldLoading, FieldIcon, FieldStats, SectionTitle } from '@/components/property/FieldUI';
+import { FieldEmpty, FieldHeading, FieldLoading, FieldStats, SectionTitle } from '@/components/property/FieldUI';
 import {
   ApiError,
   ENROLLMENT_LABEL,
@@ -46,7 +46,6 @@ function ReportsHeading({ tab }: { tab: Tab }) {
   return (
     <>
       <FieldHeading
-        icon="report"
         eyebrow="Prestação de contas"
         title="Relatórios"
         description={
@@ -131,10 +130,8 @@ function ProducerReportTab() {
 
       <section className={`card enter ${styles.builder}`} style={{ '--i': 1 } as React.CSSProperties} aria-label="Montar relatório">
         <SectionTitle
-          icon="note"
           actions={
             <button type="button" className="btn btn-primary" onClick={download} disabled={!report || !validPeriod || downloading || loading}>
-              {downloading ? <span className={styles.spinner} aria-hidden="true" /> : <FieldIcon name="download" />}
               {downloading ? 'Gerando PDF…' : 'Baixar PDF'}
             </button>
           }
@@ -195,7 +192,7 @@ function ProducerReportTab() {
 
       {!producerId && (
         <div className="enter" style={{ '--i': 2 } as React.CSSProperties}>
-          <FieldEmpty icon="report" title="Escolha um produtor">
+          <FieldEmpty title="Escolha um produtor">
             A prévia do relatório aparece aqui, com os mesmos números do PDF.
           </FieldEmpty>
         </div>
@@ -230,15 +227,15 @@ function Preview({ r, loading }: { r: ProducerReport; loading: boolean }) {
 
       <FieldStats
         items={[
-          { label: 'Visitas', value: formatInt(r.totals.visits), icon: 'visit', note: 'atendimentos técnicos' },
-          { label: 'Solicitações abertas', value: formatInt(r.totals.requestsOpened), icon: 'inbox', note: `${formatInt(r.totals.requestsCompleted)} concluídas` },
-          { label: 'Entregas de programas', value: formatInt(r.totals.deliveries), icon: 'sprout', note: formatMoney(r.totals.deliveredValueCents) },
+          { label: 'Visitas', value: formatInt(r.totals.visits), note: 'atendimentos técnicos' },
+          { label: 'Solicitações abertas', value: formatInt(r.totals.requestsOpened), note: `${formatInt(r.totals.requestsCompleted)} concluídas` },
+          { label: 'Entregas de programas', value: formatInt(r.totals.deliveries), note: formatMoney(r.totals.deliveredValueCents) },
         ]}
       />
 
       <div className={styles.sections}>
         <section className="card enter" style={{ '--i': 5 } as React.CSSProperties}>
-          <SectionTitle icon="visit" actions={<span className="badge badge-neutral num">{r.totals.visits}</span>}>
+          <SectionTitle actions={<span className="badge badge-neutral num">{r.totals.visits}</span>}>
             Visitas técnicas
           </SectionTitle>
           {r.visits.length === 0 ? (
@@ -264,7 +261,7 @@ function Preview({ r, loading }: { r: ProducerReport; loading: boolean }) {
                   </p>
                   <div className={styles.tags}>
                     <span className="badge badge-neutral">
-                      <FieldIcon name="calendar" /> {v.returnOn ? `Retorno ${formatDay(v.returnOn)}` : 'Sem retorno previsto'}
+                      {v.returnOn ? `Retorno ${formatDay(v.returnOn)}` : 'Sem retorno previsto'}
                     </span>
                     <span className="badge badge-neutral num">{v.photoCount} {v.photoCount === 1 ? 'foto' : 'fotos'}</span>
                     <span className={v.hasSignature ? 'badge badge-success' : 'badge badge-warning'}>
@@ -279,7 +276,7 @@ function Preview({ r, loading }: { r: ProducerReport; loading: boolean }) {
 
         <aside className={styles.side}>
           <section className="card enter" style={{ '--i': 6 } as React.CSSProperties}>
-            <SectionTitle icon="land">Propriedades</SectionTitle>
+            <SectionTitle>Propriedades</SectionTitle>
             {r.properties.length === 0 ? (
               <p className="muted">Nenhuma cadastrada.</p>
             ) : (
@@ -293,7 +290,7 @@ function Preview({ r, loading }: { r: ProducerReport; loading: boolean }) {
             )}
           </section>
           <section className="card enter" style={{ '--i': 7 } as React.CSSProperties}>
-            <SectionTitle icon="inbox" actions={<span className="badge badge-neutral num">{r.totals.requestsOpened}</span>}>
+            <SectionTitle actions={<span className="badge badge-neutral num">{r.totals.requestsOpened}</span>}>
               Solicitações no período
             </SectionTitle>
             {r.requests.length === 0 ? (
@@ -312,7 +309,7 @@ function Preview({ r, loading }: { r: ProducerReport; loading: boolean }) {
             )}
           </section>
           <section className="card enter" style={{ '--i': 8 } as React.CSSProperties}>
-            <SectionTitle icon="sprout">Programas</SectionTitle>
+            <SectionTitle>Programas</SectionTitle>
             {r.programs.length === 0 ? (
               <p className="muted">Sem inscrição em programas.</p>
             ) : (

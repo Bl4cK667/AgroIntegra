@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { Fragment, useCallback, useEffect, useState } from 'react';
 import { Toast } from '@/components/feedback/Toast';
-import { FieldHeading, FieldIcon, FieldLoading, FieldStats, fieldStyles as ui } from '@/components/property/FieldUI';
+import { FieldHeading, FieldLoading, FieldStats, fieldStyles as ui } from '@/components/property/FieldUI';
 import { PriorityTag } from '@/components/request/PriorityTag';
 import {
   ApiError,
@@ -116,23 +116,17 @@ export default function SolicitacoesPage() {
   return (
     <>
       <FieldHeading
-        icon="inbox"
         eyebrow="Fluxo de atendimento"
         title="Solicitações"
         description="Pedidos de atendimento dos produtores, da chegada à visita. Selecione uma linha para ver os detalhes e mudar a situação."
-        actions={
-          <Link href="/solicitacoes/nova" className="btn btn-primary">
-            <FieldIcon name="plus" /> Nova solicitação
-          </Link>
-        }
       />
 
       {items && (
         <FieldStats
           items={[
-            { label: 'Em aberto', value: openItems.length, icon: 'inbox', note: 'Novas, em análise e agendadas' },
-            { label: 'Alta prioridade', value: openItems.filter((r) => r.priority === 'HIGH').length, icon: 'flag', note: 'Pedem atenção primeiro' },
-            { label: 'Agendadas', value: openItems.filter((r) => r.status === 'SCHEDULED').length, icon: 'calendar', note: 'Com visita marcada' },
+            { label: 'Em aberto', value: openItems.length, note: 'Novas, em análise e agendadas' },
+            { label: 'Alta prioridade', value: openItems.filter((r) => r.priority === 'HIGH').length, note: 'Pedem atenção primeiro' },
+            { label: 'Agendadas', value: openItems.filter((r) => r.status === 'SCHEDULED').length, note: 'Com visita marcada' },
           ]}
         />
       )}
@@ -142,7 +136,7 @@ export default function SolicitacoesPage() {
       <section className={`card enter ${ui.listCard}`} style={{ '--i': 4 } as React.CSSProperties}>
         <div className="toolbar">
           <div className={ui.search}>
-            <FieldIcon name="search" />
+            <span className={ui.searchLabel} aria-hidden="true">Buscar:</span>
             <input
               className="input"
               type="search"
@@ -183,7 +177,6 @@ export default function SolicitacoesPage() {
           <div className="table-wrap">
             {rows.length === 0 ? (
               <div className="empty">
-                <span className={`card-icon ${ui.emptyIcon}`}><FieldIcon name="inbox" /></span>
                 <strong>Nenhuma solicitação encontrada</strong>
                 {term || filter !== 'ALL' || status !== 'OPEN' ? 'Ajuste a busca ou os filtros.' : <Link href="/solicitacoes/nova">Registrar uma solicitação</Link>}
               </div>
@@ -222,9 +215,6 @@ export default function SolicitacoesPage() {
                           </td>
                           <td data-label="Produtor">
                             <span className={ui.person}>
-                              <span className={ui.avatar} aria-hidden="true">
-                                {r.producer.name.split(' ').filter(Boolean).slice(0, 2).map((n) => n[0]).join('')}
-                              </span>
                               <span>
                                 {r.producer.name}
                                 <small>{r.producer.community}</small>
@@ -273,6 +263,11 @@ export default function SolicitacoesPage() {
             )}
           </div>
         )}
+        <div className="table-actions">
+          <Link href="/solicitacoes/nova" className="btn btn-primary">
+            Nova solicitação
+          </Link>
+        </div>
       </section>
     </>
   );

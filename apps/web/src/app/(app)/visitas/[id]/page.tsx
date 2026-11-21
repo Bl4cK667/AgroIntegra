@@ -37,32 +37,32 @@ export default function VisitaPage() {
       <Link href={`/produtores/${visit.producer.id}`} className="back">
         {visit.producer.name}
       </Link>
-      <FieldHeading icon="visit" eyebrow="Registro de atendimento" title={<>Visita de <span className="num">{formatDay(visit.visitedOn)}</span></>} description={<><Link href={`/produtores/${visit.producer.id}`}>{visit.producer.name}</Link>{visit.property && <> · {visit.property.name}</>}</>} actions={<Link href={`/visitas/nova?produtor=${visit.producer.id}`} className="btn btn-primary">Registrar nova visita</Link>} />
+      <FieldHeading eyebrow="Registro de atendimento" title={<>Visita de <span className="num">{formatDay(visit.visitedOn)}</span></>} description={<><Link href={`/produtores/${visit.producer.id}`}>{visit.producer.name}</Link>{visit.property && <> · {visit.property.name}</>}</>} actions={<Link href={`/visitas/nova?produtor=${visit.producer.id}`} className="btn btn-primary">Registrar nova visita</Link>} />
       <FieldStats items={[
-        { label: 'Técnico responsável', value: visit.technician.name, icon: 'people' },
-        { label: 'Prazo de retorno', value: visit.returnOn ? formatDay(visit.returnOn) : 'Sem previsão', icon: 'calendar' },
-        { label: 'Registros fotográficos', value: visit.photos.length, icon: 'note', note: visit.hasSignature ? 'Com assinatura do produtor' : 'Sem assinatura coletada' },
+        { label: 'Técnico responsável', value: visit.technician.name },
+        { label: 'Prazo de retorno', value: visit.returnOn ? formatDay(visit.returnOn) : 'Sem previsão' },
+        { label: 'Registros fotográficos', value: visit.photos.length, note: visit.hasSignature ? 'Com assinatura do produtor' : 'Sem assinatura coletada' },
       ]} />
 
       <div className={styles.layout}>
         <div className={styles.main}>
           <section className="card enter">
-            <SectionTitle icon="search">Diagnóstico</SectionTitle>
+            <SectionTitle>Diagnóstico</SectionTitle>
             <p className={styles.text}>{visit.diagnosis}</p>
           </section>
           <section className="card enter">
-            <SectionTitle icon="check">Plano de ação</SectionTitle>
+            <SectionTitle>Plano de ação</SectionTitle>
             <p className={styles.text}>{visit.actionPlan}</p>
           </section>
           {visit.impact && (
             <section className="card enter">
-              <SectionTitle icon="sprout">Impacto esperado</SectionTitle>
+              <SectionTitle>Impacto esperado</SectionTitle>
               <p className={styles.text}>{visit.impact}</p>
             </section>
           )}
           {visit.photos.length > 0 && (
             <section className="card enter">
-              <SectionTitle icon="note">Fotos</SectionTitle>
+              <SectionTitle>Fotos</SectionTitle>
               <div className={styles.photos}>
                 {visit.photos.map((p) => (
                   <ProtectedImage key={p.id} path={`/visits/${visit.id}/photos/${p.id}`} alt={`Foto ${p.position} da visita`} />

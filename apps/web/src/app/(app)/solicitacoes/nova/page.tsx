@@ -85,7 +85,7 @@ function NovaSolicitacao() {
       <Link href={back} className="back">
         {fromProducer ? (producer?.name ?? 'Produtor') : 'Solicitações'}
       </Link>
-      <FieldHeading icon="inbox" eyebrow="Fluxo de atendimento" title="Nova solicitação" description="Registre o pedido do produtor. Ele entra na lista de solicitações com a situação Nova." />
+      <FieldHeading eyebrow="Fluxo de atendimento" title="Nova solicitação" description="Registre o pedido do produtor. Ele entra na lista de solicitações com a situação Nova." />
 
       <p className="muted">Os campos com * são obrigatórios. Você pode completar o pedido com uma descrição.</p>
       <form className={`${styles.form} form-h enter`} style={{ '--i': 1 } as React.CSSProperties} onSubmit={onSubmit} onInput={clearFieldError} noValidate>

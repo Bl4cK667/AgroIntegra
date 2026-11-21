@@ -663,6 +663,14 @@ main:focus {
   border-radius: var(--radius-lg);
 }
 
+/* Botões de ação de uma lista: agrupados abaixo da tabela, alinhados à esquerda. */
+.table-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}
+
 /* Formulário horizontal: rótulo à esquerda, campo à direita, ajuda abaixo do campo. */
 .form-h .field {
   grid-template-columns: var(--label-col) minmax(0, 1fr);

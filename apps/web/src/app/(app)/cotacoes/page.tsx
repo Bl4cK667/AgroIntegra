@@ -254,7 +254,6 @@ export default function CotacoesPage() {
   return (
     <>
       <FieldHeading
-        icon="sprout"
         eyebrow="Cotações"
         title="Preços ao produtor"
         description="Preço recebido pelo produtor no Pará, semana a semana (CONAB), e os preços que a equipe encontra nas praças da região."

@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { FormFeedback } from '@/components/property/FormFeedback';
 import { checkRequiredFields, clearFieldError, propertyArea, reportFieldError, validCpf } from '@/components/property/formValidation';
-import { FieldHeading, FieldIcon, fieldStyles as ui } from '@/components/property/FieldUI';
+import { FieldHeading, fieldStyles as ui } from '@/components/property/FieldUI';
 import { PerimeterField } from '@/components/geo/PerimeterField';
 import { useRouter } from 'next/navigation';
 import { FormEvent, useState } from 'react';
@@ -81,11 +81,11 @@ export default function NovoProdutorPage() {
       <Link href="/produtores" className="back">
         Produtores
       </Link>
-      <FieldHeading icon="people" eyebrow="Cadastro de produtores" title="Novo produtor" description="Comece pela identificação. Se quiser, já cadastre a primeira propriedade e demarque o perímetro no mapa." />
+      <FieldHeading eyebrow="Cadastro de produtores" title="Novo produtor" description="Comece pela identificação. Se quiser, já cadastre a primeira propriedade e demarque o perímetro no mapa." />
 
       <form className={`${ui.form} form-h`} onSubmit={onSubmit} onInput={clearFieldError} noValidate>
           <FormFeedback />
-          <fieldset disabled={saving} className={`card enter ${ui.formSection}`}><legend><FieldIcon name="people" /> Identificação e contato</legend>
+          <fieldset disabled={saving} className={`card enter ${ui.formSection}`}><legend>Identificação e contato</legend>
         <p className="muted">Os campos com * são obrigatórios.</p>
         <label className="field">
           <span>Nome completo *</span>
@@ -119,7 +119,7 @@ export default function NovoProdutorPage() {
         </label>
 
           </fieldset>
-          <fieldset disabled={saving} className={`card enter ${ui.formSection}`} style={{ '--i': 1 } as React.CSSProperties}><legend><FieldIcon name="check" /> Consentimento e privacidade</legend>
+          <fieldset disabled={saving} className={`card enter ${ui.formSection}`} style={{ '--i': 1 } as React.CSSProperties}><legend>Consentimento e privacidade</legend>
         <label className="check">
           <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} />
           <span>
@@ -129,7 +129,7 @@ export default function NovoProdutorPage() {
         </label>
 
           </fieldset>
-          <fieldset disabled={saving} className={`card enter ${ui.formSection}`} style={{ '--i': 2 } as React.CSSProperties}><legend><FieldIcon name="land" /> Primeira propriedade e demarcação</legend>
+          <fieldset disabled={saving} className={`card enter ${ui.formSection}`} style={{ '--i': 2 } as React.CSSProperties}><legend>Primeira propriedade e demarcação</legend>
         <label className="check">
           <input type="checkbox" checked={withProperty} onChange={(e) => setWithProperty(e.target.checked)} />
           <span>

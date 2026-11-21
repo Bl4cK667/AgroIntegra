@@ -1,7 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { FieldHeading, FieldIcon, FieldLoading, FieldStats, fieldStyles as ui } from '@/components/property/FieldUI';
+import { Pager, usePager } from '@/components/Pager';
+import { FieldHeading, FieldLoading, FieldStats, fieldStyles as ui } from '@/components/property/FieldUI';
 
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -25,19 +26,20 @@ export default function PropriedadesPage() {
       alive = false;
     };
   }, [term]);
+  const pager = usePager(data?.items ?? [], term);
 
   return (
     <>
-      <FieldHeading icon="land" eyebrow="Cadastro" title="Propriedades" description="Propriedades rurais cadastradas, com área, atividade principal e produtor responsável." actions={<Link href="/produtores" className="btn btn-secondary"><FieldIcon name="plus" /> Cadastrar pelo produtor</Link>} />
+      <FieldHeading eyebrow="Cadastro" title="Propriedades" description="Propriedades rurais cadastradas, com área, atividade principal e produtor responsável." />
       {data && !term && <FieldStats items={[
-        { label: 'Propriedades cadastradas', value: data.total.toLocaleString('pt-BR'), icon: 'land', note: 'Base de propriedades rurais' },
-        { label: 'Área nesta consulta', value: formatArea(data.items.reduce((sum, p) => sum + p.areaHa, 0)), icon: 'pin', note: 'Soma das propriedades listadas' },
-        { label: 'Produtores na lista', value: new Set(data.items.map(p => p.producer.id)).size, icon: 'people', note: 'Vinculados às propriedades' },
+        { label: 'Propriedades cadastradas', value: data.total.toLocaleString('pt-BR'), note: 'Base de propriedades rurais' },
+        { label: 'Área nesta consulta', value: formatArea(data.items.reduce((sum, p) => sum + p.areaHa, 0)), note: 'Soma das propriedades listadas' },
+        { label: 'Produtores na lista', value: new Set(data.items.map(p => p.producer.id)).size, note: 'Vinculados às propriedades' },
       ]} /> }
 
       <section className={`card enter ${ui.listCard}`} style={{ '--i': 4 } as React.CSSProperties}>
       <div className="toolbar">
-        <div className={ui.search}><FieldIcon name="search" />
+        <div className={ui.search}><span className={ui.searchLabel} aria-hidden="true">Buscar:</span>
         <input
           className="input"
           type="search"
@@ -60,7 +62,7 @@ export default function PropriedadesPage() {
       {data && (
         <div className="table-wrap">
           {data.items.length === 0 ? (
-            <div className="empty"><span className={`card-icon ${ui.emptyIcon}`}><FieldIcon name="land" /></span>
+            <div className="empty">
               {term ? (
                 <>
                   <strong>Nenhuma propriedade encontrada</strong>
@@ -87,12 +89,11 @@ export default function PropriedadesPage() {
                 </tr>
               </thead>
               <tbody>
-                {data.items.map((p) => (
+                {pager.pageItems.map((p) => (
                   <tr key={p.id} className="clickable" onClick={() => router.push(`/propriedades/${p.id}/mapa`)}>
                     <td data-label="Propriedade">
                       <Link href={`/propriedades/${p.id}/mapa`} onClick={(e) => e.stopPropagation()}>
                         <span className={ui.person}>
-                          <span className={ui.avatar} aria-hidden="true"><FieldIcon name="land" /></span>
                           <span>{p.name}<small>{p.locality}</small></span>
                         </span>
                       </Link>
@@ -118,12 +119,18 @@ export default function PropriedadesPage() {
           )}
           {data.items.length > 0 && (
             <div className="table-foot">
-              <span>Mostrando {data.items.length.toLocaleString('pt-BR')} de {data.total.toLocaleString('pt-BR')}</span>
-              <span>Selecione uma linha para abrir o mapa da propriedade.</span>
+              <Pager {...pager} shown={pager.pageItems.length} total={data.items.length} />
             </div>
           )}
         </div>
       )}
+      {data && data.total > data.items.length && (
+        <p className="muted">A lista mostra as {data.items.length.toLocaleString('pt-BR')} primeiras de {data.total.toLocaleString('pt-BR')} propriedades. Use a busca para encontrar as demais.</p>
+      )}
+      {data && data.items.length > 0 && <p className="muted">Selecione uma linha para abrir o mapa da propriedade.</p>}
+      <div className="table-actions">
+        <Link href="/produtores" className="btn btn-secondary">Cadastrar propriedade pela ficha do produtor</Link>
+      </div>
       </section>
     </>
   );

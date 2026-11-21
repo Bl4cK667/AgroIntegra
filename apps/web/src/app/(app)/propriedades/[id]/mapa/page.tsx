@@ -183,7 +183,7 @@ export default function MapaDaPropriedadePage() {
   return (
     <>
       <Link href={`/produtores/${p.producer.id}`} className="back">{p.producer.name}</Link>
-      <FieldHeading icon="land" eyebrow="Mapa da propriedade" title={p.name} description={`${p.producer.name} · ${p.locality}`} />
+      <FieldHeading eyebrow="Mapa da propriedade" title={p.name} description={`${p.producer.name} · ${p.locality}`} />
       <Toast message={success} onClose={() => setSuccess(null)} />
 
       <div className={styles.mapPage}>

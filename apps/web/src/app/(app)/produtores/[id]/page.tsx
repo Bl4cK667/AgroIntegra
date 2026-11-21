@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { FormFeedback } from '@/components/property/FormFeedback';
 import { Toast } from '@/components/feedback/Toast';
 import { checkRequiredFields, clearFieldError, propertyArea, reportFieldError } from '@/components/property/formValidation';
-import { FieldHeading, FieldIcon, FieldLoading, SectionTitle, fieldStyles as ui } from '@/components/property/FieldUI';
+import { FieldHeading, FieldLoading, SectionTitle, fieldStyles as ui } from '@/components/property/FieldUI';
 import { useParams } from 'next/navigation';
 import { FormEvent, useCallback, useEffect, useState } from 'react';
 import { LocationDraft, locationDraft, LocationFields, locationInput, LocationSummary } from '@/components/property/LocationFields';
@@ -127,7 +127,7 @@ export default function ProdutorPage() {
       <Link href="/produtores" className="back">
         Produtores
       </Link>
-      <FieldHeading icon="people" eyebrow="Ficha do produtor" title={producer.name} description={producer.community} actions={<><Link href={`/relatorios?produtor=${id}`} className="btn btn-secondary"><FieldIcon name="report" /> Relatório em PDF</Link><Link href={`/produtores/${id}/editar`} className="btn btn-secondary">Editar dados</Link></>} />
+      <FieldHeading eyebrow="Ficha do produtor" title={producer.name} description={producer.community} actions={<><Link href={`/relatorios?produtor=${id}`} className="btn btn-secondary">Relatório em PDF</Link><Link href={`/produtores/${id}/editar`} className="btn btn-secondary">Editar dados</Link></>} />
 
       {error && <p className="alert">{error}</p>}
       {warning && (
@@ -198,11 +198,6 @@ export default function ProdutorPage() {
           <div role="tabpanel" id="panel-propriedades" aria-labelledby="tab-propriedades">
           <div className={styles.sectionHead}>
             <h2 className={styles.panelTitle}>Propriedades</h2>
-            {!adding && (
-              <button type="button" className="btn btn-primary" onClick={() => (setAdding(true), setEditingId(null))}>
-                <FieldIcon name="plus" /> Adicionar propriedade
-              </button>
-            )}
           </div>
 
           {adding && (
@@ -220,7 +215,7 @@ export default function ProdutorPage() {
 
           <div className="table-wrap">
             {producer.properties.length === 0 ? (
-              <div className="empty"><span className={`card-icon ${ui.emptyIcon}`}><FieldIcon name="land" /></span>
+              <div className="empty">
                 <strong>Nenhuma propriedade cadastrada</strong>
                 Adicione a propriedade com a área em hectares.
               </div>
@@ -281,20 +276,26 @@ export default function ProdutorPage() {
               </table>
             )}
           </div>
-
+          {!adding && (
+            <div className="table-actions">
+              <button type="button" className="btn btn-primary" onClick={() => (setAdding(true), setEditingId(null))}>
+                Adicionar propriedade
+              </button>
+              <Link href="/propriedades" className="btn btn-secondary">
+                Ver todas as propriedades
+              </Link>
+            </div>
+          )}
           </div>
         )}
         {tab === 'solicitacoes' && (
           <div role="tabpanel" id="panel-solicitacoes" aria-labelledby="tab-solicitacoes">
           <div className={styles.sectionHead}>
             <h2 className={styles.panelTitle}>Solicitações abertas</h2>
-            <Link href={`/solicitacoes/nova?produtor=${id}`} className="btn btn-primary">
-              <FieldIcon name="plus" /> Nova solicitação
-            </Link>
           </div>
           <div className="table-wrap">
             {requests.length === 0 ? (
-              <div className="empty"><span className={`card-icon ${ui.emptyIcon}`}><FieldIcon name="land" /></span>
+              <div className="empty">
                 <strong>Nenhuma solicitação aberta</strong>
                 Pedidos do produtor aparecem aqui até serem concluídos.
               </div>
@@ -334,26 +335,38 @@ export default function ProdutorPage() {
               </table>
             )}
           </div>
-
+          <div className="table-actions">
+            <Link href={`/solicitacoes/nova?produtor=${id}`} className="btn btn-primary">
+              Nova solicitação
+            </Link>
+            <Link href="/solicitacoes" className="btn btn-secondary">
+              Ver todas as solicitações
+            </Link>
+          </div>
           </div>
         )}
         {tab === 'visitas' && (
           <div role="tabpanel" id="panel-visitas" aria-labelledby="tab-visitas">
           <div className={styles.sectionHead}>
-            <h2 className={styles.panelTitle}>Visitas</h2>
-            <Link href={`/visitas/nova?produtor=${id}`} className="btn btn-primary">
-              <FieldIcon name="plus" /> Registrar visita
-            </Link>
+            <h2 className={styles.panelTitle}>Visitas deste produtor</h2>
           </div>
           <div className="table-wrap">
             {producer.visits.length === 0 ? (
-              <div className="empty"><span className={`card-icon ${ui.emptyIcon}`}><FieldIcon name="land" /></span>
+              <div className="empty">
                 <strong>Nenhuma visita registrada</strong>
                 As visitas técnicas a este produtor aparecem aqui.
               </div>
             ) : (
               <VisitTable visits={producer.visits} showProducer={false} />
             )}
+          </div>
+          <div className="table-actions">
+            <Link href={`/visitas/nova?produtor=${id}`} className="btn btn-primary">
+              Registrar visita
+            </Link>
+            <Link href="/visitas" className="btn btn-secondary">
+              Ver visitas de todos os produtores
+            </Link>
           </div>
           </div>
         )}
@@ -428,7 +441,7 @@ function PropertyForm({
   return (
     <form className={`enter form-h ${styles.propertyForm}`} onSubmit={onSubmit} onInput={clearFieldError} noValidate>
           <FormFeedback />
-      <SectionTitle icon="land">{property ? 'Editar propriedade' : 'Nova propriedade'}</SectionTitle>
+      <SectionTitle>{property ? 'Editar propriedade' : 'Nova propriedade'}</SectionTitle>
       <p className="muted">Os campos com * são obrigatórios.</p>
       <fieldset disabled={saving} className={styles.propertyFields}>
       <div className="form-row">

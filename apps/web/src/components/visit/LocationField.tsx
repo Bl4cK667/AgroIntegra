@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { formatCoord } from '@/lib/format';
 import styles from './visit.module.css';
-import { FieldIcon } from '@/components/property/FieldUI';
 
 export interface Location {
   latitude: number;
@@ -67,7 +66,6 @@ export function LocationField({ value, onChange }: { value: Location | null; onC
         </div>
       ) : (
         <button type="button" className="btn btn-secondary" onClick={capture} disabled={busy} style={{ justifySelf: 'start' }}>
-          <FieldIcon name="pin" />
           {busy ? 'Obtendo localização…' : 'Registrar localização atual'}
         </button>
       )}

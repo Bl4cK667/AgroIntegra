@@ -2,8 +2,6 @@
 .heading > div { min-width: 0; }
 .heading h1 { overflow-wrap: anywhere; }
 .heading p a { color: var(--accent); }
-.headingIcon { width: 48px; height: 48px; flex: none; border-radius: var(--radius-md); }
-.headingIcon svg { width: 23px; height: 23px; }
 .sectionActions { margin-left: auto; display: flex; flex-wrap: wrap; gap: 8px; }
 /* Faixa única de indicadores: um bloco com divisórias, sem ícones. */
 .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0; margin-bottom: var(--space-5); background: var(--card); border: 1px solid var(--linha); border-radius: var(--radius-lg); overflow: hidden; }
@@ -13,13 +11,12 @@
 .stat strong { display: block; font-size: 1.4667rem; font-weight: 600; line-height: 1.2; margin: 2px 0; overflow-wrap: anywhere; }
 .statLabel { color: var(--muted); font-size: var(--text-sm); }
 .stat small { color: var(--muted); display: block; font-size: var(--text-xs); }
-.search { position: relative; flex: 1; max-width: 510px; min-width: 180px; }
-.search > svg { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--muted, #5b675f); }
-.search input { padding-left: 34px; max-width: none; }
+.search { display: flex; align-items: center; gap: 8px; flex: 1; max-width: 560px; min-width: 180px; }
+.searchLabel { flex: none; font-size: var(--text-sm); font-weight: 600; color: var(--ink); }
+.search input { flex: 1; min-width: 0; max-width: none; }
 .listCard { padding: var(--space-4); }
 .listCard > :global(.toolbar) { margin-bottom: var(--space-3); }
 .person { display: flex; gap: 10px; align-items: center; }
-.avatar { display: grid; place-items: center; width: 34px; height: 34px; flex: none; border-radius: 50%; background: var(--card-2); color: var(--muted); border: 1px solid var(--linha); font-weight: 600; font-size: .75rem; }
 .person small { display: block; color: var(--muted, #5b675f); font-size: .73rem; margin-top: 2px; }
 
 .loading { display: grid; gap: 16px; }
@@ -28,7 +25,6 @@
 /* Seção de formulário = painel com faixa de título (docs/design-system.md, seção 5). */
 .formSection { display: grid; gap: 14px; border: 1px solid var(--linha); border-radius: var(--radius-lg); background: var(--card); min-width: 0; margin: 0; padding: 0 var(--space-4) var(--space-4); }
 .formSection legend { float: left; width: calc(100% + 2 * var(--space-4)); display: flex; align-items: center; gap: 8px; padding: var(--panel-head-pad); margin: 0 calc(-1 * var(--space-4)) 2px; background: var(--panel-head-bg); border-bottom: 1px solid var(--linha); border-radius: var(--radius-lg) var(--radius-lg) 0 0; font-size: var(--text-md); font-weight: var(--weight-panel-title); color: var(--ink); }
-.formSection legend svg { display: none; }
 .formHint { margin: 0; font-size: .83rem; color: var(--muted, #5b675f); }
 .mobileOnly { display: none; }
 @media (max-width: 640px) {

@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { FormFeedback } from '@/components/property/FormFeedback';
 import { checkRequiredFields, clearFieldError, reportFieldError } from '@/components/property/formValidation';
-import { FieldHeading, FieldIcon, FieldLoading, fieldStyles as ui } from '@/components/property/FieldUI';
+import { FieldHeading, FieldLoading, fieldStyles as ui } from '@/components/property/FieldUI';
 import { useParams, useRouter } from 'next/navigation';
 import { FormEvent, useEffect, useState } from 'react';
 import { ApiError, getProducer, ProducerDetail, updateProducer } from '@/lib/api';
@@ -48,14 +48,14 @@ export default function EditarProdutorPage() {
       <Link href={`/produtores/${id}`} className="back">
         {producer?.name ?? 'Produtor'}
       </Link>
-      <FieldHeading icon="people" eyebrow="Cadastro de produtores" title="Editar dados do produtor" description="Mantenha os dados de contato e a comunidade atualizados." />
+      <FieldHeading eyebrow="Cadastro de produtores" title="Editar dados do produtor" description="Mantenha os dados de contato e a comunidade atualizados." />
 
       {!producer && !error && <FieldLoading />}
 
       {producer && (
         <form className={`${ui.form} form-h`} onSubmit={onSubmit} onInput={clearFieldError} noValidate>
           <FormFeedback />
-          <fieldset disabled={saving} className={`card enter ${ui.formSection}`}><legend><FieldIcon name="people" /> Identificação e contato</legend>
+          <fieldset disabled={saving} className={`card enter ${ui.formSection}`}><legend>Identificação e contato</legend>
           <label className="field">
             <span>Nome completo *</span>
             <input className="input" name="name" required data-required-message="Informe o nome completo do produtor." autoComplete="name" placeholder="Ex.: Maria da Silva" value={name} onChange={(e) => setName(e.target.value)} maxLength={120} />
