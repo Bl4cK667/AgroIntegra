@@ -15,3 +15,6 @@ apps/web/public/maplibre/
 .playwright-cli/
 # Capturas de tela de produto de terceiros (referência visual): só na máquina local, não publicar
 docs/referencia-sgp/
+
+# ferramenta local de agentes (não versionar)
+.maestri/
