@@ -6,24 +6,24 @@
 }
 
 .land {
-  position: relative;
-  overflow: hidden;
-  /* Painel institucional: verde da marca em todos os temas, com texto claro. */
-  background: #1f4d36;
-  color: #ffffff;
+  /* Lado da marca: fundo branco em todos os temas, para a logo colorida aparecer bem. */
+  background: #ffffff;
+  color: #1f2a24;
   display: flex;
-  align-items: flex-end;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px;
+  text-align: center;
 }
 
 .landText {
-  position: relative;
-  padding: 48px;
-  max-width: 500px;
+  max-width: 460px;
 }
 
 .org {
   margin: 0 0 10px;
-  color: rgba(255, 255, 255, 0.82);
+  color: #4a5a51;
   font-size: var(--text-md);
   font-weight: 500;
 }
@@ -33,7 +33,7 @@
   font-size: 1.3333rem;
   line-height: 1.4;
   font-weight: 400;
-  color: #ffffff;
+  color: #1f4d36;
 }
 
 .formSide {
@@ -46,21 +46,12 @@
 .formBox {
   width: 100%;
   max-width: 400px;
-  padding: 36px 32px;
-  background: var(--card);
-  border: 1px solid var(--card-border);
-  border-radius: var(--radius-lg);
 }
 
 .brand {
   display: flex;
   justify-content: center;
-  /* Faixa sempre branca: a logo fica legível em todos os temas, inclusive os escuros. */
-  padding: 16px 12px;
-  background: #ffffff;
-  border: 1px solid var(--card-border);
-  border-radius: var(--radius-md, 6px);
-  margin-bottom: 28px;
+  margin-bottom: 32px;
 }
 
 .title {
@@ -82,7 +73,7 @@
 @media (max-width: 820px) {
   .page {
     grid-template-columns: 1fr;
-    grid-template-rows: 210px 1fr;
+    grid-template-rows: auto 1fr;
   }
 
   .landText {
@@ -106,8 +97,16 @@
     margin-bottom: 22px;
   }
 
+  .land {
+    padding: 28px 20px;
+  }
+
+  .brand {
+    margin-bottom: 16px;
+  }
+
   .brand img {
-    width: 190px;
+    width: 180px;
   }
 }
 

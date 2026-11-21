@@ -36,7 +36,10 @@ export default function LoginPage() {
   // Tela dividida ao meio: faixa institucional verde à esquerda, formulário com a logo à direita.
   return (
     <main className={styles.page}>
-      <section className={styles.land} aria-hidden="true">
+      <section className={styles.land}>
+        <div className={styles.brand}>
+          <BrandLogo width={320} />
+        </div>
         <div className={styles.landText}>
           <p className={styles.org}>Secretaria Municipal de Agricultura</p>
           <p className={styles.tagline}>Assistência técnica e extensão rural, do cadastro do produtor ao relatório da visita.</p>
@@ -45,9 +48,6 @@ export default function LoginPage() {
 
       <section className={styles.formSide}>
         <div className={styles.formBox}>
-          <div className={styles.brand}>
-            <BrandLogo width={236} />
-          </div>
 
           <span className="eyebrow">Acesso ao sistema</span>
           <h1 className={styles.title}>Entrar</h1>

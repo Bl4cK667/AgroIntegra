@@ -136,7 +136,10 @@ export default function CadastroPage() {
 
   return (
     <main className={styles.page}>
-      <section className={styles.land} aria-hidden="true">
+      <section className={styles.land}>
+        <div className={styles.brand}>
+          <BrandLogo width={320} />
+        </div>
         <div className={styles.landText}>
           <p className={styles.org}>Secretaria Municipal de Agricultura</p>
           <p className={styles.tagline}>
@@ -147,9 +150,6 @@ export default function CadastroPage() {
 
       <section className={styles.formSide}>
         <div className={styles.formBox}>
-          <div className={styles.brand}>
-            <BrandLogo width={220} />
-          </div>
 
           {phase === 'validating' && (
             <div className={styles.stateBox} role="status" aria-label="Validando convite">
