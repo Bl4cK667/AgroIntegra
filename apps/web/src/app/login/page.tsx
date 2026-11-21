@@ -33,18 +33,24 @@ export default function LoginPage() {
     }
   }
 
-  // Cartão estreito e centralizado: logo em destaque, faixa de título e formulário com rótulos claros.
+  // Tela dividida ao meio: faixa institucional verde à esquerda, formulário com a logo à direita.
   return (
     <main className={styles.page}>
-      <div className={styles.box}>
-        <div className={styles.brand}>
-          <BrandLogo width={260} />
+      <section className={styles.land} aria-hidden="true">
+        <div className={styles.landText}>
+          <p className={styles.org}>Secretaria Municipal de Agricultura</p>
+          <p className={styles.tagline}>Assistência técnica e extensão rural, do cadastro do produtor ao relatório da visita.</p>
         </div>
+      </section>
 
-        <section className={styles.card} aria-labelledby="login-title">
-          <div className={styles.cardHead}>
-            <h1 id="login-title" className={styles.title}>Acesso ao sistema</h1>
+      <section className={styles.formSide}>
+        <div className={styles.formBox}>
+          <div className={styles.brand}>
+            <BrandLogo width={236} />
           </div>
+
+          <span className="eyebrow">Acesso ao sistema</span>
+          <h1 className={styles.title}>Entrar</h1>
 
           <form onSubmit={onSubmit} className={styles.form} onInput={clearFieldError} noValidate>
             <p className={styles.legend}>Campos marcados com <span className={styles.star}>*</span> são obrigatórios.</p>
@@ -76,18 +82,12 @@ export default function LoginPage() {
                 {error}
               </p>
             )}
-            <button type="submit" className={`btn btn-primary ${styles.submit}`} disabled={loading}>
+            <button type="submit" className="btn btn-primary" disabled={loading}>
               {loading ? 'Entrando…' : 'Entrar'}
             </button>
           </form>
-        </section>
-
-        <p className={styles.org}>
-          Secretaria Municipal de Agricultura
-          <br />
-          Assistência técnica e extensão rural, do cadastro do produtor ao relatório da visita.
-        </p>
-      </div>
+        </div>
+      </section>
     </main>
   );
 }

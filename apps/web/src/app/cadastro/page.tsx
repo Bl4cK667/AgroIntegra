@@ -136,11 +136,20 @@ export default function CadastroPage() {
 
   return (
     <main className={styles.page}>
-      <section className={styles.formSide}>
-        <div className={styles.brand}>
-          <BrandLogo width={260} />
+      <section className={styles.land} aria-hidden="true">
+        <div className={styles.landText}>
+          <p className={styles.org}>Secretaria Municipal de Agricultura</p>
+          <p className={styles.tagline}>
+            Cadastro exclusivo para membros convidados da equipe técnica e coordenação.
+          </p>
         </div>
+      </section>
+
+      <section className={styles.formSide}>
         <div className={styles.formBox}>
+          <div className={styles.brand}>
+            <BrandLogo width={220} />
+          </div>
 
           {phase === 'validating' && (
             <div className={styles.stateBox} role="status" aria-label="Validando convite">
