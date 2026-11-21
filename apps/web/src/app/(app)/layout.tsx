@@ -61,13 +61,15 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <SessionContext.Provider value={user}>
       {/* Os dois estilos usam as mesmas rotas e páginas; só a moldura muda. */}
+      {/* Primeiro item do teclado: pula o menu e vai direto ao conteúdo da página. */}
+      <a href="#conteudo" className="skip-link">Pular para o conteúdo</a>
       <div className={styles.shell} data-nav={navStyle} data-collapsed={(navStyle === 'sidebar' && collapsed) || undefined}>
         {navStyle === 'topbar' ? (
           <Topbar user={user} onLogout={logout} />
         ) : (
           <Sidebar user={user} onLogout={logout} collapsed={collapsed} onCollapsedChange={setCollapsed} />
         )}
-        <main className={styles.content}>{children}</main>
+        <main id="conteudo" tabIndex={-1} className={styles.content}>{children}</main>
         <footer className={styles.footer}>AgroIntegra · Integra Tech</footer>
       </div>
     </SessionContext.Provider>

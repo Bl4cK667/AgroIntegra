@@ -1,86 +1,49 @@
-/* ---------- sino ---------- */
+/* ---------- botão "Avisos" (só texto) ---------- */
 
 .bell {
-  position: relative;
   flex: none;
-  display: grid;
-  place-items: center;
-  width: 34px;
-  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 32px;
+  padding: 0 10px;
   border-radius: var(--radius-sm);
-  border: 0;
+  border: 1px solid transparent;
   background: transparent;
   color: var(--nav-ink, #c9d6cd);
+  font: inherit;
+  font-size: 0.86rem;
   cursor: pointer;
-  transition:
-    background-color var(--dur-fast, 150ms) var(--ease-out, ease),
-    color var(--dur-fast, 150ms) var(--ease-out, ease);
 }
 
 .bell:hover {
   background: var(--nav-hover, rgba(255, 255, 255, 0.08));
   color: var(--nav-ink-strong, #fff);
+  text-decoration: underline;
 }
 
-.clapper {
-  transform-box: fill-box;
-  transform-origin: center top;
+.bellLabel {
+  font-weight: 500;
 }
 
 .bellMobile {
-  width: 44px;
-  height: 44px;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--nav-line);
-  background: var(--nav-hover);
+  min-height: 40px;
+  border-color: var(--nav-line);
   color: var(--nav-ink-strong);
 }
 
 .badge {
-  position: absolute;
-  top: 1px;
-  right: 0;
-  min-width: 18px;
-  height: 18px;
-  padding: 0 5px;
-  display: grid;
-  place-items: center;
-  border-radius: var(--radius-sm);
-  background: var(--notification-bg);
-  color: var(--notification-ink);
-  font-size: 0.68rem;
-  font-weight: 600;
-  line-height: 1;
-  box-shadow: 0 0 0 2px var(--nav-bg);
-}
-
-:root[data-theme='dark'] .badge {
-  box-shadow: 0 0 0 2px var(--nav-bg);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
 }
 
 .bellTopbar {
-  /* mesmo visual dos botões de busca e tema da Topbar, em fundo claro ou escuro */
-  width: 36px;
-  height: 36px;
-  border-radius: var(--radius-sm);
-  background: transparent;
-  color: var(--muted);
+  color: inherit;
 }
 
 .bellTopbar:hover {
-  background: var(--card-2);
-  color: var(--ink);
-}
-
-.bellTopbar .badge {
-  box-shadow: 0 0 0 2px var(--superficie);
-  top: 2px;
-  right: 2px;
-}
-
-.bellMobile .badge {
-  top: -2px;
-  right: -2px;
+  background: var(--header-hover, rgba(255, 255, 255, 0.12));
+  color: inherit;
 }
 
 /* ---------- painel ---------- */
@@ -136,21 +99,20 @@
 }
 
 .close {
-  display: grid;
-  place-items: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  border: 1px solid var(--card-border);
-  background: var(--card-2);
-  color: var(--muted);
+  min-height: 32px;
+  padding: 0 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--linha-forte);
+  background: var(--card);
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.86rem;
   cursor: pointer;
-  transition: transform var(--dur-med, 300ms) var(--ease-spring, ease), color var(--dur-fast, 150ms);
 }
 
 .close:hover {
-  color: var(--ink);
-  transform: rotate(90deg);
+  background: var(--card-2);
+  text-decoration: underline;
 }
 
 .toolbar {
@@ -233,22 +195,6 @@
   background: color-mix(in srgb, var(--chart-1) 12%, transparent);
 }
 
-.icon {
-  --tone: var(--chart-1);
-  flex: none;
-  display: grid;
-  place-items: center;
-  width: 38px;
-  height: 38px;
-  border-radius: var(--radius-sm);
-  background: color-mix(in srgb, var(--tone) 14%, var(--card));
-  color: var(--tone);
-}
-
-.item[data-type='REQUEST_URGENT'] .icon { --tone: var(--perigo); }
-.item[data-type='REQUEST_SCHEDULED'] .icon { --tone: var(--chart-2); }
-.item[data-type='VISIT_CREATED'] .icon { --tone: var(--chart-3); }
-.item[data-type='PRODUCER_CREATED'] .icon { --tone: var(--chart-4); }
 
 .text {
   display: grid;
@@ -279,14 +225,16 @@
   opacity: 0.85;
 }
 
-.dot {
+.unreadTag {
   flex: none;
-  width: 9px;
-  height: 9px;
-  margin-top: 6px;
   margin-left: auto;
-  border-radius: 50%;
-  background: var(--chart-1);
+  padding: 1px 6px;
+  border-radius: var(--radius-sm);
+  background: var(--accent);
+  color: var(--on-accent);
+  font-size: 0.72rem;
+  font-weight: 600;
+  white-space: nowrap;
 }
 
 .more {
@@ -320,17 +268,6 @@
   font-size: 1rem;
 }
 
-.emptyIcon {
-  display: grid;
-  place-items: center;
-  width: 56px;
-  height: 56px;
-  margin-bottom: 6px;
-  border-radius: var(--radius-sm);
-  background: var(--card-2);
-  border: 1px solid var(--card-border);
-  color: var(--chart-1);
-}
 
 /* ---------- celular: gaveta inferior ---------- */
 
@@ -392,13 +329,10 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .bell svg,
-  .ringing,
   .badge,
   .panel,
   .backdrop,
   .items li,
-  .dot,
   .emptyIcon {
     animation: none !important;
   }

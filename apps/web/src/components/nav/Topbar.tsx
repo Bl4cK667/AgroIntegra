@@ -4,12 +4,10 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useId, useRef, useState } from 'react';
 import { BrandSymbol } from '@/components/Brand';
-import { Avatar } from '@/components/account/Avatar';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
 import { listProducers, ROLE_LABEL, type ProducerSummary, type SessionUser } from '@/lib/api';
 import { useTheme } from '@/lib/theme';
 import { useDebounced } from '@/lib/useDebounced';
-import { NavIcon } from './NavIcon';
 import { activeGroupHref, MENU, MENU_GROUPS } from './menu';
 import s from './topbar.module.css';
 
@@ -86,33 +84,35 @@ export function Topbar({ user, onLogout }: { user: SessionUser; onLogout: () => 
     <header ref={header} className={s.topbar}>
       <div className={s.top}>
         <Link href="/painel" className={s.brand} aria-label="AgroIntegra — Painel">
-          <BrandSymbol size={28} />
-          <span>AgroIntegra</span>
+          <BrandSymbol size={38} />
+          <span className={s.brandText}>
+            <span className={s.brandName}>AgroIntegra</span>
+            <span className={s.brandTag}>Gestão integrada para o desenvolvimento rural</span>
+          </span>
         </Link>
 
         <QuickProducerSearch className={s.quickDesktop} onPick={(id) => router.push(`/produtores/${id}`)} />
 
         <div className={s.actions}>
-          <button type="button" className={s.iconButton} onClick={openSearch} aria-label="Ir para uma página" aria-keyshortcuts="Control+k Meta+k" title="Ir para uma página (Ctrl/⌘ K)">
-            <NavIcon name="busca" />
+          <button type="button" className={s.textButton} onClick={openSearch} aria-keyshortcuts="Control+k Meta+k" title="Atalho: Ctrl + K">
+            Ir para página
           </button>
           <span className={s.bell}><NotificationBell variant="topbar" /></span>
-          <button type="button" className={`${s.iconButton} ${s.theme}`} onClick={toggle} aria-label={theme === 'dark' ? 'Usar tema claro' : 'Usar tema escuro'} title={theme === 'dark' ? 'Tema claro' : 'Tema escuro'}>
-            <NavIcon name={theme === 'dark' ? 'sol' : 'lua'} />
+          <button type="button" className={`${s.textButton} ${s.theme}`} onClick={toggle}>
+            {theme === 'dark' ? 'Tema claro' : 'Tema escuro'}
           </button>
           <details ref={profile} className={s.profile}>
-            <summary className={s.profileTrigger} aria-label={`${user.name}: opções da conta`}>
-              <Avatar name={user.name} size={26} />
+            <summary className={s.profileTrigger}>
               <span className={s.userText}>
                 <span className={s.userLabel}>Usuário:</span> <strong>{user.name}</strong>
               </span>
-              <span className={s.chevron} aria-hidden="true">▾</span>
+              <span className={s.userShort}>Minha conta</span>
             </summary>
             <div className={s.profileMenu}>
               <div className={s.user}><strong>{user.name}</strong><small>{ROLE_LABEL[user.role]}</small></div>
               <Link href="/configuracoes">Configurações da conta</Link>
-              <button type="button" className={s.mobileTheme} onClick={toggle}><NavIcon name={theme === 'dark' ? 'sol' : 'lua'} />{theme === 'dark' ? 'Tema claro' : 'Tema escuro'}</button>
-              <button type="button" onClick={onLogout}><NavIcon name="sair" />Sair da conta</button>
+              <button type="button" className={s.mobileTheme} onClick={toggle}>{theme === 'dark' ? 'Usar tema claro' : 'Usar tema escuro'}</button>
+              <button type="button" onClick={onLogout}>Sair da conta</button>
             </div>
           </details>
           <button type="button" className={s.logout} onClick={onLogout}>Sair</button>
@@ -121,7 +121,7 @@ export function Topbar({ user, onLogout }: { user: SessionUser; onLogout: () => 
 
       <nav className={s.menu} aria-label="Principal">
         <button type="button" className={s.menuToggle} aria-expanded={mobileOpen} aria-controls="topbar-menu" onClick={() => setMobileOpen((open) => !open)}>
-          <span className={s.burger} aria-hidden="true" />Menu
+          {mobileOpen ? 'Fechar menu' : 'Menu'}
         </button>
         <ul id="topbar-menu" className={s.groups} data-open={mobileOpen || undefined}>
           <li className={s.quickMobile}>
@@ -163,7 +163,7 @@ export function Topbar({ user, onLogout }: { user: SessionUser; onLogout: () => 
                     }
                   }}
                 >
-                  {group.label}<span className={s.caret} aria-hidden="true">▾</span>
+                  {group.label}
                 </button>
                 <ul id={submenuId} className={s.submenu} hidden={!open}>
                   {group.items?.map((item) => (
@@ -184,16 +184,16 @@ export function Topbar({ user, onLogout }: { user: SessionUser; onLogout: () => 
       <dialog ref={search} className={s.search} aria-labelledby="nav-search-title" onClick={(event) => { if (event.target === event.currentTarget) search.current?.close(); }}>
         <div className={s.searchHead}>
           <h2 id="nav-search-title">Ir para uma página</h2>
-          <button type="button" className={s.closeButton} onClick={() => search.current?.close()} aria-label="Fechar pesquisa"><NavIcon name="fechar" /></button>
+          <button type="button" className={s.closeButton} onClick={() => search.current?.close()} >Fechar</button>
         </div>
         <form onSubmit={(event) => { event.preventDefault(); if (results[0]) { search.current?.close(); router.push(results[0].href); } }}>
           <label className={s.searchField}>
-            <NavIcon name="busca" />
-            <input aria-label="Pesquisar páginas" placeholder="Pesquisar páginas…" value={query} onChange={(event) => setQuery(event.target.value)} />
+            <span className={s.searchLabel}>Nome da página</span>
+            <input placeholder="Ex.: Produtores, Visitas, Mapa" value={query} onChange={(event) => setQuery(event.target.value)} />
           </label>
         </form>
         <nav className={s.results} aria-label="Resultados da pesquisa">
-          {results.map((item) => <Link key={item.href} href={item.href} onClick={() => search.current?.close()}><NavIcon name={item.icon} /><span>{item.label}</span></Link>)}
+          {results.map((item) => <Link key={item.href} href={item.href} onClick={() => search.current?.close()}>{item.label}</Link>)}
           {!results.length && <p role="status">Nenhuma página encontrada.</p>}
         </nav>
         <div className={s.searchFoot}>Enter para abrir a primeira página · Esc para fechar</div>

@@ -34,7 +34,7 @@
   --control-h-touch: 44px; /* alvo mínimo no celular */
 
   /* Moldura: cabeçalho em duas faixas, painéis e formulário horizontal */
-  --header-top-h: 44px;
+  --header-top-h: 56px;
   --header-menu-h: 38px;
   --panel-head-pad: 8px 12px;
   --panel-pad: 12px;

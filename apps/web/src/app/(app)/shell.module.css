@@ -23,7 +23,7 @@
 }
 
 .shell[data-collapsed] {
-  grid-template-columns: 80px minmax(0, 1fr);
+  grid-template-columns: 96px minmax(0, 1fr);
 }
 
 /* Topbar em duas faixas: conteúdo em largura total, como no padrão de referência (docs/design-system.md). */

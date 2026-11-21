@@ -21,7 +21,6 @@ export function NotificationBell({ variant = 'sidebar' }: { variant?: 'sidebar' 
   const router = useRouter();
   const [unread, setUnread] = useState(0);
   const [open, setOpen] = useState(false);
-  const [ring, setRing] = useState(0); // muda a cada chegada nova, reinicia a animação do sino
   const last = useRef<number | null>(null);
   const [mounted, setMounted] = useState(false);
 
@@ -30,7 +29,6 @@ export function NotificationBell({ variant = 'sidebar' }: { variant?: 'sidebar' 
   const refresh = useCallback(async () => {
     try {
       const { unread: n } = await unreadCount();
-      if (last.current !== null && n > last.current) setRing((r) => r + 1);
       last.current = n;
       setUnread(n);
     } catch {
@@ -60,13 +58,10 @@ export function NotificationBell({ variant = 'sidebar' }: { variant?: 'sidebar' 
         aria-expanded={open}
         data-tip="Notificações"
       >
-        <svg key={ring} className={ring ? s.ringing : undefined} width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-          <path d="M6 9.5a6 6 0 0 1 12 0c0 4.5 1.8 6.2 2.5 7H3.5c.7-.8 2.5-2.5 2.5-7z" />
-          <path className={s.clapper} d="M10 20a2.2 2.2 0 0 0 4 0" />
-        </svg>
+        <span className={s.bellLabel}>Avisos</span>
         {unread > 0 && (
-          <span key={`b${unread}`} className={s.badge} aria-hidden="true">
-            {unread > 99 ? '99+' : unread}
+          <span className={s.badge} aria-hidden="true">
+            ({unread > 99 ? '99+' : unread})
           </span>
         )}
       </button>
@@ -181,10 +176,8 @@ function Panel({ onClose, onUnread, onGo }: { onClose: () => void; onUnread: (n:
         <span className={s.grabber} aria-hidden="true" />
         <header className={s.head}>
           <h2 id="notif-title">Notificações</h2>
-          <button type="button" className={s.close} onClick={close} aria-label="Fechar notificações">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">
-              <path d="M6 6l12 12M18 6 6 18" />
-            </svg>
+          <button type="button" className={s.close} onClick={close}>
+            Fechar
           </button>
         </header>
 
@@ -213,9 +206,6 @@ function Panel({ onClose, onUnread, onGo }: { onClose: () => void; onUnread: (n:
           )}
           {items && items.length === 0 && (
             <div className={s.empty}>
-              <span className={s.emptyIcon} aria-hidden="true">
-                <TypeIcon type="EMPTY" />
-              </span>
               <strong>{filter === 'unread' ? 'Nenhuma notificação não lida' : 'Nenhuma notificação'}</strong>
               <span>
                 {filter === 'unread'
@@ -229,15 +219,12 @@ function Panel({ onClose, onUnread, onGo }: { onClose: () => void; onUnread: (n:
               {items.map((n, i) => (
                 <li key={n.id} style={{ '--i': Math.min(i, 10) } as React.CSSProperties}>
                   <button type="button" className={s.item} data-unread={!n.readAt || undefined} data-type={n.type} onClick={() => open(n)}>
-                    <span className={s.icon} aria-hidden="true">
-                      <TypeIcon type={n.type} />
-                    </span>
                     <span className={s.text}>
                       <strong>{n.title}</strong>
                       <span>{n.body}</span>
                       <time dateTime={n.createdAt}>{timeAgo(n.createdAt)}</time>
                     </span>
-                    {!n.readAt && <span className={s.dot} aria-label="Não lida" />}
+                    {!n.readAt && <span className={s.unreadTag}>Não lida</span>}
                   </button>
                 </li>
               ))}
@@ -251,22 +238,5 @@ function Panel({ onClose, onUnread, onGo }: { onClose: () => void; onUnread: (n:
         </div>
       </div>
     </>
-  );
-}
-
-function TypeIcon({ type }: { type: string }) {
-  const p = {
-    REQUEST_CREATED: 'M4 13.5V6.5A2.5 2.5 0 0 1 6.5 4h11A2.5 2.5 0 0 1 20 6.5v7M4 13.5h4.2l1.6 2.5h4.4l1.6-2.5H20V18a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2zM12 7v5m-2.2-2.2L12 12l2.2-2.2',
-    REQUEST_URGENT: 'M12 3 2.5 20h19zM12 10v4.5M12 17.5v.01',
-    REQUEST_SCHEDULED: 'M8 2.5v4m8-4v4M3.5 10h17M5.5 4.5h13a2 2 0 0 1 2 2V19a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2V6.5a2 2 0 0 1 2-2z',
-    REQUEST_DONE: 'M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0zM8 12.5l2.7 2.7L16 9.8',
-    VISIT_CREATED: 'M12 21s-6.5-5.6-6.5-10.5a6.5 6.5 0 0 1 13 0C18.5 15.4 12 21 12 21zM12 8a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5',
-    PRODUCER_CREATED: 'M15 19.5c-.5-3-2.6-5-5.5-5s-5 2-5.5 5M9.5 4.5a3.2 3.2 0 1 0 0 6.4 3.2 3.2 0 0 0 0-6.4M19 8v6M16 11h6',
-    EMPTY: 'M6 9.5a6 6 0 0 1 12 0c0 4.5 1.8 6.2 2.5 7H3.5c.7-.8 2.5-2.5 2.5-7zM10 20a2.2 2.2 0 0 0 4 0',
-  }[type] ?? 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM12 8v5M12 16v.01';
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <path d={p} />
-    </svg>
   );
 }

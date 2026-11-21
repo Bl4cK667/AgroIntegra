@@ -37,12 +37,26 @@
 .brand {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   color: var(--header-ink);
   text-decoration: none;
-  font-size: 16px;
-  font-weight: 600;
   flex-shrink: 0;
+}
+
+.brandText {
+  display: grid;
+  line-height: 1.15;
+}
+
+.brandName {
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.brandTag {
+  color: var(--header-ink-muted);
+  font-size: 11px;
 }
 
 .quick {
@@ -126,28 +140,21 @@
   flex-shrink: 0;
 }
 
-.iconButton,
-.bell button {
-  width: 32px;
-  height: 32px;
-  display: grid;
-  place-items: center;
+.textButton {
+  min-height: 32px;
+  padding: 0 10px;
   background: transparent;
-  color: var(--header-ink-muted);
+  color: var(--header-ink);
   border: 0;
   border-radius: var(--radius-sm);
+  font-size: var(--text-sm);
+  white-space: nowrap;
   cursor: pointer;
 }
 
-.iconButton:hover,
-.bell button:hover {
+.textButton:hover {
   background: var(--header-hover);
-  color: var(--header-ink);
-}
-
-.iconButton svg {
-  width: 18px;
-  height: 18px;
+  text-decoration: underline;
 }
 
 .bell {
@@ -185,9 +192,9 @@
   color: var(--header-ink-muted);
 }
 
-.chevron {
-  color: var(--header-ink-muted);
-  font-size: 11px;
+.userShort {
+  display: none;
+  white-space: nowrap;
 }
 
 .profileMenu {
@@ -246,11 +253,6 @@
 .profileMenu a:hover,
 .profileMenu button:hover {
   background: var(--card-2);
-}
-
-.profileMenu svg {
-  width: 16px;
-  height: 16px;
 }
 
 .profileMenu .mobileTheme {
@@ -326,11 +328,6 @@
   background: var(--header-active);
   border-bottom-color: var(--header-ink);
   font-weight: 600;
-}
-
-.caret {
-  font-size: 10px;
-  color: var(--header-ink-muted);
 }
 
 .submenu {
@@ -422,25 +419,19 @@
 }
 
 .closeButton {
-  width: 28px;
-  height: 28px;
-  display: grid;
-  place-items: center;
-  border: 0;
+  min-height: 28px;
+  padding: 0 10px;
+  border: 1px solid var(--linha-forte);
   border-radius: var(--radius-sm);
-  background: none;
-  color: var(--muted);
+  background: var(--card);
+  color: var(--ink);
+  font-size: var(--text-sm);
   cursor: pointer;
 }
 
 .closeButton:hover {
   background: var(--card-2);
-  color: var(--ink);
-}
-
-.closeButton svg {
-  width: 16px;
-  height: 16px;
+  text-decoration: underline;
 }
 
 .search form {
@@ -448,33 +439,31 @@
 }
 
 .searchField {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 0 10px;
-  min-height: var(--control-h);
-  border: 1px solid var(--linha-forte);
-  border-radius: var(--radius-md);
-  color: var(--muted);
+  display: grid;
+  gap: 4px;
 }
 
-.searchField:focus-within {
-  outline: 2px solid var(--focus);
-  outline-offset: 0;
-}
-
-.searchField svg {
-  width: 16px;
-  height: 16px;
+.searchLabel {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--ink);
 }
 
 .searchField input {
   width: 100%;
   min-width: 0;
-  border: 0;
-  outline: 0;
-  background: none;
+  min-height: var(--control-h);
+  padding: 0 10px;
+  border: 1px solid var(--linha-forte);
+  border-radius: var(--radius-md);
+  background: var(--card);
+  color: var(--ink);
   font-size: var(--text-base);
+}
+
+.searchField input:focus {
+  outline: 2px solid var(--focus);
+  outline-offset: 0;
 }
 
 .results {
@@ -499,11 +488,6 @@
   background: var(--card-2);
 }
 
-.results svg {
-  width: 16px;
-  height: 16px;
-}
-
 .results p {
   color: var(--muted);
   text-align: center;
@@ -519,9 +503,19 @@
 
 /* ---------- telas médias: menos texto na faixa superior ---------- */
 
+@media (max-width: 1280px) {
+  .brandTag {
+    display: none;
+  }
+}
+
 @media (max-width: 1180px) {
   .userText {
     display: none;
+  }
+
+  .userShort {
+    display: inline;
   }
 }
 
@@ -535,8 +529,7 @@
 
   .quickDesktop,
   .theme,
-  .logout,
-  .chevron {
+  .logout {
     display: none;
   }
 
@@ -548,10 +541,8 @@
     padding-left: 4px;
   }
 
-  .iconButton,
-  .bell button {
-    width: var(--control-h-touch);
-    height: var(--control-h-touch);
+  .textButton {
+    min-height: var(--control-h-touch);
   }
 
   .menu {
@@ -572,34 +563,6 @@
     font-size: var(--text-md);
     font-weight: 600;
     cursor: pointer;
-  }
-
-  .burger,
-  .burger::before,
-  .burger::after {
-    display: block;
-    width: 16px;
-    height: 2px;
-    background: currentColor;
-  }
-
-  .burger {
-    position: relative;
-  }
-
-  .burger::before,
-  .burger::after {
-    content: '';
-    position: absolute;
-    left: 0;
-  }
-
-  .burger::before {
-    top: -5px;
-  }
-
-  .burger::after {
-    top: 5px;
   }
 
   .groups {

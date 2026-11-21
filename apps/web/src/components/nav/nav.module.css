@@ -59,10 +59,10 @@
 
 .collapse {
   flex: none;
-  display: grid;
-  place-items: center;
-  width: 34px;
-  height: 34px;
+  min-height: 30px;
+  padding: 0 8px;
+  font: inherit;
+  font-size: 0.76rem;
   border-radius: var(--radius-sm);
   border: 1px solid transparent;
   background: transparent;
@@ -80,9 +80,6 @@
   color: var(--nav-ink-strong);
 }
 
-.collapse .icon {
-  transition: transform var(--dur-med, 300ms) var(--ease-spring, ease);
-}
 
 /* ---------- itens ---------- */
 
@@ -199,10 +196,10 @@
 .logout {
   margin-left: auto;
   flex: none;
-  display: grid;
-  place-items: center;
-  width: 36px;
-  height: 36px;
+  min-height: 32px;
+  padding: 0 10px;
+  font: inherit;
+  font-size: 0.82rem;
   border-radius: var(--radius-sm);
   border: 1px solid transparent;
   background: transparent;
@@ -232,7 +229,6 @@
 }
 
 .sidebar[data-collapsed] .brandName,
-.sidebar[data-collapsed] .label,
 .sidebar[data-collapsed] .userText {
   opacity: 0;
   width: 0;
@@ -240,13 +236,18 @@
   pointer-events: none;
 }
 
-.sidebar[data-collapsed] .collapse .icon {
-  transform: rotate(180deg); /* indica para que lado o menu abre */
+/* recolhido: os itens continuam com o nome, em letra menor */
+.sidebar[data-collapsed] .label {
+  white-space: normal;
+  font-size: 0.7rem;
+  line-height: 1.2;
+  text-align: center;
+  overflow-wrap: anywhere;
 }
 
 .sidebar[data-collapsed] .link {
   justify-content: center;
-  padding: 0;
+  padding: 4px 2px;
 }
 
 .sidebar[data-collapsed] .user {
@@ -258,32 +259,6 @@
   margin: 0;
 }
 
-/* dica com o nome do item quando o menu está recolhido */
-.sidebar[data-collapsed] [data-tip]:hover::after,
-.sidebar[data-collapsed] [data-tip]:focus-visible::after {
-  content: attr(data-tip);
-  position: fixed;
-  left: 88px;
-  transform: translateY(0);
-  padding: 6px 11px;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--nav-line);
-  background: var(--ink);
-  color: var(--card);
-  font-size: 0.78rem;
-  font-weight: 600;
-  white-space: nowrap;
-  pointer-events: none;
-  box-shadow: var(--shadow-lift);
-  z-index: 60;
-}
-
-/* ---------- ícones ---------- */
-
-/* Ícones parados: só herdam a cor do item. */
-.icon {
-  flex: none;
-}
 
 /* ---------- celular ---------- */
 
@@ -317,10 +292,10 @@
   }
 
   .roundBtn {
-    display: grid;
-    place-items: center;
-    width: 44px;
-    height: 44px;
+    min-height: 40px;
+    padding: 0 10px;
+    font: inherit;
+    font-size: 0.82rem;
     border-radius: var(--radius-sm);
     border: 1px solid var(--nav-line);
     background: var(--nav-hover);
@@ -335,7 +310,7 @@
     bottom: max(12px, env(safe-area-inset-bottom));
     z-index: 45;
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: 2px;
     padding: 6px;
     border-radius: var(--radius-lg);
@@ -357,7 +332,7 @@
     background: transparent;
     color: var(--nav-ink);
     font: inherit;
-    font-size: 0.68rem;
+    font-size: 0.8rem;
     font-weight: 600;
     text-decoration: none;
     cursor: pointer;
@@ -443,10 +418,6 @@
     text-decoration: none;
   }
 
-  .sheetItem .icon {
-    color: var(--chart-1);
-  }
-
   .sheetItem[data-active] {
     border-color: var(--chart-1);
     background: var(--nav-active-bg);
@@ -477,8 +448,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  :is(.motionLink, .motionButton, .motionLogout) .icon,
-  :is(.motionLink, .motionButton, .motionLogout) .icon *,
   .sidebar *,
   .sidebar *::after,
   .mobileTop *,
@@ -542,12 +511,6 @@
   background: none;
 }
 
-.avatarLink {
-  display: grid;
-  border-radius: 50%;
-  text-decoration: none;
-}
-
 .sheetUser {
   color: inherit;
   text-decoration: none;
@@ -556,11 +519,6 @@
   border-radius: var(--radius-lg);
   background: var(--card-2);
   border: 1px solid var(--card-border);
-}
-
-.sheetUser > .icon {
-  margin-left: auto;
-  color: var(--muted);
 }
 
 .avatarRing {
