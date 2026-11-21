@@ -94,7 +94,7 @@ export function Topbar({ user, onLogout }: { user: SessionUser; onLogout: () => 
         <QuickProducerSearch className={s.quickDesktop} onPick={(id) => router.push(`/produtores/${id}`)} />
 
         <div className={s.actions}>
-          <button type="button" className={s.textButton} onClick={openSearch} aria-keyshortcuts="Control+k Meta+k" title="Atalho: Ctrl + K">
+          <button type="button" className={`${s.textButton} ${s.pageSearch}`} onClick={openSearch} aria-keyshortcuts="Control+k Meta+k" title="Atalho: Ctrl + K">
             Ir para página
           </button>
           <span className={s.bell}><NotificationBell variant="topbar" /></span>
@@ -111,6 +111,7 @@ export function Topbar({ user, onLogout }: { user: SessionUser; onLogout: () => 
             <div className={s.profileMenu}>
               <div className={s.user}><strong>{user.name}</strong><small>{ROLE_LABEL[user.role]}</small></div>
               <Link href="/configuracoes">Configurações da conta</Link>
+              <button type="button" className={s.mobileTheme} onClick={openSearch}>Ir para página</button>
               <button type="button" className={s.mobileTheme} onClick={toggle}>{theme === 'dark' ? 'Usar tema claro' : 'Usar tema escuro'}</button>
               <button type="button" onClick={onLogout}>Sair da conta</button>
             </div>

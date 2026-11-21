@@ -25,6 +25,7 @@
 
 .top {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
@@ -468,10 +469,13 @@
 
 /* ---------- Fase 3: sino, link do perfil ---------- */
 
+/* Avisos e Recolher em texto: ficam numa linha própria, abaixo da logo. */
 .topActions {
   display: flex;
   align-items: center;
-  gap: 2px;
+  justify-content: space-between;
+  gap: 4px;
+  width: 100%;
 }
 
 .sidebar[data-collapsed] .topActions {

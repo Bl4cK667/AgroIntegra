@@ -529,8 +529,14 @@
 
   .quickDesktop,
   .theme,
+  .pageSearch,
   .logout {
     display: none;
+  }
+
+  /* No celular a logo fica só com o símbolo e o nome: o resto cabe na mesma linha. */
+  .brandName {
+    font-size: 17px;
   }
 
   .profileMenu .mobileTheme {
