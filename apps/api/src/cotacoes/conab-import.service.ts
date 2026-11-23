@@ -43,16 +43,28 @@ export class ConabImportService implements OnApplicationBootstrap, OnModuleDestr
     const job = CronJob.from({
       cronTime: this.config.cron,
       timeZone: this.config.timezone,
-      onTick: () => void this.importAll('agendada'),
+      onTick: () => this.runBackground('agendada', () => this.importAll('agendada')),
     });
     this.scheduler.addCronJob(JOB_NAME, job);
     job.start();
     this.logger.log(JSON.stringify({ event: 'cotacoes_schedule', cron: this.config.cron, timezone: this.config.timezone, ufs: this.config.ufs }));
-    if (this.config.importOnStart) void this.importIfOld();
+    if (this.config.importOnStart) void this.runBackground('na inicialização', () => this.importIfOld());
   }
 
   onModuleDestroy() {
     if (this.scheduler.doesExist('cron', JOB_NAME)) this.scheduler.deleteCronJob(JOB_NAME);
+  }
+
+  // Falhas no trabalho em segundo plano devem ser observadas sem derrubar a API.
+  private async runBackground(trigger: string, task: () => Promise<unknown>): Promise<void> {
+    try {
+      await task();
+    } catch {
+      this.logger.error(JSON.stringify({
+        event: 'cotacoes_background_failed', trigger,
+        message: 'Falha na importação automática de cotações. Verifique o banco e as migrações.',
+      }));
+    }
   }
 
   private async importIfOld() {

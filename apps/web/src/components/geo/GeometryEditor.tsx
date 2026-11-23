@@ -68,11 +68,16 @@ export default function GeometryEditor({ kind, featureType, value, onChange, con
   const drawRef = useRef<TerraDraw | null>(null);
   const emitted = useRef<Geometry | null>(value);
   const lockedRef = useRef<Position[][][]>([]);
+  // true enquanto o próprio editor limpa/recarrega o terra-draw: o clear() dispara 'change'/'delete'
+  // e, sem isto, emit() devolveria ao pai a geometria antiga (ou null) por cima do valor novo.
+  const silentRef = useRef(false);
   const onChangeRef = useRef(onChange);
   onChangeRef.current = onChange;
   const [loaded, setLoaded] = useState(false);
   const [tool, setTool] = useState<Tool>('pan');
-  const [lockedCount, setLockedCount] = useState(0);
+  // Polígonos com recorte (furo) que o terra-draw não aceita: desenhados numa camada própria.
+  const [locked, setLocked] = useState<Position[][][]>([]);
+  const lockedCount = locked.length;
   const [gps, setGps] = useState<number | null>(null);
 
   const style = FEATURE_STYLES[featureType];
@@ -87,10 +92,23 @@ export default function GeometryEditor({ kind, featureType, value, onChange, con
     [context],
   );
 
+  const lockedData = useMemo(
+    () => ({
+      type: 'FeatureCollection' as const,
+      features: locked.map((coordinates, i) => ({
+        type: 'Feature' as const,
+        id: i,
+        geometry: { type: 'Polygon' as const, coordinates },
+        properties: { featureType },
+      })),
+    }),
+    [locked, featureType],
+  );
+
   // Recalcula a geometria a partir do que está desenhado e avisa o pai.
   const emit = useCallback(() => {
     const draw = drawRef.current;
-    if (!draw) return;
+    if (!draw || silentRef.current) return;
     const geomType = kind === 'polygon' ? 'Polygon' : kind === 'line' ? 'LineString' : 'Point';
     let features = draw.getSnapshot().filter((f) => f.properties.mode === drawMode && f.geometry.type === geomType);
     if (kind === 'point' && features.length > 1) {
@@ -108,16 +126,22 @@ export default function GeometryEditor({ kind, featureType, value, onChange, con
     (g: Geometry | null) => {
       const draw = drawRef.current;
       if (!draw) return;
-      draw.clear();
       const feats = pieces(g).map(
         (p) => ({ id: uuidv4(), type: 'Feature', geometry: p, properties: { mode: drawMode } }) as GeoJSONStoreFeatures,
       );
-      const results = feats.length ? draw.addFeatures(feats) : [];
+      silentRef.current = true;
+      let results: ReturnType<TerraDraw['addFeatures']> = [];
+      try {
+        draw.clear();
+        results = feats.length ? draw.addFeatures(feats) : [];
+      } finally {
+        silentRef.current = false;
+      }
       // Polígonos com recorte (furo) não são editáveis no terra-draw: ficam travados, mas continuam valendo.
       lockedRef.current = results
         .map((r, i) => (r.valid ? null : (feats[i].geometry.coordinates as Position[][])))
         .filter((x): x is Position[][] => x !== null && kind === 'polygon');
-      setLockedCount(lockedRef.current.length);
+      setLocked(lockedRef.current);
       emitted.current = g;
     },
     [drawMode, kind],
@@ -192,9 +216,14 @@ export default function GeometryEditor({ kind, featureType, value, onChange, con
   const initialBounds = useMemo(() => bounds([...(value ? [value] : []), ...context.map((f) => f.geometry)]), []); // eslint-disable-line react-hooks/exhaustive-deps
 
   function clearAll() {
-    drawRef.current?.clear();
     lockedRef.current = [];
-    setLockedCount(0);
+    setLocked([]);
+    silentRef.current = true;
+    try {
+      drawRef.current?.clear();
+    } finally {
+      silentRef.current = false;
+    }
     emitted.current = null;
     onChangeRef.current(null);
     setTool('draw');
@@ -251,6 +280,12 @@ export default function GeometryEditor({ kind, featureType, value, onChange, con
               ))}
             </Source>
           )}
+          {/* Sempre montada (mesmo vazia) para ficar abaixo das camadas do terra-draw, criadas depois do load. */}
+          <Source id="locked" type="geojson" data={lockedData as never}>
+            {featureLayers('locked').map((l) => (
+              <Layer key={l.id} {...(l as unknown as LayerProps)} />
+            ))}
+          </Source>
         </MapGL>
       </div>
 
